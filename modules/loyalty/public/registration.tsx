@@ -7,8 +7,15 @@ import Input from "@/shell/ui/Input"
 import LoyaltyCard, {
   type LoyaltyCardData,
 } from "@/modules/loyalty/public/card"
+import { useBusiness } from "@/shell/context/business"
 
 type Mode = "register" | "login"
+
+const shellClassName =
+  "fixed inset-0 z-10 flex min-h-[100dvh] w-full flex-col items-center overflow-y-auto bg-gradient-to-b from-[color-mix(in_srgb,var(--color-primary,#F97316)_55%,white)] via-[var(--color-primary,#F97316)] to-[color-mix(in_srgb,var(--color-primary,#F97316)_65%,black)] pt-[max(1.5rem,env(safe-area-inset-top))] pr-[max(1.5rem,env(safe-area-inset-right))] pb-[max(2rem,env(safe-area-inset-bottom))] pl-[max(1.5rem,env(safe-area-inset-left))]"
+
+const inputClassName =
+  "h-[52px] !rounded-2xl !border-0 !bg-stone-100 px-4 text-base text-stone-900 shadow-none placeholder:text-stone-400 focus:!ring-2 focus:!ring-[var(--color-primary,#F97316)]/35"
 
 export default function LoyaltyRegistration({
   initialCustomer,
@@ -16,6 +23,7 @@ export default function LoyaltyRegistration({
   initialCustomer?: LoyaltyCardData | null
 }) {
   const params = useParams<{ slug: string }>()
+  const business = useBusiness()
   const slug = params.slug
   const [mode, setMode] = useState<Mode>("register")
   const [name, setName] = useState("")
@@ -26,6 +34,7 @@ export default function LoyaltyRegistration({
   const [customer, setCustomer] = useState<LoyaltyCardData | null>(
     initialCustomer ?? null
   )
+  const businessInitial = (business.name?.trim()?.[0] ?? "T").toUpperCase()
 
   async function onRegister(e: FormEvent) {
     e.preventDefault()
@@ -80,73 +89,143 @@ export default function LoyaltyRegistration({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-col gap-4">
-      {mode === "register" ? (
-        <form onSubmit={onRegister} className="flex flex-col gap-4">
-          <Input
-            label="Tu nombre"
-            name="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-          <Input
-            label="Tu WhatsApp"
-            name="phone"
-            type="tel"
-            placeholder="+54 9 11 1234-5678"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            required
-          />
-          <Input
-            label="Cumpleaños (opcional)"
-            name="birthday"
-            type="date"
-            value={birthday}
-            onChange={(e) => setBirthday(e.target.value)}
-          />
-          <Button type="submit" disabled={loading}>
-            {loading ? "Guardando…" : "Empezar a sumar visitas"}
-          </Button>
-          <button
-            type="button"
-            className="text-left text-sm text-gray-600 underline"
-            onClick={() => {
-              setMode("login")
-              setError("")
-            }}
-          >
-            ¿Ya tenés cuenta? Ingresá tu WhatsApp
-          </button>
-        </form>
-      ) : (
-        <form onSubmit={onLogin} className="flex flex-col gap-4">
-          <Input
-            label="Tu WhatsApp"
-            name="phone"
-            type="tel"
-            placeholder="+54 9 11 1234-5678"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            required
-          />
-          <Button type="submit" disabled={loading}>
-            {loading ? "Buscando…" : "Ingresar"}
-          </Button>
-          <button
-            type="button"
-            className="text-left text-sm text-gray-600 underline"
-            onClick={() => {
-              setMode("register")
-              setError("")
-            }}
-          >
-            Volver al registro
-          </button>
-        </form>
-      )}
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+    <div className={shellClassName}>
+      <div className="mx-auto flex w-full max-w-sm flex-col gap-5 py-8">
+        <header className="flex flex-col items-center gap-2.5 text-center text-white">
+          {business.logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={business.logo}
+              alt={business.name}
+              className="h-[72px] w-[72px] rounded-[20px] object-cover shadow-md"
+            />
+          ) : (
+            <div
+              aria-hidden
+              className="flex h-[72px] w-[72px] items-center justify-center rounded-[20px] bg-white/20 text-2xl font-extrabold text-white backdrop-blur-sm"
+            >
+              {businessInitial}
+            </div>
+          )}
+          <h1 className="text-xl font-extrabold tracking-tight">
+            {business.name}
+          </h1>
+          <p className="text-xs text-white/80">Programa de fidelización</p>
+        </header>
+
+        <div className="flex w-full flex-col gap-5 rounded-3xl border border-white/25 bg-white p-6 shadow-xl">
+          <div className="text-center">
+            <h2 className="text-xl font-bold tracking-tight text-stone-900">
+              {mode === "register"
+                ? "Empezá a sumar visitas"
+                : "Ingresá tu WhatsApp"}
+            </h2>
+            <p className="mt-2 text-[13px] leading-relaxed text-stone-500">
+              {mode === "register"
+                ? `Registrate en segundos y ganá tu ${business.reward_name || "premio"} cada ${business.purchases_needed || 10} ${business.purchases_needed === 1 ? "compra" : "compras"}.`
+                : "Buscamos tu tarjeta con el número de WhatsApp."}
+            </p>
+          </div>
+
+          {mode === "register" ? (
+            <form onSubmit={onRegister} className="flex flex-col gap-3.5">
+              <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-stone-800">
+                <Input
+                  label="Tu nombre"
+                  name="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  className={inputClassName}
+                />
+              </div>
+              <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-stone-800">
+                <Input
+                  label="Tu WhatsApp"
+                  name="phone"
+                  type="tel"
+                  placeholder="+54 9 11 1234-5678"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                  className={inputClassName}
+                />
+              </div>
+              <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-stone-800">
+                <Input
+                  label="Cumpleaños (opcional)"
+                  name="birthday"
+                  type="date"
+                  value={birthday}
+                  onChange={(e) => setBirthday(e.target.value)}
+                  className={inputClassName}
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="mt-1 h-14 w-full !rounded-2xl text-base font-bold disabled:opacity-70"
+              >
+                {loading ? "Guardando…" : "Empezar a sumar visitas"}
+              </Button>
+              <button
+                type="button"
+                className="pt-1 text-center text-xs text-stone-500"
+                onClick={() => {
+                  setMode("login")
+                  setError("")
+                }}
+              >
+                ¿Ya tenés cuenta?{" "}
+                <span className="font-semibold text-[var(--color-primary,#F97316)]">
+                  Ingresá tu WhatsApp
+                </span>
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={onLogin} className="flex flex-col gap-3.5">
+              <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-stone-800">
+                <Input
+                  label="Tu WhatsApp"
+                  name="phone"
+                  type="tel"
+                  placeholder="+54 9 11 1234-5678"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  required
+                  className={inputClassName}
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="mt-1 h-14 w-full !rounded-2xl text-base font-bold disabled:opacity-70"
+              >
+                {loading ? "Buscando…" : "Ingresar"}
+              </Button>
+              <button
+                type="button"
+                className="pt-1 text-center text-xs font-semibold text-[var(--color-primary,#F97316)]"
+                onClick={() => {
+                  setMode("register")
+                  setError("")
+                }}
+              >
+                Volver al registro
+              </button>
+            </form>
+          )}
+
+          {error ? (
+            <p
+              role="alert"
+              className="rounded-xl bg-red-50 px-3 py-2 text-center text-sm font-medium text-red-700"
+            >
+              {error}
+            </p>
+          ) : null}
+        </div>
+      </div>
     </div>
   )
 }

@@ -16,6 +16,9 @@ type CustomerView = {
   canRedeem: boolean
 }
 
+const inputClassName =
+  "h-12 !rounded-2xl !border-stone-200 !bg-stone-50 px-4 text-base text-stone-900 placeholder:text-stone-400 focus:!border-[var(--color-primary,#F97316)] focus:!ring-2 focus:!ring-[var(--color-primary,#F97316)]/25"
+
 export default function LoyaltyPanel() {
   const params = useParams<{ slug: string }>()
   const slug = params.slug
@@ -130,11 +133,23 @@ export default function LoyaltyPanel() {
         )
       : 0
 
-  return (
-    <div className="mx-auto flex w-full max-w-lg flex-col gap-4">
-      <h1 className="text-2xl font-bold">Fidelización</h1>
+  const customerInitial = (customer?.name?.trim()?.[0] ?? "C").toUpperCase()
 
-      <form onSubmit={search} className="flex flex-col gap-3">
+  return (
+    <div className="relative mx-auto flex w-full max-w-lg flex-col gap-5">
+      <header className="flex flex-col gap-1">
+        <h1 className="text-2xl font-bold tracking-tight text-stone-900">
+          Fidelización
+        </h1>
+        <p className="text-sm text-stone-500">
+          Buscá un cliente para sumar visitas o canjear premios.
+        </p>
+      </header>
+
+      <form
+        onSubmit={search}
+        className="flex flex-col gap-3 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm"
+      >
         {codeMode ? (
           <Input
             label="Código de 4 dígitos"
@@ -144,18 +159,25 @@ export default function LoyaltyPanel() {
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
             required
+            className={inputClassName}
           />
         ) : (
           <Input
             label="Buscar por código o WhatsApp"
             name="query"
+            placeholder="Código o número de WhatsApp"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             required
+            className={inputClassName}
           />
         )}
-        <div className="flex flex-wrap gap-2">
-          <Button type="submit" disabled={loading}>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button
+            type="submit"
+            disabled={loading}
+            className="h-12 flex-1 !rounded-2xl text-sm font-bold disabled:opacity-70"
+          >
             {loading ? "Buscando…" : "Buscar"}
           </Button>
           <Button
@@ -165,34 +187,71 @@ export default function LoyaltyPanel() {
               setCodeMode((v) => !v)
               setError("")
             }}
+            className="h-12 flex-1 !rounded-2xl text-sm font-bold"
           >
             {codeMode ? "Buscar por WhatsApp" : "Ingresar código"}
           </Button>
         </div>
       </form>
 
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
+      {error ? (
+        <p
+          role="alert"
+          className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-700"
+        >
+          {error}
+        </p>
+      ) : null}
+
       {toast ? (
-        <p className="rounded-lg bg-green-50 px-3 py-2 text-sm text-green-800">
+        <p
+          role="status"
+          className="rounded-xl bg-green-50 px-4 py-3 text-sm font-semibold text-green-800 shadow-sm ring-1 ring-green-600/10 transition duration-300 ease-out"
+        >
           {toast}
         </p>
       ) : null}
 
+      {loading && !customer ? (
+        <div className="flex min-h-[140px] items-center justify-center rounded-2xl bg-stone-100 px-6 py-8 text-center">
+          <p className="text-sm font-medium text-stone-500">Buscando…</p>
+        </div>
+      ) : null}
+
       {customer ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <div className="text-lg font-semibold">{customer.name}</div>
-          <div className="text-sm text-gray-500">
-            {customer.phone} · código {customer.code}
+        <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+          <div className="flex items-start gap-3">
+            <div
+              aria-hidden
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--color-primary,#F97316)_14%,white)] text-sm font-bold text-[var(--color-primary,#F97316)]"
+            >
+              {customerInitial}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-lg font-semibold text-stone-900">
+                {customer.name}
+              </div>
+              <div className="truncate text-sm text-stone-500">
+                {customer.phone}
+              </div>
+              <div className="mt-1 text-xs font-semibold tracking-widest text-stone-400 uppercase">
+                Código {customer.code}
+              </div>
+            </div>
           </div>
-          <div className="mt-4">
-            <div className="mb-1 flex justify-between text-sm text-gray-600">
+
+          <div className="mt-5">
+            <div className="mb-1.5 flex justify-between text-sm text-stone-600">
               <span>
                 {customer.purchases} / {customer.purchasesNeeded}
               </span>
+              <span className="font-medium text-stone-500">
+                {Math.round(pct)}%
+              </span>
             </div>
-            <div className="h-3 w-full overflow-hidden rounded-full bg-gray-200">
+            <div className="h-3 w-full overflow-hidden rounded-full bg-stone-100">
               <div
-                className="h-full rounded-full"
+                className="h-full rounded-full transition-all duration-500 ease-out"
                 style={{
                   width: `${pct}%`,
                   background: "var(--color-primary, #F97316)",
@@ -200,13 +259,14 @@ export default function LoyaltyPanel() {
               />
             </div>
           </div>
-          <div className="mt-4">
+
+          <div className="mt-5">
             {customer.canRedeem ? (
               <Button
                 type="button"
                 disabled={acting}
                 onClick={() => void redeem()}
-                className="!bg-amber-500 !text-white"
+                className="h-12 w-full !rounded-2xl !border-0 !bg-amber-500 text-sm font-bold !text-white disabled:opacity-70"
               >
                 {acting ? "Canjeando…" : `Canjear ${customer.rewardName}`}
               </Button>
@@ -215,12 +275,19 @@ export default function LoyaltyPanel() {
                 type="button"
                 disabled={acting}
                 onClick={() => void addVisit()}
-                className="!bg-green-600 !text-white"
+                className="h-12 w-full !rounded-2xl !border-0 !bg-green-600 text-sm font-bold !text-white disabled:opacity-70"
               >
                 {acting ? "Sumando…" : "+1 visita"}
               </Button>
             )}
           </div>
+        </div>
+      ) : !loading && !error ? (
+        <div className="flex min-h-[140px] items-center justify-center rounded-2xl bg-stone-100 px-6 py-8 text-center">
+          <p className="max-w-xs text-sm leading-relaxed text-stone-500">
+            Buscá por código o WhatsApp para ver la tarjeta del cliente y sumar
+            visitas.
+          </p>
         </div>
       ) : null}
     </div>

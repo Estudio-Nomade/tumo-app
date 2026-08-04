@@ -25,3 +25,11 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-dashboard-visual-refactor.md`
   summary: Tabs mobile icon-only no escalan bien con muchos módulos
   evidence: flex-1 + overflow-x; sin labels visibles (pedido del brief)
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-loyalty-visual-refactor.md`
+  summary: Página pública loyalty sigue con wrapper p-4/min-h-60vh mientras card/registro son fixed inset-0
+  evidence: app/(public)/[slug]/loyalty/page.tsx fuera de scope del one-shot
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-loyalty-visual-refactor.md`
+  summary: shellClassName brand duplicado entre login/verify/card/registration
+  evidence: riesgo de drift; conviene extraer helper compartido
