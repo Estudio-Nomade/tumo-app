@@ -15,10 +15,30 @@ type Status = "idle" | "loading" | "success" | "error" | "rate_limited"
 const OTP_LENGTH = 6
 const RESEND_SECONDS = 300
 
+const shellClassName =
+  "fixed inset-0 z-10 flex min-h-[100dvh] w-full flex-col justify-between overflow-y-auto bg-gradient-to-b from-[color-mix(in_srgb,var(--color-primary,#F97316)_55%,white)] via-[var(--color-primary,#F97316)] to-[color-mix(in_srgb,var(--color-primary,#F97316)_65%,black)] px-7 pt-[max(1.5rem,env(safe-area-inset-top))] pr-[max(1.75rem,env(safe-area-inset-right))] pb-[max(2rem,env(safe-area-inset-bottom))] pl-[max(1.75rem,env(safe-area-inset-left))] text-white"
+
 function formatTime(total: number) {
   const m = Math.floor(total / 60)
   const s = total % 60
   return `${m}:${s.toString().padStart(2, "0")}`
+}
+
+function MessageIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+    </svg>
+  )
 }
 
 export default function VerifyForm() {
@@ -172,70 +192,110 @@ export default function VerifyForm() {
 
   if (missingParams) {
     return (
-      <div className="mx-auto flex w-full max-w-sm flex-col gap-4">
-        <p className="text-sm text-red-600">
-          Falta el código de verificación. Volvé a pedir uno.
-        </p>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.push(`/${slug}/login`)}
-        >
-          Volver
-        </Button>
+      <div className={shellClassName}>
+        <div className="flex flex-1 flex-col items-center justify-center gap-6 self-center py-8">
+          <div className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-white/20 text-white backdrop-blur-sm">
+            <MessageIcon className="h-8 w-8" />
+          </div>
+          <p
+            role="alert"
+            className="max-w-sm rounded-xl bg-white px-4 py-3 text-center text-sm font-medium text-red-600 shadow-sm"
+          >
+            Falta el código de verificación. Volvé a pedir uno.
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push(`/${slug}/login`)}
+            className="h-14 w-full max-w-sm !rounded-2xl !border-2 !border-white/85 !bg-transparent text-base font-bold !text-white"
+          >
+            Volver
+          </Button>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-sm flex-col gap-4">
-      <p className="text-sm text-gray-700">
-        Te mandamos un código de 6 dígitos a tu WhatsApp
-      </p>
-      <div
-        className={`flex justify-between gap-2 ${shake ? "animate-shake" : ""}`}
-      >
-        {digits.map((digit, index) => (
-          <input
-            key={index}
-            ref={(el) => {
-              inputsRef.current[index] = el
-            }}
-            type="text"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            maxLength={1}
-            value={digit}
-            disabled={disabled}
-            onChange={(e) => updateDigit(index, e.target.value)}
-            onKeyDown={(e) => onKeyDown(index, e)}
-            onPaste={onPaste}
-            className="h-12 w-10 rounded-lg border border-gray-300 text-center text-lg outline-none focus:border-[var(--color-primary,#F97316)] disabled:opacity-50"
-            aria-label={`Dígito ${index + 1}`}
-          />
-        ))}
-      </div>
-      {error ? <p className="text-sm text-red-600">{error}</p> : null}
-      {secondsLeft > 0 ? (
-        <p className="text-sm text-gray-600">
-          Reenviar código en {formatTime(secondsLeft)}
-        </p>
-      ) : (
-        <button
-          type="button"
-          onClick={() => void resendCode()}
-          className="text-left text-sm font-medium text-[var(--color-primary,#F97316)]"
+    <div className={shellClassName}>
+      <header className="flex flex-col items-center gap-2.5 pt-8">
+        <div className="flex h-16 w-16 items-center justify-center rounded-[20px] bg-white/20 text-white shadow-sm backdrop-blur-sm">
+          <MessageIcon className="h-8 w-8" />
+        </div>
+        <h1 className="max-w-sm text-center text-xl font-extrabold tracking-tight">
+          Te mandamos un código de 6 dígitos a tu WhatsApp
+        </h1>
+      </header>
+
+      <div className="flex w-full max-w-sm flex-col items-center gap-5 self-center py-6">
+        <div
+          className={`flex w-full justify-between gap-1.5 ${shake ? "animate-shake" : ""}`}
         >
-          Reenviar código
-        </button>
-      )}
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => router.push(`/${slug}/login`)}
-      >
-        Volver
-      </Button>
+          {digits.map((digit, index) => (
+            <input
+              key={index}
+              ref={(el) => {
+                inputsRef.current[index] = el
+              }}
+              type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={1}
+              value={digit}
+              disabled={disabled}
+              onChange={(e) => updateDigit(index, e.target.value)}
+              onKeyDown={(e) => onKeyDown(index, e)}
+              onPaste={onPaste}
+              className="h-14 min-w-0 flex-1 rounded-2xl border-0 bg-white text-center text-xl font-bold text-stone-900 shadow-sm outline-none ring-0 transition focus:ring-2 focus:ring-white disabled:opacity-50"
+              aria-label={`Dígito ${index + 1}`}
+            />
+          ))}
+        </div>
+
+        <div aria-live="polite" className="min-h-5 w-full text-center">
+          {status === "loading" ? (
+            <p className="text-sm font-medium text-white/90">Un momento…</p>
+          ) : null}
+        </div>
+
+        {error ? (
+          <p
+            role="alert"
+            className="w-full rounded-xl bg-white px-3 py-2 text-center text-sm font-medium text-red-600 shadow-sm"
+          >
+            {error}
+          </p>
+        ) : null}
+
+        {secondsLeft > 0 ? (
+          <p className="text-center text-sm text-white/85">
+            Reenviar código en{" "}
+            <span className="font-semibold tabular-nums text-white">
+              {formatTime(secondsLeft)}
+            </span>
+          </p>
+        ) : (
+          <button
+            type="button"
+            onClick={() => void resendCode()}
+            disabled={status === "loading"}
+            className="text-sm font-bold text-white underline decoration-white/50 underline-offset-4 disabled:opacity-60"
+          >
+            Reenviar código
+          </button>
+        )}
+      </div>
+
+      <footer className="flex w-full max-w-sm flex-col self-center pb-2">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => router.push(`/${slug}/login`)}
+          className="h-14 w-full !rounded-2xl !border-2 !border-white/85 !bg-transparent text-base font-bold !text-white"
+        >
+          Volver
+        </Button>
+      </footer>
     </div>
   )
 }
