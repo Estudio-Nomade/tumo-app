@@ -28,10 +28,11 @@ export default async function Layout({ children, params }: LayoutProps) {
     redirect(`/${slug}/login`)
   }
 
-  const modules = getActiveModules(business)
+  const allModules = getActiveModules(business)
+  const sidebarModules = allModules.map((m) => ({ id: m.id, name: m.name, icon: m.icon }))
 
   return (
-    <DashboardLayout business={business} role={session.role} modules={modules}>
+    <DashboardLayout business={business} role={session.role} modules={sidebarModules}>
       {children}
     </DashboardLayout>
   )

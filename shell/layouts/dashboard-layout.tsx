@@ -2,8 +2,10 @@
 
 import type { ReactNode } from "react"
 import Link from "next/link"
-import type { Business, Module } from "@/lib/modules"
+import type { Business } from "@/lib/modules"
 import { BusinessProvider } from "@/shell/context/business"
+
+type SidebarModule = { id: string; name: string; icon: string }
 
 export default function DashboardLayout({
   business,
@@ -13,7 +15,7 @@ export default function DashboardLayout({
 }: {
   business: Business
   role: string
-  modules: Module[]
+  modules: SidebarModule[]
   children: ReactNode
 }) {
   const showDashboard = role === "owner"
