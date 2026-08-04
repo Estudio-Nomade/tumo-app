@@ -48,3 +48,4 @@ next-env.d.ts
 .bmad-loop/cache/
 .bmad-loop/policy.toml
 _bmad/render/
+.codegraph
