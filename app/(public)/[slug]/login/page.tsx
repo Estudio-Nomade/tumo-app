@@ -1,8 +1,9 @@
-type PageProps = {
-  params: Promise<{ slug: string }>
-}
+import LoginForm from "@/shell/auth/login/login-form"
 
-export default async function LoginPage({ params }: PageProps) {
-  const { slug } = await params
-  return <div>Login — {slug}</div>
+export default function LoginPage() {
+  return (
+    <div className="flex min-h-[60vh] items-center justify-center p-6">
+      <LoginForm />
+    </div>
+  )
 }

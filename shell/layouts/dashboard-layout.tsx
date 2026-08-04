@@ -6,11 +6,15 @@ import { BusinessProvider } from "@/shell/context/business"
 
 export default function DashboardLayout({
   business,
+  role,
   children,
 }: {
   business: Business
+  role: string
   children: ReactNode
 }) {
+  const showDashboard = role === "owner"
+
   return (
     <BusinessProvider business={business}>
       <div
@@ -31,8 +35,8 @@ export default function DashboardLayout({
           }}
         >
           <div style={{ fontWeight: 700 }}>{business.name}</div>
-          <nav style={{ marginTop: 24 }}>
-            <div>Dashboard</div>
+          <nav style={{ marginTop: 24, display: "grid", gap: 8 }}>
+            {showDashboard ? <div>Dashboard</div> : null}
             <div>Fidelización</div>
           </nav>
         </aside>

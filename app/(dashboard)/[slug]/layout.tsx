@@ -1,5 +1,7 @@
 import type { ReactNode } from "react"
-import { notFound } from "next/navigation"
+import { cookies } from "next/headers"
+import { notFound, redirect } from "next/navigation"
+import { validateSession } from "@/shell/auth/session"
 import { getBusiness } from "@/shell/db/business"
 import DashboardLayout from "@/shell/layouts/dashboard-layout"
 
@@ -14,5 +16,20 @@ export default async function Layout({ children, params }: LayoutProps) {
 
   if (!business) notFound()
 
-  return <DashboardLayout business={business}>{children}</DashboardLayout>
+  const cookieStore = await cookies()
+  const token = cookieStore.get("session_token")?.value
+  if (!token) {
+    redirect(`/${slug}/login`)
+  }
+
+  const session = await validateSession(token)
+  if (!session || session.businessId !== business.id) {
+    redirect(`/${slug}/login`)
+  }
+
+  return (
+    <DashboardLayout business={business} role={session.role}>
+      {children}
+    </DashboardLayout>
+  )
 }
