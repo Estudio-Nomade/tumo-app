@@ -17,3 +17,11 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-verify-visual-refactor.md`
   summary: Teclado móvil puede empujar OTP bajo el viewport en shell fixed+justify-between
   evidence: overflow-y-auto mitiga pero no usa visualViewport/safe keyboard insets
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-dashboard-visual-refactor.md`
+  summary: DashboardLayout acepta employeeName pero layout del dashboard no lo pasa
+  evidence: Solo se permiten widgets.tsx y dashboard-layout.tsx; fallback Dueño/Empleado hasta cablear session.name
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-dashboard-visual-refactor.md`
+  summary: Tabs mobile icon-only no escalan bien con muchos módulos
+  evidence: flex-1 + overflow-x; sin labels visibles (pedido del brief)
