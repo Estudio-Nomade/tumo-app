@@ -1,8 +1,9 @@
-type PageProps = {
-  params: Promise<{ slug: string }>
-}
+import LoyaltyPanel from "@/modules/loyalty/dashboard/panel"
 
-export default async function DashboardLoyaltyPage({ params }: PageProps) {
-  const { slug } = await params
-  return <div>Panel fidelización — {slug}</div>
+export default function DashboardLoyaltyPage() {
+  return (
+    <div className="p-2">
+      <LoyaltyPanel />
+    </div>
+  )
 }

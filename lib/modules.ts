@@ -1,4 +1,5 @@
 import type { ComponentType } from "react"
+import { loyaltyModule } from "@/modules/loyalty"
 
 export type ActivityEvent = {
   timestamp: number
@@ -19,7 +20,6 @@ export type Business = {
   reward_name: string
 }
 
-// Placeholder types for module routes/handlers (no real implementation yet)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Component = ComponentType<any>
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,6 +41,12 @@ export interface Module {
   ) => Promise<ActivityEvent[]>
 }
 
-export function getActiveModules(_business: Business): Module[] {
-  return []
+const registry: Record<string, Module> = {
+  loyalty: loyaltyModule,
+}
+
+export function getActiveModules(business: Business): Module[] {
+  return business.active_modules
+    .map((id) => registry[id])
+    .filter((mod): mod is Module => Boolean(mod))
 }

@@ -24,10 +24,27 @@ describe("getActiveModules", () => {
     expect(Array.isArray(result)).toBe(true)
   })
 
-  test("placeholder actual: array vacío aunque active_modules tenga loyalty", () => {
+  test("incluye loyalty cuando active_modules lo lista", () => {
     const result = getActiveModules(business)
+    expect(result).toHaveLength(1)
+    expect(result[0].id).toBe("loyalty")
+    expect(result[0]).toBe(loyaltyModule)
+  })
+
+  test("respeta el orden de active_modules", () => {
+    const result = getActiveModules({
+      ...business,
+      active_modules: ["unknown", "loyalty"],
+    })
+    expect(result.map((m) => m.id)).toEqual(["loyalty"])
+  })
+
+  test("vacío si no hay módulos activos conocidos", () => {
+    const result = getActiveModules({
+      ...business,
+      active_modules: [],
+    })
     expect(result).toEqual([])
-    expect(business.active_modules).toContain("loyalty")
   })
 })
 

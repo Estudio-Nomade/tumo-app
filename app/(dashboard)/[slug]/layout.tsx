@@ -1,6 +1,7 @@
 import type { ReactNode } from "react"
 import { cookies } from "next/headers"
 import { notFound, redirect } from "next/navigation"
+import { getActiveModules } from "@/lib/modules"
 import { validateSession } from "@/shell/auth/session"
 import { getBusiness } from "@/shell/db/business"
 import DashboardLayout from "@/shell/layouts/dashboard-layout"
@@ -27,8 +28,10 @@ export default async function Layout({ children, params }: LayoutProps) {
     redirect(`/${slug}/login`)
   }
 
+  const modules = getActiveModules(business)
+
   return (
-    <DashboardLayout business={business} role={session.role}>
+    <DashboardLayout business={business} role={session.role} modules={modules}>
       {children}
     </DashboardLayout>
   )
