@@ -9,6 +9,7 @@ import {
   LayoutDashboard,
   Sandwich,
   Settings,
+  Users,
 } from "lucide-react"
 import type { Business } from "@/lib/modules"
 import { BusinessProvider } from "@/shell/context/business"
@@ -70,6 +71,11 @@ export default function DashboardLayout({
           label: "Panel",
           icon: LayoutDashboard,
           exact: true,
+        },
+        {
+          href: `/${slug}/dashboard/loyalty`,
+          label: "Clientes",
+          icon: Users,
         },
         {
           href: `/${slug}/dashboard/activity`,

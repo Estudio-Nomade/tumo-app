@@ -55,10 +55,18 @@ export default function LoyaltyPanel() {
   const [error, setError] = useState("")
   const [toast, setToast] = useState("")
   const [highlightId, setHighlightId] = useState<string | null>(null)
+  const [lookingUp, setLookingUp] = useState(false)
 
   function showToast(msg: string) {
     setToast(msg)
     window.setTimeout(() => setToast(""), 2500)
+  }
+
+  function upsertCustomer(customer: CustomerView) {
+    setCustomers((prev) => {
+      const rest = prev.filter((c) => c.id !== customer.id)
+      return [customer, ...rest]
+    })
   }
 
   const loadCustomers = useCallback(async () => {
@@ -160,24 +168,52 @@ export default function LoyaltyPanel() {
     }
   }
 
-  function submitCode() {
+  async function submitCode() {
     const digits = code.replace(/\D/g, "").slice(0, 4)
     if (digits.length !== 4) {
-      setError("Ingresá un código de 4 dígitos")
+      setError("Ingresá el código de 4 dígitos de la tarjeta del cliente")
       return
     }
-    const found = customers.find((c) => c.code === digits)
-    if (!found) {
-      setError("Cliente no encontrado")
-      setHighlightId(null)
-      return
-    }
+
+    setLookingUp(true)
     setError("")
-    setQuery(found.name)
-    setHighlightId(found.id)
-    setCodeMode(false)
-    setCode("")
-    showToast(`Encontramos a ${found.name}`)
+    try {
+      const qs = new URLSearchParams({
+        code: digits,
+        slug: business.slug,
+      })
+      const res = await fetch(`/api/loyalty/customers?${qs.toString()}`)
+      const data = (await res.json()) as CustomerView & { error?: string }
+      if (!res.ok) {
+        setError(data.error ?? "Cliente no encontrado")
+        setHighlightId(null)
+        return
+      }
+
+      const found: CustomerView = {
+        id: data.id,
+        name: data.name,
+        phone: data.phone,
+        code: data.code,
+        purchases: data.purchases,
+        purchasesNeeded: data.purchasesNeeded,
+        rewardName: data.rewardName,
+        canRedeem: Boolean(
+          data.canRedeem ?? data.purchases >= data.purchasesNeeded
+        ),
+      }
+
+      upsertCustomer(found)
+      setQuery("")
+      setHighlightId(found.id)
+      setCodeMode(false)
+      setCode("")
+      showToast(`${found.name} · listo para sumar o canjear`)
+    } catch {
+      setError("No pudimos buscar el código. Probá de nuevo.")
+    } finally {
+      setLookingUp(false)
+    }
   }
 
   return (
@@ -335,27 +371,42 @@ export default function LoyaltyPanel() {
 
         {codeMode ? (
           <div className="flex flex-col gap-2 rounded-2xl border border-[#E7E5E4] bg-white p-3">
-            <label className="text-xs font-semibold text-stone-500">
-              Código de 4 dígitos
+            <label
+              htmlFor="customer-code"
+              className="text-xs font-semibold text-stone-500"
+            >
+              Código del cliente
             </label>
+            <p className="text-[11px] leading-snug text-stone-400">
+              El de 4 dígitos que ve el cliente en su tarjeta.
+            </p>
             <div className="flex gap-2">
               <input
+                id="customer-code"
                 inputMode="numeric"
+                autoComplete="one-time-code"
                 maxLength={4}
                 value={code}
                 onChange={(e) =>
                   setCode(e.target.value.replace(/\D/g, "").slice(0, 4))
                 }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault()
+                    void submitCode()
+                  }
+                }}
                 placeholder="••••"
                 className="h-[50px] min-w-0 flex-1 rounded-[14px] border-0 bg-[#F5F5F4] px-4 text-center text-lg font-bold tracking-[0.35em] text-stone-900 outline-none placeholder:tracking-normal placeholder:text-[#A8A29E] focus:ring-2 focus:ring-[var(--color-primary,#F97316)]/25"
                 autoFocus
               />
               <button
                 type="button"
-                onClick={submitCode}
-                className="h-[50px] shrink-0 rounded-[14px] bg-[var(--color-primary,#F97316)] px-4 text-sm font-bold text-white"
+                disabled={lookingUp || code.length !== 4}
+                onClick={() => void submitCode()}
+                className="h-[50px] shrink-0 rounded-[14px] bg-[var(--color-primary,#F97316)] px-4 text-sm font-bold text-white disabled:opacity-50"
               >
-                OK
+                {lookingUp ? "…" : "Buscar"}
               </button>
             </div>
             <button

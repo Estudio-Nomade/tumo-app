@@ -100,6 +100,15 @@ describe("loyalty panel source (Pencil EDNqK + real data)", () => {
     expect(src).toContain("/api/loyalty/redemptions")
   })
 
+  test("ingresar código busca por API code+slug (tarjeta del cliente)", () => {
+    expect(src).toContain("Ingresar código")
+    expect(src).toContain("URLSearchParams")
+    expect(src).toContain("code: digits")
+    expect(src).toContain("slug: business.slug")
+    expect(src).toContain("/api/loyalty/customers?")
+    expect(src).toContain("Código del cliente")
+  })
+
   test("search live sin botón Buscar", () => {
     expect(src).toContain("Buscar por nombre o teléfono")
     expect(src).toContain("Search")
