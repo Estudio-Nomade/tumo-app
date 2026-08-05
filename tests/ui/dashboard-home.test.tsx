@@ -254,6 +254,18 @@ describe("Loyalty module insights", () => {
     expect(insightsIdx).toBeGreaterThan(-1)
     expect(panelIdx).toBeLessThan(insightsIdx)
   })
+
+  test("hay separación visual entre la lista y las tarjetas de insights", () => {
+    const page = read("app/(dashboard)/[slug]/dashboard/loyalty/page.tsx")
+    const jsx = page.slice(page.indexOf("return ("))
+    const panelEndIdx = jsx.indexOf("</Suspense>")
+    const insightsIdx = jsx.indexOf("LoyaltyModuleInsights")
+    expect(panelEndIdx).toBeGreaterThan(-1)
+    expect(insightsIdx).toBeGreaterThan(panelEndIdx)
+    const separator = jsx.slice(panelEndIdx, insightsIdx)
+    expect(separator).toMatch(/border-t/) 
+    expect(separator).toMatch(/my-\d+|py-\d+|mb-\d+|mt-\d+/)
+  })
 })
 
 describe("LoyaltyTimeline (Pencil 6 · Actividad)", () => {

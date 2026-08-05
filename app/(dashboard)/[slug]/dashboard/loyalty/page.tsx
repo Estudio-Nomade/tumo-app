@@ -37,6 +37,7 @@ export default async function DashboardLoyaltyPage({ params }: PageProps) {
       >
         <LoyaltyPanel canEditProgram={canEditProgram} />
       </Suspense>
+      <hr className="my-6 border-t border-[#E7E5E4]" aria-hidden />
       <LoyaltyModuleInsights slug={slug} business={business} />
     </div>
   )
