@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react"
 import { useParams } from "next/navigation"
+import { Calendar } from "lucide-react"
 import Button from "@/shell/ui/Button"
 import Input from "@/shell/ui/Input"
 import LoyaltyCard, {
@@ -26,6 +27,7 @@ export default function LoyaltyRegistration({
   const [name, setName] = useState("")
   const [phone, setPhone] = useState("")
   const [birthday, setBirthday] = useState("")
+  const [birthdayEnabled, setBirthdayEnabled] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [customer, setCustomer] = useState<LoyaltyCardData | null>(
@@ -44,7 +46,7 @@ export default function LoyaltyRegistration({
         body: JSON.stringify({
           name,
           phone,
-          birthday: birthday || undefined,
+          birthday: birthdayEnabled ? birthday || undefined : undefined,
           slug,
         }),
       })
@@ -151,15 +153,63 @@ export default function LoyaltyRegistration({
                 className={inputClassName}
               />
             </div>
-            <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-stone-900">
-              <Input
-                label="Cumpleaños (opcional)"
-                name="birthday"
-                type="date"
-                value={birthday}
-                onChange={(e) => setBirthday(e.target.value)}
-                className={`${inputClassName} !border !border-[#E7E5E4] !bg-white`}
-              />
+            <div className="flex w-full flex-col gap-2.5">
+              <div className="flex items-center justify-between">
+                <span
+                  id="birthday-label"
+                  className="text-[15px] text-stone-900"
+                >
+                  ¿Fecha de cumpleaños?
+                </span>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={birthdayEnabled}
+                  aria-labelledby="birthday-label"
+                  aria-controls="birthday-field"
+                  disabled={loading}
+                  onClick={() => {
+                    if (birthdayEnabled) {
+                      setBirthday("")
+                      setBirthdayEnabled(false)
+                    } else {
+                      setBirthdayEnabled(true)
+                    }
+                  }}
+                  className={`flex h-7 w-12 shrink-0 items-center rounded-full p-0.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary,#F97316)]/40 focus-visible:ring-offset-2 disabled:opacity-70 ${
+                    birthdayEnabled
+                      ? "justify-end bg-[var(--color-primary,#F97316)]"
+                      : "justify-start bg-stone-300"
+                  }`}
+                >
+                  <span
+                    aria-hidden
+                    className="h-[22px] w-[22px] rounded-full bg-white shadow-sm"
+                  />
+                </button>
+              </div>
+              {birthdayEnabled ? (
+                <div
+                  id="birthday-field"
+                  className="relative flex h-[52px] w-full items-center overflow-hidden rounded-[14px] border border-[#E7E5E4] bg-white px-4 focus-within:ring-2 focus-within:ring-[var(--color-primary,#F97316)]/30"
+                >
+                  <input
+                    id="birthday"
+                    name="birthday"
+                    type="date"
+                    required
+                    disabled={loading}
+                    aria-labelledby="birthday-label"
+                    value={birthday}
+                    onChange={(e) => setBirthday(e.target.value)}
+                    className="h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] text-stone-900 outline-none [color-scheme:light] focus:ring-0 disabled:opacity-70 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
+                  />
+                  <Calendar
+                    aria-hidden
+                    className="pointer-events-none h-[18px] w-[18px] shrink-0 text-[var(--color-primary,#F97316)]"
+                  />
+                </div>
+              ) : null}
             </div>
             <Button
               type="submit"
@@ -174,6 +224,8 @@ export default function LoyaltyRegistration({
               onClick={() => {
                 setMode("login")
                 setError("")
+                setBirthday("")
+                setBirthdayEnabled(false)
               }}
             >
               ¿Ya tenés cuenta?

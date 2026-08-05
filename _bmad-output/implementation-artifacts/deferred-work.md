@@ -49,3 +49,11 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-owner-nav-dashboard-home.md`
   summary: Hoy/Ayer del timeline usan TZ del server en RSC
   evidence: groupActivityByDay corre en server; desfase cerca de medianoche vs usuario AR
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-registration-birthday-toggle.md`
+  summary: API customers acepta birthday string sin min/max ni validación de formato
+  evidence: Preexistente en modules/loyalty/api/customers.ts; el UI nativo type=date no cierra el gap de backend
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-registration-birthday-toggle.md`
+  summary: Hit-target del calendar picker depende de ::-webkit-calendar-picker-indicator
+  evidence: Solución nativa type=date; Firefox/Safari difieren; no hay date picker custom en el stack
