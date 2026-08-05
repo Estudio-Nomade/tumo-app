@@ -159,7 +159,13 @@ export function GoalCard({
   )
 }
 
-export function TopCustomers({ customers }: { customers: TopCustomerRow[] }) {
+export function TopCustomers({
+  customers,
+  slug,
+}: {
+  customers: TopCustomerRow[]
+  slug: string
+}) {
   if (customers.length === 0) {
     return (
       <section className="flex flex-col gap-2.5">
@@ -175,38 +181,46 @@ export function TopCustomers({ customers }: { customers: TopCustomerRow[] }) {
     <section className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-stone-900">Top clientes</h2>
+        <a
+          href={`/${slug}/dashboard/loyalty`}
+          className="text-xs font-semibold text-[var(--color-primary,#F97316)]"
+        >
+          Ver todos
+        </a>
       </div>
       <ul className="flex flex-col gap-2.5">
         {customers.map((c) => (
-          <li
-            key={c.id}
-            className="flex items-center gap-3 rounded-2xl border border-[#E7E5E4] bg-white p-3"
-          >
-            <div
-              aria-hidden
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FFF7ED] text-xs font-bold text-[var(--color-primary,#F97316)]"
+          <li key={c.id}>
+            <a
+              href={`/${slug}/dashboard/loyalty?highlight=${encodeURIComponent(c.id)}`}
+              className="flex items-center gap-3 rounded-2xl border border-[#E7E5E4] bg-white p-3 transition hover:border-[var(--color-primary,#F97316)]/40"
             >
-              {initialsOf(c.name)}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-semibold text-stone-900">
-                {c.name}
+              <div
+                aria-hidden
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FFF7ED] text-xs font-bold text-[var(--color-primary,#F97316)]"
+              >
+                {initialsOf(c.name)}
               </div>
-              <div className="truncate text-xs text-stone-500">
-                {c.canRedeem
-                  ? "Premio listo para canjear"
-                  : `${c.purchases}/${c.purchasesNeeded} compras`}
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-semibold text-stone-900">
+                  {c.name}
+                </div>
+                <div className="truncate text-xs text-stone-500">
+                  {c.canRedeem
+                    ? "Premio listo para canjear"
+                    : `${c.purchases}/${c.purchasesNeeded} compras`}
+                </div>
               </div>
-            </div>
-            <span
-              className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
-                c.canRedeem
-                  ? "bg-[#FEF9C3] text-[#A16207]"
-                  : "bg-[#DCFCE7] text-[#16A34A]"
-              }`}
-            >
-              {c.canRedeem ? "Listo" : "En curso"}
-            </span>
+              <span
+                className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                  c.canRedeem
+                    ? "bg-[#FEF9C3] text-[#A16207]"
+                    : "bg-[#DCFCE7] text-[#16A34A]"
+                }`}
+              >
+                {c.canRedeem ? "Listo" : "En curso"}
+              </span>
+            </a>
           </li>
         ))}
       </ul>
@@ -338,7 +352,7 @@ export function DashboardHome({
 
       <LoyaltyMetrics {...metrics} />
       <GoalCard current={weeklyGoal.thisWeek} target={goalTarget} />
-      <TopCustomers customers={topCustomers} />
+      <TopCustomers customers={topCustomers} slug={slug} />
     </div>
   )
 }

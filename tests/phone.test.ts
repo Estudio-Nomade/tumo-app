@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test"
-import { normalizePhone, phonesMatch } from "@/lib/phone"
+import { maskPhone, normalizePhone, phonesMatch } from "@/lib/phone"
 
 describe("normalizePhone", () => {
   test("quita espacios guiones y plus", () => {
@@ -19,5 +19,15 @@ describe("phonesMatch", () => {
 
   test("distintos", () => {
     expect(phonesMatch("111", "222")).toBe(false)
+  })
+})
+
+describe("maskPhone", () => {
+  test("enmascara dejando últimos 4", () => {
+    expect(maskPhone("+54 9 11 1234-5678")).toBe("+5491 ••••5678")
+  })
+
+  test("corto", () => {
+    expect(maskPhone("1234")).toBe("••••1234")
   })
 })

@@ -8,12 +8,14 @@ import {
   useState,
 } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
+import { maskPhone } from "@/lib/phone"
 import Button from "@/shell/ui/Button"
 
 type Status = "idle" | "loading" | "success" | "error" | "rate_limited"
 
 const OTP_LENGTH = 6
-const RESEND_SECONDS = 300
+/** Matches server send cooldown (~60s). */
+const RESEND_SECONDS = 60
 
 const shellClassName =
   "fixed inset-0 z-10 flex min-h-[100dvh] w-full flex-col justify-between overflow-y-auto bg-gradient-to-b from-[color-mix(in_srgb,var(--color-primary,#F97316)_88%,white)] via-[var(--color-primary,#F97316)] to-[color-mix(in_srgb,var(--color-primary,#F97316)_78%,#9a3412)] px-7 pt-[max(1.5rem,env(safe-area-inset-top))] pr-[max(1.75rem,env(safe-area-inset-right))] pb-[max(2rem,env(safe-area-inset-bottom))] pl-[max(1.75rem,env(safe-area-inset-left))] text-white"
@@ -48,6 +50,7 @@ export default function VerifyForm() {
   const slug = params.slug
   const maskId = searchParams.get("maskId") ?? ""
   const phone = searchParams.get("phone") ?? ""
+  const phoneLabel = maskPhone(phone)
   const missingParams = !maskId || !phone
 
   const [digits, setDigits] = useState<string[]>(Array(OTP_LENGTH).fill(""))
@@ -225,6 +228,14 @@ export default function VerifyForm() {
         <h1 className="max-w-sm text-center text-xl font-extrabold tracking-tight">
           Te mandamos un código de 6 dígitos a tu WhatsApp
         </h1>
+        {phoneLabel ? (
+          <p className="text-center text-sm font-medium text-[#FFEDD5]">
+            Enviado a{" "}
+            <span className="font-bold tabular-nums text-white">
+              {phoneLabel}
+            </span>
+          </p>
+        ) : null}
       </header>
 
       <div className="flex w-full max-w-sm flex-col items-center gap-5 self-center py-6">

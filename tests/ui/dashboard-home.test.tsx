@@ -107,17 +107,21 @@ describe("GoalCard", () => {
 })
 
 describe("TopCustomers", () => {
-  test("lista clientes reales", () => {
+  test("lista clientes reales y links a panel", () => {
     const html = renderToStaticMarkup(
-      <TopCustomers customers={topCustomers} />
+      <TopCustomers customers={topCustomers} slug="carri" />
     )
     expect(html).toContain("Top clientes")
     expect(html).toContain("María Real")
     expect(html).toContain("Listo")
+    expect(html).toContain("/carri/dashboard/loyalty?highlight=1")
+    expect(html).toContain("Ver todos")
   })
 
   test("empty state sin inventar gente", () => {
-    const html = renderToStaticMarkup(<TopCustomers customers={[]} />)
+    const html = renderToStaticMarkup(
+      <TopCustomers customers={[]} slug="carri" />
+    )
     expect(html).toContain("Compartí el QR")
     expect(html).not.toContain("María López")
   })

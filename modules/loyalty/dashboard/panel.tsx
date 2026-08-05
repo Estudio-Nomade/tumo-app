@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { Gift, Keyboard, QrCode, Sandwich, Search } from "lucide-react"
 import { useBusiness } from "@/shell/context/business"
 
@@ -46,6 +47,8 @@ export function customerInitials(name: string): string {
 
 export default function LoyaltyPanel() {
   const business = useBusiness()
+  const searchParams = useSearchParams()
+  const highlightFromUrl = searchParams.get("highlight")
   const [query, setQuery] = useState("")
   const [codeMode, setCodeMode] = useState(false)
   const [code, setCode] = useState("")
@@ -54,7 +57,9 @@ export default function LoyaltyPanel() {
   const [actingId, setActingId] = useState<string | null>(null)
   const [error, setError] = useState("")
   const [toast, setToast] = useState("")
-  const [highlightId, setHighlightId] = useState<string | null>(null)
+  const [highlightId, setHighlightId] = useState<string | null>(
+    highlightFromUrl
+  )
   const [lookingUp, setLookingUp] = useState(false)
 
   function showToast(msg: string) {
@@ -96,10 +101,27 @@ export default function LoyaltyPanel() {
     void loadCustomers()
   }, [loadCustomers])
 
-  const visible = useMemo(
-    () => filterCustomers(customers, query),
-    [customers, query]
-  )
+  useEffect(() => {
+    if (!highlightFromUrl || customers.length === 0) return
+    const found = customers.find((c) => c.id === highlightFromUrl)
+    if (!found) return
+    setHighlightId(found.id)
+    setQuery("")
+    // Scroll highlighted row into view after paint
+    window.requestAnimationFrame(() => {
+      document
+        .getElementById(`customer-row-${found.id}`)
+        ?.scrollIntoView({ block: "nearest", behavior: "smooth" })
+    })
+  }, [highlightFromUrl, customers])
+
+  const visible = useMemo(() => {
+    const filtered = filterCustomers(customers, query)
+    if (!highlightId) return filtered
+    const hi = filtered.find((c) => c.id === highlightId)
+    if (!hi) return filtered
+    return [hi, ...filtered.filter((c) => c.id !== highlightId)]
+  }, [customers, query, highlightId])
 
   async function addVisit(id: string) {
     setActingId(id)
@@ -393,6 +415,7 @@ export default function LoyaltyPanel() {
 
               return (
                 <li
+                  id={`customer-row-${customer.id}`}
                   key={customer.id}
                   className={`flex items-center gap-3 rounded-2xl border bg-white p-3 ${
                     highlighted
