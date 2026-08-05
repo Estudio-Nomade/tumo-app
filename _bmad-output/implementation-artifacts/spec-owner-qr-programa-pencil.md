@@ -26,10 +26,10 @@ baseline_commit: 'a810664'
 **ShareProgram variants**
 
 - Owner: link row + Copiar link primary + Compartir + tip + poster
-  [`share-program.tsx:118`](../../modules/loyalty/dashboard/share-program.tsx#L118)
+  [`share-program.tsx:130`](../../modules/loyalty/dashboard/share-program.tsx#L130)
 
 - Counter: QR grande + Copiar {url} gris + brillo
-  [`share-program.tsx:82`](../../modules/loyalty/dashboard/share-program.tsx#L82)
+  [`share-program.tsx:89`](../../modules/loyalty/dashboard/share-program.tsx#L89)
 
 **Tests**
 

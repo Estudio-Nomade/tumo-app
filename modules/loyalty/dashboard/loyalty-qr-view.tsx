@@ -20,15 +20,17 @@ export default function LoyaltyQrView({
     ? `/${slug}/dashboard/settings`
     : `/${slug}/dashboard/loyalty`
 
+  function goBack() {
+    if (window.history.length > 1) router.back()
+    else router.push(backHref)
+  }
+
   if (!isOwner) {
     return (
-      <div className="mx-auto flex w-full max-w-md flex-col gap-5 px-1">
+      <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-5">
         <button
           type="button"
-          onClick={() => {
-            if (window.history.length > 1) router.back()
-            else router.push(backHref)
-          }}
+          onClick={goBack}
           className="inline-flex items-center gap-2 self-start text-[13px] font-semibold text-stone-500 transition hover:text-stone-900"
         >
           <ArrowLeft size={20} strokeWidth={2} aria-hidden />
@@ -48,14 +50,11 @@ export default function LoyaltyQrView({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-[18px]">
+    <div className="mx-auto flex w-full max-w-md flex-1 flex-col gap-[18px]">
       <button
         type="button"
-        onClick={() => {
-          if (window.history.length > 1) router.back()
-          else router.push(backHref)
-        }}
-        className="inline-flex items-center gap-2 text-[13px] font-semibold text-stone-500 transition hover:text-stone-900"
+        onClick={goBack}
+        className="inline-flex items-center gap-2 self-start text-[13px] font-semibold text-stone-500 transition hover:text-stone-900"
       >
         <ArrowLeft size={18} strokeWidth={2} aria-hidden />
         Volver

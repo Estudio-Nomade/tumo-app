@@ -99,24 +99,27 @@ export default function BrandedQr({
       </div>
 
       <div className="flex flex-col items-center justify-center bg-white p-4">
-        {dataUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={dataUrl}
-            alt={`Código QR para ${display}`}
-            width={qrPx}
-            height={qrPx}
-            className="h-auto w-full max-w-full"
-          />
-        ) : error ? (
-          <p className="py-10 text-center text-sm text-red-600">{error}</p>
-        ) : (
-          <div
-            className="animate-pulse rounded-lg bg-[#F5F5F4]"
-            style={{ width: qrPx, height: qrPx }}
-            aria-hidden
-          />
-        )}
+        <div
+          className="relative shrink-0 overflow-hidden rounded-lg"
+          style={{ width: qrPx, height: qrPx }}
+        >
+          {dataUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={dataUrl}
+              alt={`Código QR para ${display}`}
+              width={qrPx}
+              height={qrPx}
+              className="block h-full w-full object-contain"
+            />
+          ) : error ? (
+            <p className="flex h-full items-center justify-center px-2 text-center text-xs text-red-600">
+              {error}
+            </p>
+          ) : (
+            <div className="h-full w-full animate-pulse bg-[#F5F5F4]" aria-hidden />
+          )}
+        </div>
       </div>
 
       <div className="bg-[#F5F5F4] px-3 py-2.5 text-center">
