@@ -4,7 +4,7 @@ import type {
   TopCustomerRow,
 } from "@/modules/loyalty/api/metrics"
 import MetricCard from "@/shell/ui/MetricCard"
-import { Gift, QrCode, ShoppingBag, Users } from "lucide-react"
+import { Gift, QrCode, Sandwich, ShoppingBag, Users } from "lucide-react"
 
 function formatEventTime(timestamp: number) {
   const date = new Date(timestamp)
@@ -315,6 +315,31 @@ export function TopByPrizesList({
   )
 }
 
+function ActivityEventIcon({ kind }: { kind: string }) {
+  if (kind === "redemption") {
+    return (
+      <span
+        aria-hidden
+        className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl bg-[#FEF3C7]"
+      >
+        <Gift size={18} className="text-[#D97706]" strokeWidth={2} />
+      </span>
+    )
+  }
+  return (
+    <span
+      aria-hidden
+      className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl bg-[#FFF7ED]"
+    >
+      <Sandwich
+        size={18}
+        className="text-[var(--color-primary,#F97316)]"
+        strokeWidth={2}
+      />
+    </span>
+  )
+}
+
 export function LoyaltyTimeline({ events }: { events: ActivityEvent[] }) {
   if (events.length === 0) {
     return (
@@ -354,12 +379,7 @@ export function LoyaltyTimeline({ events }: { events: ActivityEvent[] }) {
                       {timeLabel}
                     </time>
                   ) : null}
-                  <span
-                    aria-hidden
-                    className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl bg-[#FFF7ED] text-base"
-                  >
-                    {event.icon}
-                  </span>
+                  <ActivityEventIcon kind={event.icon} />
                   <div className="min-w-0 flex-1">
                     <div
                       className="truncate text-sm font-semibold text-stone-900"

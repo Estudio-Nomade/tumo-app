@@ -10,6 +10,12 @@ type ActivityRow = {
   created_at: Date | string
   customer_name: string
   type: "purchase" | "redemption"
+  purchase_count: number | string
+}
+
+function ordinalPurchaseLabel(count: number): string {
+  const n = Number.isFinite(count) ? Math.max(1, Math.floor(count)) : 1
+  return `${n}° compra`
 }
 
 export async function getMetrics(
@@ -51,23 +57,54 @@ export async function getRecentActivity(
 ): Promise<ActivityEvent[]> {
   const { businessId, limit } = input
 
-  const purchases = (await deps.sql`
-    SELECT p.created_at, c.name AS customer_name, 'purchase' AS type
-    FROM purchases p
-    JOIN customers c ON c.id = p.customer_id
-    WHERE p.business_id = ${businessId}
-    ORDER BY p.created_at DESC
-    LIMIT ${limit}
-  `) as ActivityRow[]
-
-  const redemptions = (await deps.sql`
-    SELECT r.created_at, c.name AS customer_name, 'redemption' AS type
-    FROM redemptions r
-    JOIN customers c ON c.id = r.customer_id
-    WHERE r.business_id = ${businessId}
-    ORDER BY r.created_at DESC
-    LIMIT ${limit}
-  `) as ActivityRow[]
+  const [purchases, redemptions] = await Promise.all([
+    deps.sql`
+      SELECT p.created_at, c.name AS customer_name, 'purchase' AS type,
+             (
+               SELECT COUNT(*)::int FROM purchases p2
+               WHERE p2.customer_id = p.customer_id
+                 AND p2.business_id = p.business_id
+                 AND p2.created_at <= p.created_at
+                 AND p2.created_at > COALESCE(
+                   (
+                     SELECT MAX(r2.created_at) FROM redemptions r2
+                     WHERE r2.customer_id = p.customer_id
+                       AND r2.business_id = p.business_id
+                       AND r2.created_at < p.created_at
+                   ),
+                   'epoch'::timestamptz
+                 )
+             ) AS purchase_count
+      FROM purchases p
+      JOIN customers c ON c.id = p.customer_id
+      WHERE p.business_id = ${businessId}
+      ORDER BY p.created_at DESC
+      LIMIT ${limit}
+    ` as Promise<ActivityRow[]>,
+    deps.sql`
+      SELECT r.created_at, c.name AS customer_name, 'redemption' AS type,
+             (
+               SELECT COUNT(*)::int FROM purchases p2
+               WHERE p2.customer_id = r.customer_id
+                 AND p2.business_id = r.business_id
+                 AND p2.created_at <= r.created_at
+                 AND p2.created_at > COALESCE(
+                   (
+                     SELECT MAX(r2.created_at) FROM redemptions r2
+                     WHERE r2.customer_id = r.customer_id
+                       AND r2.business_id = r.business_id
+                       AND r2.created_at < r.created_at
+                   ),
+                   'epoch'::timestamptz
+                 )
+             ) AS purchase_count
+      FROM redemptions r
+      JOIN customers c ON c.id = r.customer_id
+      WHERE r.business_id = ${businessId}
+      ORDER BY r.created_at DESC
+      LIMIT ${limit}
+    ` as Promise<ActivityRow[]>,
+  ])
 
   const events: ActivityEvent[] = [...purchases, ...redemptions].map((row) => {
     const ts =
@@ -75,11 +112,15 @@ export async function getRecentActivity(
         ? row.created_at.getTime()
         : new Date(row.created_at).getTime()
     const isPurchase = row.type === "purchase"
+    const count = Number(row.purchase_count ?? 0)
+    const purchaseLabel = ordinalPurchaseLabel(count)
     return {
       timestamp: ts,
-      icon: isPurchase ? "🎫" : "🎁",
-      title: isPurchase ? "Visita sumada" : "Premio canjeado",
-      description: row.customer_name,
+      icon: isPurchase ? "purchase" : "redemption",
+      title: row.customer_name,
+      description: isPurchase
+        ? purchaseLabel
+        : `${purchaseLabel} · ¡Premio canjeado!`,
     }
   })
 

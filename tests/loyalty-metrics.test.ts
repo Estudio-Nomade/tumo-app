@@ -45,11 +45,13 @@ describe("getRecentActivity", () => {
             created_at: new Date("2026-08-04T12:00:00Z"),
             customer_name: "Ana",
             type: "purchase",
+            purchase_count: 8,
           },
           {
             created_at: new Date("2026-08-04T10:00:00Z"),
             customer_name: "Bob",
             type: "purchase",
+            purchase_count: 3,
           },
         ])
       }
@@ -58,6 +60,7 @@ describe("getRecentActivity", () => {
           created_at: new Date("2026-08-04T11:00:00Z"),
           customer_name: "Ana",
           type: "redemption",
+          purchase_count: 10,
         },
       ])
     })
@@ -73,8 +76,17 @@ describe("getRecentActivity", () => {
 
     expect(events).toHaveLength(3)
     expect(events[0].timestamp).toBeGreaterThanOrEqual(events[1].timestamp)
-    expect(events[0].icon).toBe("🎫")
-    expect(events.some((e) => e.icon === "🎁")).toBe(true)
+    expect(events[0]).toMatchObject({
+      icon: "purchase",
+      title: "Ana",
+      description: "8° compra",
+    })
+    expect(events.some((e) => e.icon === "redemption")).toBe(true)
+    const redemption = events.find((e) => e.icon === "redemption")
+    expect(redemption).toMatchObject({
+      title: "Ana",
+      description: "10° compra · ¡Premio canjeado!",
+    })
   })
 
   test("respeta el límite", async () => {

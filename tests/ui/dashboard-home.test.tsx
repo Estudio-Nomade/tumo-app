@@ -6,6 +6,7 @@ import DashboardHome from "@/shell/dashboard/dashboard-home"
 import {
   GoalCard,
   LoyaltyHomeQuickActions,
+  LoyaltyTimeline,
   TopByPrizesList,
   TopCustomers,
 } from "@/modules/loyalty/dashboard/widgets"
@@ -184,6 +185,38 @@ describe("LoyaltyHomeSection wire ranking", () => {
     expect(src).toContain("TopByPrizesList")
     expect(src).toContain("TopCustomers")
     expect(src).not.toContain("LoyaltyHomeQuickActions")
+  })
+})
+
+describe("LoyaltyTimeline (Pencil 6 · Actividad)", () => {
+  test("nombre arriba, detalle con compras abajo, sin emojis", () => {
+    const ts = new Date("2026-08-05T14:32:00").getTime()
+    const html = renderToStaticMarkup(
+      <LoyaltyTimeline
+        events={[
+          {
+            timestamp: ts,
+            icon: "purchase",
+            title: "María González",
+            description: "8° compra",
+          },
+          {
+            timestamp: ts - 60_000,
+            icon: "redemption",
+            title: "Juan Rodríguez",
+            description: "10° compra · ¡Premio canjeado!",
+          },
+        ]}
+      />
+    )
+    expect(html).toContain("María González")
+    expect(html).toContain("8° compra")
+    expect(html).toContain("Juan Rodríguez")
+    expect(html).toContain("10° compra · ¡Premio canjeado!")
+    expect(html).toContain("14:32")
+    expect(html).not.toContain("🎫")
+    expect(html).not.toContain("🎁")
+    expect(html).not.toContain("Visita sumada")
   })
 })
 
