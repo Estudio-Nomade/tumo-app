@@ -1,5 +1,8 @@
 import type { ActivityEvent } from "@/lib/modules"
-import type { TopCustomerRow } from "@/modules/loyalty/api/metrics"
+import type {
+  TopCustomerByPrizesRow,
+  TopCustomerRow,
+} from "@/modules/loyalty/api/metrics"
 import MetricCard from "@/shell/ui/MetricCard"
 import { Gift, QrCode, ShoppingBag, Users } from "lucide-react"
 
@@ -191,7 +194,9 @@ export function TopCustomers({
   if (customers.length === 0) {
     return (
       <section className="flex flex-col gap-2.5">
-        <h2 className="text-sm font-semibold text-stone-900">Top clientes</h2>
+        <h2 className="text-sm font-semibold text-stone-900">
+          Más cerca del premio
+        </h2>
         <div className="rounded-2xl border border-[#E7E5E4] bg-[#F5F5F4] px-4 py-8 text-center text-sm text-stone-500">
           Compartí el QR del programa para conseguir tu primer cliente.
         </div>
@@ -202,7 +207,9 @@ export function TopCustomers({
   return (
     <section className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-stone-900">Top clientes</h2>
+        <h2 className="text-sm font-semibold text-stone-900">
+          Más cerca del premio
+        </h2>
         <a
           href={`/${slug}/dashboard/loyalty`}
           className="text-xs font-semibold text-[var(--color-primary,#F97316)]"
@@ -246,6 +253,64 @@ export function TopCustomers({
           </li>
         ))}
       </ul>
+    </section>
+  )
+}
+
+export function TopByPrizesList({
+  customers,
+  redeemersCount,
+  slug,
+}: {
+  customers: TopCustomerByPrizesRow[]
+  redeemersCount: number
+  slug: string
+}) {
+  const count = Number.isFinite(redeemersCount)
+    ? Math.max(0, Math.floor(redeemersCount))
+    : 0
+
+  return (
+    <section className="flex flex-col gap-2.5">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold text-stone-900">
+          Más premios ganados
+        </h2>
+        <span className="text-xs font-medium text-stone-500">
+          {count === 1 ? "1 cliente canjeó" : `${count} clientes canjearon`}
+        </span>
+      </div>
+      {customers.length === 0 ? (
+        <div className="rounded-2xl border border-[#E7E5E4] bg-[#F5F5F4] px-4 py-8 text-center text-sm text-stone-500">
+          Todavía nadie canjeó un premio.
+        </div>
+      ) : (
+        <ul className="flex flex-col gap-2.5">
+          {customers.map((c) => (
+            <li key={c.id}>
+              <a
+                href={`/${slug}/dashboard/loyalty?highlight=${encodeURIComponent(c.id)}`}
+                className="flex items-center gap-3 rounded-2xl border border-[#E7E5E4] bg-white p-3 transition hover:border-[var(--color-primary,#F97316)]/40"
+              >
+                <div
+                  aria-hidden
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FFF7ED] text-xs font-bold text-[var(--color-primary,#F97316)]"
+                >
+                  {initialsOf(c.name)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-semibold text-stone-900">
+                    {c.name}
+                  </div>
+                  <div className="truncate text-xs text-stone-500">
+                    {c.prizes === 1 ? "1 premio" : `${c.prizes} premios`}
+                  </div>
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   )
 }

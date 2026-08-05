@@ -69,3 +69,15 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-phone-country-prefix.md`
   summary: Login employee sigue mandando phone en query string del verify
   evidence: Preexistente en login-form; fuera del scope del PhoneInput
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-redemptions-ranking-home.md`
+  summary: Conteo de canjeadores y ranking de premios no son un snapshot atómico
+  evidence: Promise.all lanza dos queries independientes; race rara puede desincronizar header N vs filas
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-redemptions-ranking-home.md`
+  summary: Índices en redemptions(business_id) / (business_id, customer_id) para home metrics
+  evidence: Home ahora hace COUNT DISTINCT + GROUP BY all-time sobre redemptions además de weekly/month counts
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-redemptions-ranking-home.md`
+  summary: Redeem path no-transaccional sesga rankings del home
+  evidence: INSERT redemptions + UPDATE purchases=0 sin txn; preexistente, amplificado porque el ledger es headline del Panel

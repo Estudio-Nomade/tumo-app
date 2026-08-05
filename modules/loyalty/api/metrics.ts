@@ -159,3 +159,70 @@ export async function getWeeklyRedemptions(
     lastWeek: Number(lastWeek?.count ?? 0),
   }
 }
+
+export async function countCustomersWithRedemptions(
+  deps: MetricsDeps,
+  input: { businessId: string }
+): Promise<number> {
+  const { businessId } = input
+
+  const [row] = (await deps.sql`
+    SELECT COUNT(DISTINCT customer_id)::int AS count
+    FROM redemptions
+    WHERE business_id = ${businessId}
+  `) as CountRow[]
+
+  return Number(row?.count ?? 0)
+}
+
+export type TopCustomerByPrizesRow = {
+  id: string
+  name: string
+  prizes: number
+  lastRedeemedAt: number | null
+}
+
+export async function getTopCustomersByPrizes(
+  deps: MetricsDeps,
+  input: { businessId: string; limit?: number }
+): Promise<TopCustomerByPrizesRow[]> {
+  const businessId = input.businessId
+  const limit =
+    Number.isFinite(input.limit) && (input.limit as number) > 0
+      ? Math.min(Math.max(Math.floor(input.limit as number), 1), 20)
+      : 5
+
+  const rows = (await deps.sql`
+    SELECT c.id, c.name,
+           COUNT(r.*)::int AS prizes,
+           MAX(r.created_at) AS last_redeemed_at
+    FROM redemptions r
+    JOIN customers c ON c.id = r.customer_id
+    WHERE r.business_id = ${businessId}
+    GROUP BY c.id, c.name
+    ORDER BY prizes DESC, last_redeemed_at DESC, c.name ASC
+    LIMIT ${limit}
+  `) as {
+    id: string
+    name: string
+    prizes: number
+    last_redeemed_at: Date | string | null
+  }[]
+
+  return rows.map((row) => {
+    let lastRedeemedAt: number | null = null
+    if (row.last_redeemed_at != null) {
+      lastRedeemedAt =
+        row.last_redeemed_at instanceof Date
+          ? row.last_redeemed_at.getTime()
+          : new Date(row.last_redeemed_at).getTime()
+      if (!Number.isFinite(lastRedeemedAt)) lastRedeemedAt = null
+    }
+    return {
+      id: row.id,
+      name: row.name,
+      prizes: Number(row.prizes ?? 0),
+      lastRedeemedAt,
+    }
+  })
+}

@@ -1,8 +1,10 @@
 import { describe, expect, mock, test } from "bun:test"
 import {
+  countCustomersWithRedemptions,
   getMetrics,
   getRecentActivity,
   getTopCustomers,
+  getTopCustomersByPrizes,
   getWeeklyRedemptions,
   type MetricsDeps,
 } from "@/modules/loyalty/api/metrics"
@@ -183,5 +185,73 @@ describe("getWeeklyRedemptions", () => {
       { businessId: "biz-1" }
     )
     expect(result).toEqual({ thisWeek: 4, lastWeek: 7 })
+  })
+})
+
+describe("countCustomersWithRedemptions", () => {
+  test("devuelve COUNT DISTINCT de customer_id all-time", async () => {
+    const sql = mock(() => Promise.resolve([{ count: 3 }]))
+    const result = await countCustomersWithRedemptions(
+      { sql: sql as unknown as MetricsDeps["sql"] },
+      { businessId: "biz-1" }
+    )
+    expect(result).toBe(3)
+    expect(sql).toHaveBeenCalledTimes(1)
+  })
+
+  test("devuelve 0 cuando no hay canjes", async () => {
+    const sql = mock(() => Promise.resolve([{ count: 0 }]))
+    const result = await countCustomersWithRedemptions(
+      { sql: sql as unknown as MetricsDeps["sql"] },
+      { businessId: "biz-1" }
+    )
+    expect(result).toBe(0)
+  })
+})
+
+describe("getTopCustomersByPrizes", () => {
+  test("mapea ranking all-time por premios con lastRedeemedAt en ms", async () => {
+    const lastAt = new Date("2026-08-04T15:30:00Z")
+    const sql = mock(() =>
+      Promise.resolve([
+        {
+          id: "c1",
+          name: "Ana",
+          prizes: 5,
+          last_redeemed_at: lastAt,
+        },
+        {
+          id: "c2",
+          name: "Bob",
+          prizes: 2,
+          last_redeemed_at: new Date("2026-08-01T10:00:00Z"),
+        },
+      ])
+    )
+    const result = await getTopCustomersByPrizes(
+      { sql: sql as unknown as MetricsDeps["sql"] },
+      { businessId: "biz-1", limit: 3 }
+    )
+    expect(result).toHaveLength(2)
+    expect(result[0]).toEqual({
+      id: "c1",
+      name: "Ana",
+      prizes: 5,
+      lastRedeemedAt: lastAt.getTime(),
+    })
+    expect(result[1].id).toBe("c2")
+    expect(result[1].prizes).toBe(2)
+    expect(result[1].lastRedeemedAt).toBe(
+      new Date("2026-08-01T10:00:00Z").getTime()
+    )
+  })
+
+  test("lista vacía cuando no hay canjes", async () => {
+    const sql = mock(() => Promise.resolve([]))
+    const result = await getTopCustomersByPrizes(
+      { sql: sql as unknown as MetricsDeps["sql"] },
+      { businessId: "biz-1" }
+    )
+    expect(result).toEqual([])
   })
 })

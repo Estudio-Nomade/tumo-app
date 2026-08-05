@@ -6,6 +6,7 @@ import DashboardHome from "@/shell/dashboard/dashboard-home"
 import {
   GoalCard,
   LoyaltyHomeQuickActions,
+  TopByPrizesList,
   TopCustomers,
 } from "@/modules/loyalty/dashboard/widgets"
 
@@ -90,22 +91,99 @@ describe("GoalCard", () => {
   })
 })
 
-describe("TopCustomers", () => {
+describe("TopCustomers (lista A — más cerca del premio)", () => {
   test("lista clientes reales y links a panel", () => {
     const html = renderToStaticMarkup(
       <TopCustomers customers={topCustomers} slug="carri" />
     )
-    expect(html).toContain("Top clientes")
+    expect(html).toContain("Más cerca del premio")
     expect(html).toContain("María Real")
     expect(html).toContain("/carri/dashboard/loyalty?highlight=1")
     expect(html).toContain("Ver todos")
+    expect(html).toContain("En curso")
+    expect(html).toContain("Listo")
   })
 
-  test("empty state sin inventar gente", () => {
+  test("empty state empuja a mostrar QR del módulo", () => {
     const html = renderToStaticMarkup(
       <TopCustomers customers={[]} slug="carri" />
     )
+    expect(html).toContain("Más cerca del premio")
     expect(html).toContain("Compartí el QR")
+    expect(html).not.toContain("settings")
+  })
+})
+
+describe("TopByPrizesList (lista B — más premios ganados)", () => {
+  const byPrizes = [
+    {
+      id: "p1",
+      name: "Ana Premios",
+      prizes: 4,
+      lastRedeemedAt: Date.parse("2026-08-04T12:00:00Z"),
+    },
+    {
+      id: "p2",
+      name: "Bob Premios",
+      prizes: 1,
+      lastRedeemedAt: null,
+    },
+  ]
+
+  test("muestra header de canjeadores, filas y highlight", () => {
+    const html = renderToStaticMarkup(
+      <TopByPrizesList
+        customers={byPrizes}
+        redeemersCount={7}
+        slug="carri"
+      />
+    )
+    expect(html).toContain("Más premios ganados")
+    expect(html).toContain("7 clientes canjearon")
+    expect(html).toContain("Ana Premios")
+    expect(html).toContain("4 premios")
+    expect(html).toContain("1 premio")
+    expect(html).toContain("/carri/dashboard/loyalty?highlight=p1")
+  })
+
+  test("singular en header con un solo canjeador", () => {
+    const html = renderToStaticMarkup(
+      <TopByPrizesList
+        customers={[
+          {
+            id: "p1",
+            name: "Solo Uno",
+            prizes: 1,
+            lastRedeemedAt: null,
+          },
+        ]}
+        redeemersCount={1}
+        slug="carri"
+      />
+    )
+    expect(html).toContain("1 cliente canjeó")
+    expect(html).toContain("1 premio")
+  })
+
+  test("empty state con cero canjeadores", () => {
+    const html = renderToStaticMarkup(
+      <TopByPrizesList customers={[]} redeemersCount={0} slug="carri" />
+    )
+    expect(html).toContain("Más premios ganados")
+    expect(html).toContain("0 clientes canjearon")
+    expect(html).toContain("Todavía nadie canjeó un premio.")
+  })
+})
+
+describe("LoyaltyHomeSection wire ranking", () => {
+  test("home-section carga ambos rankings y conteo de canjeadores", () => {
+    const src = read("modules/loyalty/dashboard/home-section.tsx")
+    expect(src).toContain("getTopCustomers")
+    expect(src).toContain("getTopCustomersByPrizes")
+    expect(src).toContain("countCustomersWithRedemptions")
+    expect(src).toContain("TopByPrizesList")
+    expect(src).toContain("TopCustomers")
+    expect(src).not.toContain("LoyaltyHomeQuickActions")
   })
 })
 

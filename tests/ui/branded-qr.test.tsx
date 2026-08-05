@@ -26,10 +26,10 @@ describe("BrandedQr + ShareProgram (prod)", () => {
     expect(src).toContain("getLoyaltyPublicUrl")
   })
 
-  test("settings incluye ShareProgram del programa", () => {
+  test("settings es shell-only sin ShareProgram", () => {
     const src = read("app/(dashboard)/[slug]/dashboard/settings/page.tsx")
-    expect(src).toContain("ShareProgram")
-    expect(src).not.toContain("Próximamente")
+    expect(src).not.toContain("ShareProgram")
+    expect(src).toContain("Ver módulos")
   })
 
   test("panel tiene entrada a Mostrar QR", () => {
