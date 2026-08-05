@@ -24,6 +24,44 @@ describe("BrandedQr + ShareProgram (prod)", () => {
     expect(src).toContain("Compartir")
     expect(src).toContain("BrandedQr")
     expect(src).toContain("getLoyaltyPublicUrl")
+    expect(src).toContain("navigator.share")
+    expect(src).toContain("Link2")
+    expect(src).toContain("Share2")
+  })
+
+  test("ShareProgram owner sigue layout Pencil 7 (CTAs, tip, poster)", () => {
+    const src = read("modules/loyalty/dashboard/share-program.tsx")
+    expect(src).toContain('variant === "owner"')
+    expect(src).toContain("Los clientes escanean y se registran")
+    expect(src).toContain("Próximamente: poster para imprimir")
+    expect(src).toContain("Lightbulb")
+    expect(src).toContain("Imprimí el QR o mostralo en el mostrador")
+    expect(src).toContain("bg-[var(--color-primary,#F97316)]")
+    expect(src).toContain("bg-[#FFF7ED]")
+  })
+
+  test("Compartir abre sheet Pencil 9 (Copiar / WhatsApp / Más)", () => {
+    const src = read("modules/loyalty/dashboard/share-program.tsx")
+    expect(src).toContain("Sheet")
+    expect(src).toContain('side="bottom"')
+    expect(src).toContain("Compartir programa")
+    expect(src).toContain("Invitá a tus clientes a sumar compras")
+    expect(src).toContain("WhatsApp")
+    expect(src).toContain("wa.me")
+    expect(src).toContain("Más")
+    expect(src).toContain("Cerrar")
+    expect(src).toContain("setShareOpen")
+    // CTA Compartir abre sheet, no native share directo
+    expect(src).toMatch(/setShareOpen\(true\)[\s\S]{0,400}Compartir/)
+  })
+
+  test("ShareProgram counter sigue layout Pencil 8 (empleado)", () => {
+    const src = read("modules/loyalty/dashboard/share-program.tsx")
+    expect(src).toContain('variant === "counter"')
+    expect(src).toContain("Mostrale esta pantalla al cliente")
+    expect(src).toContain("Copiar {display")
+    expect(src).toContain("Brillo al máximo recomendado")
+    expect(src).not.toMatch(/variant === "counter"[\s\S]{0,800}Compartir/)
   })
 
   test("settings es marca/negocio, QR vive en loyalty", () => {
@@ -46,14 +84,20 @@ describe("BrandedQr + ShareProgram (prod)", () => {
     expect(src).toContain("canEditProgram")
   })
 
-  test("ruta fullscreen QR del empleado existe", () => {
-    const src = read(
+  test("ruta QR ramifica dueño vs empleado según role", () => {
+    const page = read(
       "app/(dashboard)/[slug]/dashboard/loyalty/qr/page.tsx"
     )
-    expect(src).toContain("ShareProgram")
-    expect(src).toContain("Escaneá")
-    expect(src).toContain("Volver")
-    expect(src).toContain('variant="fullscreen"')
-    expect(src).toContain("router.back")
+    const view = read("modules/loyalty/dashboard/loyalty-qr-view.tsx")
+    expect(page).toContain("LoyaltyQrView")
+    expect(page).toContain("session.role")
+    expect(view).toContain('variant="owner"')
+    expect(view).toContain('variant="counter"')
+    expect(view).toContain("Ajustes")
+    expect(view).toContain("Programa y cuenta")
+    expect(view).toContain("NEGOCIO")
+    expect(view).toContain("Escaneá para sumar")
+    expect(view).toContain("Volver al panel")
+    expect(view).toContain("router.back")
   })
 })

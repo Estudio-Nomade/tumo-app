@@ -22,11 +22,15 @@ export default function BrandedQr({
   origin,
   size = "md",
   footer,
+  showUrl = true,
+  className,
 }: {
   business: Pick<Business, "name" | "slug" | "logo" | "primary_color">
   origin: string
   size?: Size
   footer?: string
+  showUrl?: boolean
+  className?: string
 }) {
   const url = getLoyaltyPublicUrl(origin, business.slug)
   const display = getLoyaltyDisplayUrl(origin, business.slug)
@@ -62,7 +66,12 @@ export default function BrandedQr({
 
   return (
     <div
-      className="flex w-full max-w-[280px] flex-col overflow-hidden rounded-[20px] border border-[#E7E5E4] bg-white"
+      className={[
+        "flex w-full max-w-[280px] flex-col overflow-hidden rounded-[20px] border border-[#E7E5E4] bg-white",
+        className ?? "",
+      ]
+        .join(" ")
+        .trim()}
       data-testid="branded-qr"
     >
       <div
@@ -114,9 +123,11 @@ export default function BrandedQr({
         <p className="text-[11px] font-semibold text-stone-500">
           {footer ?? "Sumá compras · ganá premios"}
         </p>
-        <p className="mt-0.5 truncate text-[11px] font-semibold text-[var(--color-primary,#F97316)]">
-          {display}
-        </p>
+        {showUrl ? (
+          <p className="mt-0.5 truncate text-[11px] font-semibold text-[var(--color-primary,#F97316)]">
+            {display}
+          </p>
+        ) : null}
       </div>
     </div>
   )
