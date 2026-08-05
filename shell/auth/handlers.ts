@@ -1,3 +1,4 @@
+import { normalizePhone, toE164 } from "@/lib/phone"
 import type { Business } from "@/lib/modules"
 import type { Employee } from "@/shell/db/employee"
 import type { SessionEmployee } from "@/shell/auth/session"
@@ -35,14 +36,15 @@ export async function handleSendCode(
   deps: AuthDeps,
   input: { phone?: string; slug?: string }
 ): Promise<JsonResult> {
-  const phone = input.phone?.trim() ?? ""
+  const phoneDigits = normalizePhone(input.phone ?? "")
+  const phone = toE164(input.phone ?? "")
   const slug = input.slug?.trim() ?? ""
 
-  if (!phone || !slug) {
-    return { status: 400, body: { error: "phone y slug son requeridos." } }
+  if (!phoneDigits || !slug) {
+    return { status: 400, body: { error: "Ingresá tu WhatsApp." } }
   }
 
-  if (!deps.canSendCode(phone, slug)) {
+  if (!deps.canSendCode(phoneDigits, slug)) {
     return {
       status: 429,
       body: { error: "Esperá un minuto antes de pedir otro código." },
@@ -54,7 +56,7 @@ export async function handleSendCode(
     return { status: 404, body: { error: "Negocio no encontrado" } }
   }
 
-  const employee = await deps.getEmployeeByPhone(phone, business.id)
+  const employee = await deps.getEmployeeByPhone(phoneDigits, business.id)
   if (!employee) {
     return {
       status: 404,
@@ -67,8 +69,8 @@ export async function handleSendCode(
     return { status: 500, body: { error: result.error } }
   }
 
-  deps.recordSend(phone, slug)
-  deps.resetVerifyAttempts(phone, slug)
+  deps.recordSend(phoneDigits, slug)
+  deps.resetVerifyAttempts(phoneDigits, slug)
 
   return { status: 200, body: { maskId: result.maskId } }
 }
@@ -77,16 +79,16 @@ export async function handleVerifyCode(
   deps: AuthDeps,
   input: { phone?: string; slug?: string; maskId?: string; code?: string }
 ): Promise<JsonResult> {
-  const phone = input.phone?.trim() ?? ""
+  const phoneDigits = normalizePhone(input.phone ?? "")
   const slug = input.slug?.trim() ?? ""
   const maskId = input.maskId?.trim() ?? ""
   const code = input.code?.trim() ?? ""
 
-  if (!phone || !slug || !maskId || !code) {
+  if (!phoneDigits || !slug || !maskId || !code) {
     return { status: 400, body: { error: "Datos incompletos." } }
   }
 
-  if (!deps.canVerify(phone, slug)) {
+  if (!deps.canVerify(phoneDigits, slug)) {
     return {
       status: 429,
       body: { error: "Demasiados intentos. Pedí un código nuevo." },
@@ -98,14 +100,14 @@ export async function handleVerifyCode(
     return { status: 404, body: { error: "Negocio no encontrado" } }
   }
 
-  deps.recordVerifyAttempt(phone, slug)
+  deps.recordVerifyAttempt(phoneDigits, slug)
 
   const otpResult = await deps.verifyOtp(maskId, code)
   if (!otpResult.success) {
     return { status: 401, body: { error: otpResult.error } }
   }
 
-  const employee = await deps.getEmployeeByPhone(phone, business.id)
+  const employee = await deps.getEmployeeByPhone(phoneDigits, business.id)
   if (!employee) {
     return { status: 500, body: { error: "Error interno." } }
   }

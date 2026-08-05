@@ -47,6 +47,7 @@ export default async function DashboardHomePage({ params }: PageProps) {
       employeeName={session.name}
       topCustomers={topCustomers}
       weeklyGoal={weeklyGoal}
+      slug={slug}
     />
   )
 }

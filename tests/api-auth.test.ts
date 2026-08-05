@@ -65,8 +65,9 @@ describe("handleSendCode", () => {
       slug: "demo",
     })
     expect(result).toEqual({ status: 200, body: { maskId: "mask-1" } })
-    expect(deps.sendOtp).toHaveBeenCalledWith(employee.phone)
+    expect(deps.sendOtp).toHaveBeenCalledWith("+5491112345678")
     expect(canSendCode(employee.phone, "demo")).toBe(false)
+    expect(canSendCode("54 9 11 1234-5678", "demo")).toBe(false)
   })
 
   test("negocio no encontrado", async () => {

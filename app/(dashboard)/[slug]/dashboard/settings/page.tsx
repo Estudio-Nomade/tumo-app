@@ -47,6 +47,17 @@ export default async function DashboardSettingsPage({ params }: PageProps) {
         </div>
         <div>
           <div className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">
+            Regla del programa
+          </div>
+          <div className="mt-1 text-sm font-semibold text-stone-900">
+            {business.purchases_needed} compras → {business.reward_name}
+          </div>
+          <p className="mt-1 text-xs text-stone-400">
+            Solo lectura por ahora. Para cambiarlo, contactá a soporte Tumo.
+          </p>
+        </div>
+        <div>
+          <div className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">
             Colores
           </div>
           <div className="mt-2 flex items-center gap-3">

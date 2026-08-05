@@ -1,3 +1,5 @@
+import { normalizePhone } from "@/lib/phone"
+
 type SendEntry = { lastSentAt: number }
 type VerifyEntry = { attempts: number; windowStart: number }
 
@@ -9,7 +11,7 @@ const VERIFY_WINDOW_MS = 5 * 60_000
 const VERIFY_MAX_ATTEMPTS = 5
 
 function key(phone: string, slug: string) {
-  return `${phone}:${slug}`
+  return `${normalizePhone(phone)}:${slug}`
 }
 
 export function canSendCode(phone: string, slug: string, now = Date.now()): boolean {

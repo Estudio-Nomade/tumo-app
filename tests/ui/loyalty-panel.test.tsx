@@ -120,6 +120,15 @@ describe("loyalty panel source (Pencil EDNqK + real data)", () => {
     expect(src).toContain("Canjear premio")
     expect(src).toContain("#16A34A")
     expect(src).toContain("#EAB308")
+    expect(src).toContain("window.confirm")
+  })
+
+  test("código es CTA primaria por encima de la lista", () => {
+    const codeIdx = src.indexOf("Ingresar código")
+    const listIdx = src.indexOf("max-h-[min(52vh,420px)]")
+    expect(codeIdx).toBeGreaterThan(-1)
+    expect(listIdx).toBeGreaterThan(-1)
+    expect(codeIdx).toBeLessThan(listIdx)
   })
 
   test("avatar colors cycle length 4", () => {

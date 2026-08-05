@@ -82,7 +82,13 @@ export default function LoyaltyRegistration({
   }
 
   if (customer) {
-    return <LoyaltyCard customer={customer} slug={slug} />
+    return (
+      <LoyaltyCard
+        customer={customer}
+        slug={slug}
+        onSwitchAccount={() => setCustomer(null)}
+      />
+    )
   }
 
   return (

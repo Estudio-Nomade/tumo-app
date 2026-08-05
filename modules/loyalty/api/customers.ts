@@ -1,3 +1,4 @@
+import { normalizePhone } from "@/lib/phone"
 import type { Business } from "@/lib/modules"
 import type {
   CustomerRow,
@@ -30,7 +31,7 @@ export async function registerCustomer(
   input: { name: string; phone: string; birthday?: string; slug: string }
 ): Promise<JsonResult> {
   const name = input.name?.trim() ?? ""
-  const phone = input.phone?.trim() ?? ""
+  const phone = normalizePhone(input.phone ?? "")
   const slug = input.slug?.trim() ?? ""
 
   if (!name || !phone || !slug) {
@@ -48,12 +49,16 @@ export async function registerCustomer(
   const existing = (await deps.sql`
     SELECT id, name, phone, code, purchases, total_purchases, business_id
     FROM customers
-    WHERE phone = ${phone} AND business_id = ${business.id}
+    WHERE business_id = ${business.id}
+      AND regexp_replace(phone, '[^0-9]', '', 'g') = ${phone}
     LIMIT 1
   `) as CustomerRow[]
 
   if (existing[0]) {
-    return { status: 200, body: toCustomerBody(existing[0], business) }
+    return {
+      status: 200,
+      body: { ...toCustomerBody(existing[0], business), existing: true },
+    }
   }
 
   let code = ""
@@ -84,7 +89,10 @@ export async function registerCustomer(
     }
   }
 
-  return { status: 200, body: toCustomerBody(created, business) }
+  return {
+    status: 200,
+    body: { ...toCustomerBody(created, business), existing: false },
+  }
 }
 
 export async function getCustomer(
@@ -93,7 +101,7 @@ export async function getCustomer(
 ): Promise<JsonResult> {
   const slug = input.slug?.trim() ?? ""
   const code = input.code?.trim()
-  const phone = input.phone?.trim()
+  const phone = input.phone ? normalizePhone(input.phone) : ""
   const id = input.id?.trim()
 
   if (!slug || (!code && !phone && !id)) {
@@ -127,7 +135,8 @@ export async function getCustomer(
     rows = (await deps.sql`
       SELECT id, name, phone, code, purchases, total_purchases, business_id
       FROM customers
-      WHERE phone = ${phone} AND business_id = ${business.id}
+      WHERE business_id = ${business.id}
+        AND regexp_replace(phone, '[^0-9]', '', 'g') = ${phone}
       LIMIT 1
     `) as CustomerRow[]
   }

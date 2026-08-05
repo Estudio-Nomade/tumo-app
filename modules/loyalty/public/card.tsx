@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useBusiness } from "@/shell/context/business"
 
 export type LoyaltyCardData = {
@@ -14,14 +14,52 @@ export type LoyaltyCardData = {
 }
 
 export default function LoyaltyCard({
-  customer,
+  customer: initial,
   slug,
+  onSwitchAccount,
 }: {
   customer: LoyaltyCardData
   slug: string
+  onSwitchAccount?: () => void
 }) {
   const business = useBusiness()
+  const [customer, setCustomer] = useState(initial)
   const [copied, setCopied] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
+
+  const refresh = useCallback(async () => {
+    setRefreshing(true)
+    try {
+      const qs = new URLSearchParams({ id: customer.id, slug })
+      const res = await fetch(`/api/loyalty/customers?${qs.toString()}`)
+      if (!res.ok) return
+      const data = (await res.json()) as LoyaltyCardData
+      setCustomer((prev) => ({
+        ...prev,
+        ...data,
+        canRedeem: Boolean(
+          data.canRedeem ?? data.purchases >= data.purchasesNeeded
+        ),
+      }))
+    } catch {
+      // keep last known state
+    } finally {
+      setRefreshing(false)
+    }
+  }, [customer.id, slug])
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      if (document.visibilityState === "visible") void refresh()
+    }, 8000)
+    const onFocus = () => void refresh()
+    window.addEventListener("focus", onFocus)
+    return () => {
+      window.clearInterval(id)
+      window.removeEventListener("focus", onFocus)
+    }
+  }, [refresh])
+
   const needed = customer.purchasesNeeded
   const current = Math.min(customer.purchases, needed)
   const remaining = Math.max(needed - customer.purchases, 0)
@@ -38,12 +76,25 @@ export default function LoyaltyCard({
   async function share() {
     const url = `${window.location.origin}/${slug}/loyalty`
     try {
+      if (typeof navigator.share === "function") {
+        await navigator.share({
+          title: business.name,
+          text: `Sumá en ${business.name}`,
+          url,
+        })
+        return
+      }
       await navigator.clipboard.writeText(url)
       setCopied(true)
       window.setTimeout(() => setCopied(false), 2000)
     } catch {
-      // ignore
+      // ignore cancel
     }
+  }
+
+  function switchAccount() {
+    document.cookie = "client_id=; Max-Age=0; path=/"
+    onSwitchAccount?.()
   }
 
   return (
@@ -56,12 +107,20 @@ export default function LoyaltyCard({
           >
             {initials || "·"}
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h1 className="truncate text-[19px] font-bold tracking-tight text-stone-900">
               ¡Hola, {customer.name.split(/\s+/)[0] || customer.name}!
             </h1>
             <p className="truncate text-xs text-stone-500">{business.name}</p>
           </div>
+          <button
+            type="button"
+            onClick={() => void refresh()}
+            disabled={refreshing}
+            className="shrink-0 text-xs font-semibold text-[var(--color-primary,#F97316)] disabled:opacity-50"
+          >
+            {refreshing ? "…" : "Actualizar"}
+          </button>
         </header>
 
         <div className="flex w-full flex-col gap-3.5 rounded-3xl bg-gradient-to-b from-[var(--color-primary,#F97316)] to-[color-mix(in_srgb,var(--color-primary,#F97316)_82%,#9a3412)] p-5 text-white">
@@ -117,7 +176,7 @@ export default function LoyaltyCard({
               onClick={() => void share()}
               className="inline-flex items-center gap-1.5 rounded-full bg-[#FFF7ED] px-3.5 py-2 text-xs font-semibold text-[var(--color-primary,#F97316)]"
             >
-              {copied ? "¡Link copiado!" : "Compartir"}
+              {copied ? "¡Link copiado!" : "Compartir programa"}
             </button>
           </div>
         </div>
@@ -125,6 +184,14 @@ export default function LoyaltyCard({
         <p className="text-center text-xs text-[#A8A29E]">
           Cada compra suma. ¡A las {needed}, tu recompensa!
         </p>
+
+        <button
+          type="button"
+          onClick={switchAccount}
+          className="text-center text-xs font-semibold text-stone-400 underline-offset-2 hover:text-stone-600 hover:underline"
+        >
+          No soy {customer.name.split(/\s+/)[0] || customer.name}
+        </button>
       </div>
     </div>
   )

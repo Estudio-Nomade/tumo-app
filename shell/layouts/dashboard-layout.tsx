@@ -90,7 +90,7 @@ export default function DashboardLayout({
       ]
     : modules.map((mod) => ({
         href: `/${slug}/dashboard/${mod.id}`,
-        label: mod.name,
+        label: mod.id === "loyalty" ? "Clientes" : mod.name,
         icon: resolveModuleIcon(mod.icon),
         exact: true,
       }))
@@ -237,6 +237,17 @@ export default function DashboardLayout({
             }`}
           >
             {children}
+            {!isOwner ? (
+              <div className="mx-auto mt-8 w-full max-w-lg md:hidden">
+                <button
+                  type="button"
+                  onClick={() => void onLogout()}
+                  className="w-full rounded-2xl border border-[#E7E5E4] bg-white px-4 py-3 text-sm font-semibold text-stone-600"
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            ) : null}
           </main>
         </div>
 

@@ -165,7 +165,7 @@ export function TopCustomers({ customers }: { customers: TopCustomerRow[] }) {
       <section className="flex flex-col gap-2.5">
         <h2 className="text-sm font-semibold text-stone-900">Top clientes</h2>
         <div className="rounded-2xl border border-[#E7E5E4] bg-[#F5F5F4] px-4 py-8 text-center text-sm text-stone-500">
-          Todavía no hay clientes para mostrar.
+          Compartí el QR del programa para conseguir tu primer cliente.
         </div>
       </section>
     )
@@ -288,6 +288,7 @@ export function DashboardHome({
   employeeName,
   topCustomers,
   weeklyGoal,
+  slug,
 }: {
   metrics: {
     customers: number
@@ -297,6 +298,7 @@ export function DashboardHome({
   employeeName?: string
   topCustomers: TopCustomerRow[]
   weeklyGoal: { thisWeek: number; lastWeek: number }
+  slug: string
 }) {
   const name = employeeName?.trim()
   const greeting = name
@@ -318,6 +320,22 @@ export function DashboardHome({
         </h1>
         <p className="text-[13px] text-stone-500">{greeting}</p>
       </header>
+
+      <div className="flex flex-col gap-2.5 sm:flex-row">
+        <a
+          href={`/${slug}/dashboard/loyalty`}
+          className="inline-flex h-[50px] flex-1 items-center justify-center rounded-[14px] bg-[var(--color-primary,#F97316)] text-[15px] font-bold text-white"
+        >
+          Atender clientes
+        </a>
+        <a
+          href={`/${slug}/dashboard/loyalty/qr`}
+          className="inline-flex h-[50px] flex-1 items-center justify-center rounded-[14px] border border-[var(--color-primary,#F97316)] bg-white text-[15px] font-bold text-[var(--color-primary,#F97316)]"
+        >
+          Mostrar QR
+        </a>
+      </div>
+
       <LoyaltyMetrics {...metrics} />
       <GoalCard current={weeklyGoal.thisWeek} target={goalTarget} />
       <TopCustomers customers={topCustomers} />

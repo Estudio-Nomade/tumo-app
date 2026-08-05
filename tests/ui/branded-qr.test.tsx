@@ -46,5 +46,6 @@ describe("BrandedQr + ShareProgram (prod)", () => {
     expect(src).toContain("Escaneá")
     expect(src).toContain("Volver")
     expect(src).toContain('variant="fullscreen"')
+    expect(src).toContain("router.back")
   })
 })

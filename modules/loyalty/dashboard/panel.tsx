@@ -139,6 +139,10 @@ export default function LoyaltyPanel() {
   async function redeem(id: string) {
     const target = customers.find((c) => c.id === id)
     if (!target) return
+    const ok = window.confirm(
+      `¿Canjear ${target.rewardName} a ${target.name}?`
+    )
+    if (!ok) return
     setActingId(id)
     setError("")
     try {
@@ -256,6 +260,81 @@ export default function LoyaltyPanel() {
         />
       </div>
 
+      <div className="flex flex-col gap-2.5">
+        {codeMode ? (
+          <div className="flex flex-col gap-2 rounded-2xl border border-[var(--color-primary,#F97316)] bg-white p-3 ring-2 ring-[var(--color-primary,#F97316)]/15">
+            <label
+              htmlFor="customer-code"
+              className="text-xs font-semibold text-stone-500"
+            >
+              Código del cliente
+            </label>
+            <p className="text-[11px] leading-snug text-stone-400">
+              El de 4 dígitos que ve el cliente en su tarjeta.
+            </p>
+            <div className="flex gap-2">
+              <input
+                id="customer-code"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                maxLength={4}
+                value={code}
+                onChange={(e) =>
+                  setCode(e.target.value.replace(/\D/g, "").slice(0, 4))
+                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault()
+                    void submitCode()
+                  }
+                }}
+                placeholder="••••"
+                className="h-[50px] min-w-0 flex-1 rounded-[14px] border-0 bg-[#F5F5F4] px-4 text-center text-lg font-bold tracking-[0.35em] text-stone-900 outline-none placeholder:tracking-normal placeholder:text-[#A8A29E] focus:ring-2 focus:ring-[var(--color-primary,#F97316)]/25"
+                autoFocus
+              />
+              <button
+                type="button"
+                disabled={lookingUp || code.length !== 4}
+                onClick={() => void submitCode()}
+                className="h-[50px] shrink-0 rounded-[14px] bg-[var(--color-primary,#F97316)] px-4 text-sm font-bold text-white disabled:opacity-50"
+              >
+                {lookingUp ? "…" : "Buscar"}
+              </button>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setCodeMode(false)
+                setCode("")
+                setError("")
+              }}
+              className="text-xs font-semibold text-stone-500"
+            >
+              Cancelar
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              setCodeMode(true)
+              setError("")
+            }}
+            className="inline-flex h-[50px] w-full items-center justify-center gap-2 rounded-[14px] bg-[var(--color-primary,#F97316)] text-[15px] font-bold text-white"
+          >
+            <Keyboard size={18} strokeWidth={2} aria-hidden />
+            Ingresar código
+          </button>
+        )}
+        <Link
+          href={`/${business.slug}/dashboard/loyalty/qr`}
+          className="inline-flex h-[50px] w-full items-center justify-center gap-2 rounded-[14px] border border-[var(--color-primary,#F97316)] bg-white text-[15px] font-bold text-[var(--color-primary,#F97316)]"
+        >
+          <QrCode size={18} strokeWidth={2} aria-hidden />
+          Mostrar QR del programa
+        </Link>
+      </div>
+
       {error ? (
         <p
           role="alert"
@@ -281,12 +360,23 @@ export default function LoyaltyPanel() {
       ) : (
         <ul className="flex max-h-[min(52vh,420px)] flex-col gap-2.5 overflow-y-auto">
           {customers.length === 0 ? (
-            <li className="flex min-h-[120px] items-center justify-center rounded-2xl bg-[#F5F5F4] px-6 py-8 text-center text-sm text-stone-500">
-              Todavía no hay clientes registrados.
+            <li className="flex min-h-[120px] flex-col items-center justify-center gap-3 rounded-2xl bg-[#F5F5F4] px-6 py-8 text-center">
+              <p className="text-sm text-stone-500">
+                Todavía no hay clientes. Mostrá el QR para que se registren.
+              </p>
+              <Link
+                href={`/${business.slug}/dashboard/loyalty/qr`}
+                className="text-sm font-bold text-[var(--color-primary,#F97316)]"
+              >
+                Abrir QR del programa
+              </Link>
             </li>
           ) : visible.length === 0 ? (
-            <li className="flex min-h-[120px] items-center justify-center rounded-2xl bg-[#F5F5F4] px-6 py-8 text-center text-sm text-stone-500">
-              No se encontraron clientes.
+            <li className="flex min-h-[120px] flex-col items-center justify-center gap-2 rounded-2xl bg-[#F5F5F4] px-6 py-8 text-center text-sm text-stone-500">
+              <p>No se encontraron clientes.</p>
+              <p className="text-xs text-stone-400">
+                Probá con el código de 4 dígitos de la tarjeta.
+              </p>
             </li>
           ) : (
             visible.map((customer, index) => {
@@ -350,7 +440,7 @@ export default function LoyaltyPanel() {
                       onClick={() => void addVisit(customer.id)}
                       className="shrink-0 rounded-full bg-[#16A34A] px-3 py-2.5 text-xs font-bold text-white disabled:opacity-70"
                     >
-                      +1 compra
+                      {acting ? "…" : "+1 compra"}
                     </button>
                   )}
                 </li>
@@ -359,82 +449,6 @@ export default function LoyaltyPanel() {
           )}
         </ul>
       )}
-
-      <div className="flex flex-col gap-2.5">
-        <Link
-          href={`/${business.slug}/dashboard/loyalty/qr`}
-          className="inline-flex h-[50px] w-full items-center justify-center gap-2 rounded-[14px] bg-[var(--color-primary,#F97316)] text-[15px] font-bold text-white"
-        >
-          <QrCode size={18} strokeWidth={2} aria-hidden />
-          Mostrar QR del programa
-        </Link>
-
-        {codeMode ? (
-          <div className="flex flex-col gap-2 rounded-2xl border border-[#E7E5E4] bg-white p-3">
-            <label
-              htmlFor="customer-code"
-              className="text-xs font-semibold text-stone-500"
-            >
-              Código del cliente
-            </label>
-            <p className="text-[11px] leading-snug text-stone-400">
-              El de 4 dígitos que ve el cliente en su tarjeta.
-            </p>
-            <div className="flex gap-2">
-              <input
-                id="customer-code"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                maxLength={4}
-                value={code}
-                onChange={(e) =>
-                  setCode(e.target.value.replace(/\D/g, "").slice(0, 4))
-                }
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault()
-                    void submitCode()
-                  }
-                }}
-                placeholder="••••"
-                className="h-[50px] min-w-0 flex-1 rounded-[14px] border-0 bg-[#F5F5F4] px-4 text-center text-lg font-bold tracking-[0.35em] text-stone-900 outline-none placeholder:tracking-normal placeholder:text-[#A8A29E] focus:ring-2 focus:ring-[var(--color-primary,#F97316)]/25"
-                autoFocus
-              />
-              <button
-                type="button"
-                disabled={lookingUp || code.length !== 4}
-                onClick={() => void submitCode()}
-                className="h-[50px] shrink-0 rounded-[14px] bg-[var(--color-primary,#F97316)] px-4 text-sm font-bold text-white disabled:opacity-50"
-              >
-                {lookingUp ? "…" : "Buscar"}
-              </button>
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setCodeMode(false)
-                setCode("")
-                setError("")
-              }}
-              className="text-xs font-semibold text-stone-500"
-            >
-              Cancelar
-            </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={() => {
-              setCodeMode(true)
-              setError("")
-            }}
-            className="inline-flex h-[50px] w-full items-center justify-center gap-2 rounded-[14px] border border-[var(--color-primary,#F97316)] bg-white text-[15px] font-bold text-[var(--color-primary,#F97316)]"
-          >
-            <Keyboard size={18} strokeWidth={2} aria-hidden />
-            Ingresar código
-          </button>
-        )}
-      </div>
     </div>
   )
 }

@@ -39,10 +39,12 @@ describe("DashboardHome", () => {
         employeeName="Nico"
         topCustomers={topCustomers}
         weeklyGoal={{ thisWeek: 4, lastWeek: 7 }}
+        slug="carri"
       />
     )
     expect(html).toContain("Panel")
     expect(html).toContain("Hola, Nico. Así va tu comercio hoy.")
+    expect(html).toContain("Atender clientes")
   })
 
   test("saludo sin nombre usa fallback", () => {
@@ -51,6 +53,7 @@ describe("DashboardHome", () => {
         metrics={metrics}
         topCustomers={[]}
         weeklyGoal={{ thisWeek: 0, lastWeek: 0 }}
+        slug="carri"
       />
     )
     expect(html).toContain("Hola. Así va tu comercio hoy.")
@@ -63,6 +66,7 @@ describe("DashboardHome", () => {
         employeeName="Nico"
         topCustomers={topCustomers}
         weeklyGoal={{ thisWeek: 4, lastWeek: 7 }}
+        slug="carri"
       />
     )
     expect(html).toContain("Meta de la semana")
@@ -80,6 +84,7 @@ describe("DashboardHome", () => {
         employeeName="Nico"
         topCustomers={topCustomers}
         weeklyGoal={{ thisWeek: 1, lastWeek: 0 }}
+        slug="carri"
       />
     )
     expect(html).toContain("Clientes")
@@ -113,7 +118,7 @@ describe("TopCustomers", () => {
 
   test("empty state sin inventar gente", () => {
     const html = renderToStaticMarkup(<TopCustomers customers={[]} />)
-    expect(html).toContain("Todavía no hay clientes")
+    expect(html).toContain("Compartí el QR")
     expect(html).not.toContain("María López")
   })
 })
