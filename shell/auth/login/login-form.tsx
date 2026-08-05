@@ -70,7 +70,7 @@ export default function LoginForm() {
   return (
     <form
       onSubmit={onSubmit}
-      className="fixed inset-0 z-10 flex min-h-[100dvh] w-full flex-col justify-between overflow-y-auto bg-gradient-to-b from-[color-mix(in_srgb,var(--color-primary,#F97316)_55%,white)] via-[var(--color-primary,#F97316)] to-[color-mix(in_srgb,var(--color-primary,#F97316)_65%,black)] px-7 pt-[max(1.5rem,env(safe-area-inset-top))] pr-[max(1.75rem,env(safe-area-inset-right))] pb-[max(2rem,env(safe-area-inset-bottom))] pl-[max(1.75rem,env(safe-area-inset-left))] text-white"
+      className="fixed inset-0 z-10 flex min-h-[100dvh] w-full flex-col justify-between overflow-y-auto bg-gradient-to-b from-[color-mix(in_srgb,var(--color-primary,#F97316)_88%,white)] via-[var(--color-primary,#F97316)] to-[color-mix(in_srgb,var(--color-primary,#F97316)_78%,#9a3412)] px-7 pt-[max(1.5rem,env(safe-area-inset-top))] pr-[max(1.75rem,env(safe-area-inset-right))] pb-[max(2rem,env(safe-area-inset-bottom))] pl-[max(1.75rem,env(safe-area-inset-left))] text-white"
     >
       <header className="flex flex-col items-center gap-2.5 pt-8">
         {business.logo ? (
@@ -91,7 +91,7 @@ export default function LoginForm() {
         <h1 className="text-center text-xl font-extrabold tracking-tight">
           {business.name}
         </h1>
-        <p className="text-[13px] font-normal text-white/85">
+        <p className="text-[13px] font-normal text-[#FFEDD5]">
           Panel del comercio
         </p>
       </header>
@@ -102,7 +102,7 @@ export default function LoginForm() {
         </h2>
 
         <div className="relative [&_label]:gap-0 [&_label>span]:sr-only">
-          <span className="pointer-events-none absolute top-1/2 left-4 z-10 -translate-y-1/2 text-stone-400">
+          <span className="pointer-events-none absolute top-1/2 left-4 z-10 -translate-y-1/2 text-[var(--color-primary,#F97316)]">
             <SmartphoneIcon className="h-5 w-5" />
           </span>
           <Input
@@ -115,14 +115,14 @@ export default function LoginForm() {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             required
-            className="h-[60px] !rounded-2xl !border-0 !bg-white pl-11 text-base text-stone-800 shadow-sm placeholder:text-stone-400 focus:!border-transparent focus:!ring-2 focus:!ring-stone-900/25"
+            className="h-[60px] !rounded-2xl !border-0 !bg-white pl-11 text-base text-stone-800 shadow-none placeholder:text-[#A8A29E] focus:!border-transparent focus:!ring-2 focus:!ring-stone-900/20"
           />
         </div>
 
         <Button
           type="submit"
           disabled={status === "loading"}
-          className="h-14 w-full !rounded-2xl !border-0 !bg-stone-900 text-base font-bold !text-white disabled:opacity-70"
+          className="h-14 w-full !rounded-2xl !border-0 !bg-[#1C1917] text-base font-bold !text-white disabled:opacity-70"
         >
           {status === "loading" ? "Enviando…" : "Ingresar"}
         </Button>

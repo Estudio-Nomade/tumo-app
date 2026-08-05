@@ -32,10 +32,10 @@ async function seed() {
 
   await sql`
     INSERT INTO employees (name, phone, role, business_id)
-    SELECT ${"Mariano López"}, ${"+5491112345678"}, ${"owner"}, ${business.id}
+    SELECT ${"Nobel"}, ${"+542494512494"}, ${"owner"}, ${business.id}
     WHERE NOT EXISTS (
       SELECT 1 FROM employees
-      WHERE phone = ${"+5491112345678"} AND business_id = ${business.id}
+      WHERE phone = ${"+542494512494"} AND business_id = ${business.id}
     )
   `
 

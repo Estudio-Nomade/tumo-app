@@ -7,10 +7,10 @@ describe("MetricCard", () => {
     const html = renderToStaticMarkup(
       <MetricCard value={0} label="Clientes" />
     )
-    expect(html).toContain("text-3xl")
+    expect(html).toContain("text-[22px]")
     expect(html).toContain(">0<")
     expect(html).toContain("Clientes")
-    expect(html).toContain("text-sm")
+    expect(html).toContain("text-[11px]")
   })
 
   test("acepta className extra", () => {

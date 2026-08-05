@@ -16,7 +16,7 @@ const OTP_LENGTH = 6
 const RESEND_SECONDS = 300
 
 const shellClassName =
-  "fixed inset-0 z-10 flex min-h-[100dvh] w-full flex-col justify-between overflow-y-auto bg-gradient-to-b from-[color-mix(in_srgb,var(--color-primary,#F97316)_55%,white)] via-[var(--color-primary,#F97316)] to-[color-mix(in_srgb,var(--color-primary,#F97316)_65%,black)] px-7 pt-[max(1.5rem,env(safe-area-inset-top))] pr-[max(1.75rem,env(safe-area-inset-right))] pb-[max(2rem,env(safe-area-inset-bottom))] pl-[max(1.75rem,env(safe-area-inset-left))] text-white"
+  "fixed inset-0 z-10 flex min-h-[100dvh] w-full flex-col justify-between overflow-y-auto bg-gradient-to-b from-[color-mix(in_srgb,var(--color-primary,#F97316)_88%,white)] via-[var(--color-primary,#F97316)] to-[color-mix(in_srgb,var(--color-primary,#F97316)_78%,#9a3412)] px-7 pt-[max(1.5rem,env(safe-area-inset-top))] pr-[max(1.75rem,env(safe-area-inset-right))] pb-[max(2rem,env(safe-area-inset-bottom))] pl-[max(1.75rem,env(safe-area-inset-left))] text-white"
 
 function formatTime(total: number) {
   const m = Math.floor(total / 60)
@@ -246,7 +246,7 @@ export default function VerifyForm() {
               onChange={(e) => updateDigit(index, e.target.value)}
               onKeyDown={(e) => onKeyDown(index, e)}
               onPaste={onPaste}
-              className="h-14 min-w-0 flex-1 rounded-2xl border-0 bg-white text-center text-xl font-bold text-stone-900 shadow-sm outline-none ring-0 transition focus:ring-2 focus:ring-white disabled:opacity-50"
+                  className="h-14 min-w-0 flex-1 rounded-2xl border-0 bg-white text-center text-xl font-bold text-stone-900 shadow-none outline-none ring-0 transition focus:ring-2 focus:ring-white/80 disabled:opacity-50"
               aria-label={`Dígito ${index + 1}`}
             />
           ))}

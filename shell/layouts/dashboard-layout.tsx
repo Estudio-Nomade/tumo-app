@@ -47,7 +47,7 @@ export default function DashboardLayout({
       ? [
           {
             href: `/${slug}/dashboard`,
-            label: "Dashboard",
+            label: "Panel",
             icon: "▣",
             exact: true,
           },
@@ -83,19 +83,19 @@ export default function DashboardLayout({
           } as CSSProperties
         }
       >
-        <aside className="sticky top-0 hidden h-[100dvh] w-60 shrink-0 flex-col border-r border-stone-200 bg-[#F9FAFB] md:flex">
+        <aside className="sticky top-0 hidden h-[100dvh] w-60 shrink-0 flex-col border-r border-[#E7E5E4] bg-white md:flex">
           <div className="flex flex-col items-center gap-3 px-5 pt-8 pb-5">
             {business.logo ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={business.logo}
                 alt={business.name}
-                className="h-20 w-20 rounded-[22px] object-cover shadow-sm"
+                className="h-16 w-16 rounded-[18px] object-cover"
               />
             ) : (
               <div
                 aria-hidden
-                className="flex h-20 w-20 items-center justify-center rounded-[22px] bg-[var(--color-primary,#F97316)] text-2xl font-extrabold text-white shadow-sm"
+                className="flex h-16 w-16 items-center justify-center rounded-[18px] bg-[var(--color-primary,#F97316)] text-2xl font-extrabold text-white"
               >
                 {businessInitial}
               </div>
@@ -105,7 +105,7 @@ export default function DashboardLayout({
             </div>
           </div>
 
-          <div className="mx-5 border-t border-stone-200" />
+          <div className="mx-5 border-t border-[#E7E5E4]" />
 
           <nav
             aria-label="Navegación principal"
@@ -120,8 +120,8 @@ export default function DashboardLayout({
                   aria-current={active ? "page" : undefined}
                   className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
                     active
-                      ? "bg-[var(--color-primary,#F97316)] text-white shadow-sm"
-                      : "text-stone-600 hover:bg-stone-200/60 hover:text-stone-900"
+                      ? "bg-[var(--color-primary,#F97316)] text-white"
+                      : "text-stone-500 hover:bg-[#F5F5F4] hover:text-stone-900"
                   }`}
                 >
                   <span aria-hidden className="text-base leading-none">
@@ -133,12 +133,12 @@ export default function DashboardLayout({
             })}
           </nav>
 
-          <div className="mx-5 border-t border-stone-200" />
+          <div className="mx-5 border-t border-[#E7E5E4]" />
 
           <div className="flex items-center gap-3 px-4 py-5">
             <div
               aria-hidden
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-stone-900 text-sm font-bold text-white"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1C1917] text-sm font-bold text-white"
             >
               {initial}
             </div>
@@ -158,19 +158,19 @@ export default function DashboardLayout({
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="flex items-center justify-between gap-3 border-b border-stone-100 px-4 py-3 md:hidden">
+          <header className="flex items-center justify-between gap-3 px-5 pt-2 pb-1 md:hidden">
             <div className="flex min-w-0 items-center gap-2.5">
               {business.logo ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={business.logo}
                   alt=""
-                  className="h-9 w-9 rounded-[11px] object-cover"
+                  className="h-[38px] w-[38px] rounded-[11px] object-cover"
                 />
               ) : (
                 <div
                   aria-hidden
-                  className="flex h-9 w-9 items-center justify-center rounded-[11px] bg-[var(--color-primary,#F97316)] text-sm font-bold text-white"
+                  className="flex h-[38px] w-[38px] items-center justify-center rounded-[11px] bg-[var(--color-primary,#F97316)] text-sm font-bold text-white"
                 >
                   {businessInitial}
                 </div>
@@ -179,7 +179,7 @@ export default function DashboardLayout({
                 <div className="truncate text-sm font-bold text-stone-900">
                   {business.name}
                 </div>
-                <div className="truncate text-xs text-stone-500">
+                <div className="truncate text-[11px] text-stone-500">
                   {displayName}
                 </div>
               </div>
@@ -187,14 +187,15 @@ export default function DashboardLayout({
             <button
               type="button"
               onClick={() => void onLogout()}
-              className="rounded-full bg-stone-100 px-3 py-1.5 text-xs font-semibold text-stone-700"
+              aria-label="Salir"
+              className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-[#1C1917] text-sm font-bold text-white"
             >
-              Salir
+              {initial}
             </button>
           </header>
 
           <main
-            className={`flex-1 px-4 py-5 md:px-8 md:py-8 ${
+            className={`flex-1 px-5 py-2 md:px-8 md:py-8 ${
               navItems.length > 0 ? "pb-28 md:pb-8" : "pb-5 md:pb-8"
             }`}
           >
@@ -205,25 +206,28 @@ export default function DashboardLayout({
         {navItems.length > 0 ? (
           <nav
             aria-label="Navegación principal"
-            className="fixed inset-x-0 bottom-0 z-20 border-t border-stone-200 bg-white/95 px-4 pt-2 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden"
+            className="fixed inset-x-0 bottom-0 z-20 bg-transparent px-[21px] pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:hidden"
           >
-            <div className="mx-auto flex max-w-md items-stretch gap-1 overflow-x-auto rounded-[36px] border border-stone-200 bg-white p-1 shadow-sm">
+            <div className="mx-auto flex h-[62px] max-w-md items-stretch gap-1 overflow-x-auto rounded-[36px] border border-[#E7E5E4] bg-white p-1">
               {navItems.map((item) => {
                 const active = isActivePath(pathname, item.href, item.exact)
                 return (
                   <Link
                     key={`m-${item.href}`}
                     href={item.href}
-                    aria-label={item.label}
                     aria-current={active ? "page" : undefined}
-                    title={item.label}
-                    className={`flex h-12 min-w-12 flex-1 items-center justify-center rounded-[26px] text-lg transition ${
+                    className={`flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-[26px] px-1 transition ${
                       active
                         ? "bg-[var(--color-primary,#F97316)] text-white"
-                        : "text-stone-500"
+                        : "bg-white text-stone-500"
                     }`}
                   >
-                    <span aria-hidden>{item.icon}</span>
+                    <span aria-hidden className="text-base leading-none">
+                      {item.icon}
+                    </span>
+                    <span className="max-w-full truncate text-[10px] font-semibold tracking-wide">
+                      {item.label}
+                    </span>
                   </Link>
                 )
               })}

@@ -36,10 +36,14 @@ export function LoyaltyMetrics({
   redemptionsThisMonth: number
 }) {
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+    <div className="grid grid-cols-3 gap-2.5">
       <MetricCard value={customers} label="Clientes" />
       <MetricCard value={purchasesThisMonth} label="Compras del mes" />
-      <MetricCard value={redemptionsThisMonth} label="Premios canjeados" />
+      <MetricCard
+        value={redemptionsThisMonth}
+        label="Premios canjeados"
+        className="!border-[#FDE68A] !bg-[#FEF9C3]"
+      />
     </div>
   )
 }
@@ -47,7 +51,7 @@ export function LoyaltyMetrics({
 export function LoyaltyTimeline({ events }: { events: ActivityEvent[] }) {
   if (events.length === 0) {
     return (
-      <div className="flex min-h-[180px] items-center justify-center rounded-xl bg-stone-100 px-6 py-10 text-center">
+      <div className="flex min-h-[180px] items-center justify-center rounded-2xl border border-[#E7E5E4] bg-[#F5F5F4] px-6 py-10 text-center">
         <p className="max-w-sm text-sm leading-relaxed text-stone-500">
           Aún no hay actividad. Cuando tus clientes empiecen a escanear el QR,
           vas a ver todo el movimiento acá.
@@ -67,11 +71,19 @@ export function LoyaltyTimeline({ events }: { events: ActivityEvent[] }) {
         return (
           <li
             key={`${event.timestamp}-${event.title}-${event.description}-${index}`}
-            className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-white px-3 py-3 shadow-sm"
+            className="flex items-center gap-3 rounded-2xl border border-[#E7E5E4] bg-white p-3"
           >
+            {timeLabel ? (
+              <time
+                dateTime={iso}
+                className="w-11 shrink-0 text-xs font-semibold tabular-nums text-[#A8A29E]"
+              >
+                {timeLabel}
+              </time>
+            ) : null}
             <span
               aria-hidden
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[color-mix(in_srgb,var(--color-primary,#F97316)_12%,white)] text-lg"
+              className="flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-xl bg-[#FFF7ED] text-base"
             >
               {event.icon}
             </span>
@@ -83,20 +95,12 @@ export function LoyaltyTimeline({ events }: { events: ActivityEvent[] }) {
                 {event.title}
               </div>
               <div
-                className="truncate text-sm text-stone-600"
+                className="truncate text-xs text-stone-500"
                 title={event.description}
               >
                 {event.description}
               </div>
             </div>
-            {timeLabel ? (
-              <time
-                dateTime={iso}
-                className="shrink-0 text-xs font-semibold tabular-nums text-stone-400"
-              >
-                {timeLabel}
-              </time>
-            ) : null}
           </li>
         )
       })}
@@ -116,16 +120,18 @@ export function DashboardHome({
   activity: ActivityEvent[]
 }) {
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
-      <header className="flex flex-col gap-1">
-        <h1 className="text-2xl font-bold tracking-tight text-stone-900">
-          Dashboard
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-[18px]">
+      <header className="flex flex-col gap-0.5">
+        <h1 className="text-[22px] font-bold tracking-tight text-stone-900">
+          Panel
         </h1>
-        <p className="text-sm text-stone-500">Así va tu comercio hoy.</p>
+        <p className="text-[13px] text-stone-500">
+          Así va tu comercio hoy.
+        </p>
       </header>
       <LoyaltyMetrics {...metrics} />
-      <section className="flex flex-col gap-3">
-        <h2 className="text-base font-semibold text-stone-900">
+      <section className="flex flex-col gap-2.5">
+        <h2 className="text-sm font-semibold text-stone-900">
           Actividad reciente
         </h2>
         <LoyaltyTimeline events={activity} />

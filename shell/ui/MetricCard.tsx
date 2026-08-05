@@ -11,10 +11,12 @@ export default function MetricCard({
 }: MetricCardProps) {
   return (
     <div
-      className={`flex flex-col items-center justify-center rounded-xl border border-gray-200 bg-white p-6 shadow-sm ${className}`}
+      className={`flex flex-col gap-2.5 rounded-[18px] border border-[#FED7AA] bg-[#FFF7ED] p-3.5 ${className}`}
     >
-      <div className="text-3xl font-extrabold text-gray-800">{value}</div>
-      <div className="mt-1 text-sm text-gray-500">{label}</div>
+      <div className="text-[22px] font-extrabold leading-none text-stone-900">
+        {value}
+      </div>
+      <div className="text-[11px] leading-snug text-stone-500">{label}</div>
     </div>
   )
 }
