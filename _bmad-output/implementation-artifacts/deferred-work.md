@@ -57,3 +57,11 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-registration-birthday-toggle.md`
   summary: Hit-target del calendar picker depende de ::-webkit-calendar-picker-indicator
   evidence: Solución nativa type=date; Firefox/Safari difieren; no hay date picker custom en el stack
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-shadcn-birthday-datepicker.md`
+  summary: globals.css reescrito por shadcn init (tokens, dark, body) sin suite de regresión visual global
+  evidence: blast radius de init CLI; DatePicker no es el único consumidor
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-shadcn-birthday-datepicker.md`
+  summary: Dual Button primitives (shell/ui/Button vs components/ui/button)
+  evidence: Calendar shadcn depende del button de components/ui; shell Button se mantiene para CTAs brand

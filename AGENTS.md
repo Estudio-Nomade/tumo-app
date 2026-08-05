@@ -30,3 +30,13 @@ Rules:
 - If a change cannot be tested automatically, say so explicitly and get human approval before merging — silent exceptions are not allowed.
 
 These rules exist to cut rework and review churn: tested, BMAD-driven changes are the only path for code in this repo.
+
+## Prefer shadcn/ui for complex UI primitives
+
+Do **not** reinvent calendars, date pickers, dialogs, popovers, selects, dropdown menus, sheets, command palettes, or similar interaction-heavy widgets from scratch (or with raw native controls when UX suffers).
+
+- **Prefer shadcn/ui** already installed in this repo (`components.json`, `components/ui/*`, `npx shadcn@latest add <name>`).
+- Compose primitives (e.g. Calendar + Popover → DatePicker in `shell/ui/`) rather than building custom pickers.
+- Keep brand styling via CSS vars (`--color-primary` / `--primary` set by business layouts). Do not hardcode one-off hex for shared chrome when tokens exist.
+- Simple presentational pieces that already live in `shell/ui/` (Button, Input, MetricCard) may stay custom; do not replace them with shadcn unless there is a clear win.
+- When adding a new shadcn component: install via CLI, wire brand tokens if needed, and cover the integration with a test following project TDD rules.

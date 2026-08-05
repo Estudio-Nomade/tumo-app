@@ -2,8 +2,8 @@
 
 import { FormEvent, useState } from "react"
 import { useParams } from "next/navigation"
-import { Calendar } from "lucide-react"
 import Button from "@/shell/ui/Button"
+import DatePicker from "@/shell/ui/date-picker"
 import Input from "@/shell/ui/Input"
 import LoyaltyCard, {
   type LoyaltyCardData,
@@ -37,8 +37,12 @@ export default function LoyaltyRegistration({
 
   async function onRegister(e: FormEvent) {
     e.preventDefault()
-    setLoading(true)
     setError("")
+    if (birthdayEnabled && !birthday) {
+      setError("Elegí tu fecha de cumpleaños.")
+      return
+    }
+    setLoading(true)
     try {
       const res = await fetch("/api/loyalty/customers", {
         method: "POST",
@@ -189,24 +193,16 @@ export default function LoyaltyRegistration({
                 </button>
               </div>
               {birthdayEnabled ? (
-                <div
-                  id="birthday-field"
-                  className="relative flex h-[52px] w-full items-center overflow-hidden rounded-[14px] border border-[#E7E5E4] bg-white px-4 focus-within:ring-2 focus-within:ring-[var(--color-primary,#F97316)]/30"
-                >
-                  <input
+                <div id="birthday-field" className="w-full">
+                  <DatePicker
                     id="birthday"
                     name="birthday"
-                    type="date"
                     required
                     disabled={loading}
                     aria-labelledby="birthday-label"
                     value={birthday}
-                    onChange={(e) => setBirthday(e.target.value)}
-                    className="h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] text-stone-900 outline-none [color-scheme:light] focus:ring-0 disabled:opacity-70 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
-                  />
-                  <Calendar
-                    aria-hidden
-                    className="pointer-events-none h-[18px] w-[18px] shrink-0 text-[var(--color-primary,#F97316)]"
+                    onChange={setBirthday}
+                    placeholder="Elegí tu fecha"
                   />
                 </div>
               ) : null}
