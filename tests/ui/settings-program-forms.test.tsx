@@ -68,4 +68,18 @@ describe("owner settings + program forms", () => {
     expect(prog).toContain("parseProgramUpdate")
     expect(prog).toContain("updateBusinessProgram")
   })
+
+  test("settings permite subir logo via Supabase Storage", () => {
+    const form = read("shell/ui/settings-form.tsx")
+    expect(form).toContain("initialLogo")
+    expect(form).toContain("/api/business/logo")
+    expect(form).toContain('type="file"')
+    expect(form).toContain("Subir logo")
+    const page = read("app/(dashboard)/[slug]/dashboard/settings/page.tsx")
+    expect(page).toContain("initialLogo={business.logo}")
+    const route = read("app/api/business/logo/route.ts")
+    expect(route).toContain("export async function POST")
+    expect(route).toContain("uploadBusinessLogo")
+    expect(route).toContain("createSupabaseLogoStorage")
+  })
 })

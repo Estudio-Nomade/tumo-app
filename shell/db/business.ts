@@ -76,6 +76,29 @@ export async function updateBusinessBrand(
   return business ?? null
 }
 
+export async function updateBusinessLogo(
+  businessId: string,
+  logoUrl: string
+): Promise<Business | null> {
+  const [business] = await sql<Business[]>`
+    UPDATE businesses
+    SET logo = ${logoUrl}
+    WHERE id = ${businessId}
+    RETURNING
+      id,
+      name,
+      slug,
+      logo,
+      primary_color,
+      secondary_color,
+      active_modules,
+      purchases_needed,
+      reward_name
+  `
+
+  return business ?? null
+}
+
 export async function updateBusinessProgram(
   businessId: string,
   patch: ProgramPatch

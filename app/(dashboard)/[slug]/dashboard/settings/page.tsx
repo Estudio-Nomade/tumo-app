@@ -33,6 +33,7 @@ export default async function DashboardSettingsPage({ params }: PageProps) {
     <SettingsForm
       slug={slug}
       initialName={business.name}
+      initialLogo={business.logo}
       initialPrimary={business.primary_color}
       initialSecondary={business.secondary_color}
       rewardName={business.reward_name}

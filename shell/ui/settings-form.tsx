@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import {
+  Camera,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -54,6 +55,7 @@ function colorLabel(hex: string): string {
 type Props = {
   slug: string
   initialName: string
+  initialLogo: string | null
   initialPrimary: string
   initialSecondary: string
   rewardName: string
@@ -72,6 +74,7 @@ function normalizeHex(value: string): string {
 export default function SettingsForm({
   slug,
   initialName,
+  initialLogo,
   initialPrimary,
   initialSecondary,
   rewardName,
@@ -82,6 +85,7 @@ export default function SettingsForm({
 }: Props) {
   const router = useRouter()
   const [name, setName] = useState(initialName)
+  const [logo, setLogo] = useState<string | null>(initialLogo)
   const [primary, setPrimary] = useState(normalizeHex(initialPrimary))
   const [secondary, setSecondary] = useState(normalizeHex(initialSecondary))
   const [savedName, setSavedName] = useState(initialName)
@@ -90,10 +94,12 @@ export default function SettingsForm({
     normalizeHex(initialSecondary)
   )
   const [saving, setSaving] = useState(false)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
   const [error, setError] = useState("")
   const [toast, setToast] = useState("")
   const [clientPreviewOpen, setClientPreviewOpen] = useState(false)
   const [previewModuleId, setPreviewModuleId] = useState<string | null>(null)
+  const logoInputRef = useRef<HTMLInputElement>(null)
 
   const clientPreviews = useMemo(
     () => getClientBrandPreviews(activeModuleIds),
@@ -162,6 +168,34 @@ export default function SettingsForm({
     }
   }
 
+  async function onLogoSelected(file: File | null) {
+    if (!file || uploadingLogo) return
+    setUploadingLogo(true)
+    setError("")
+    try {
+      const body = new FormData()
+      body.append("file", file)
+      const res = await fetch("/api/business/logo", {
+        method: "POST",
+        body,
+      })
+      const data = (await res.json()) as { error?: string; logo?: string }
+      if (!res.ok) {
+        setError(data.error ?? "No se pudo subir el logo.")
+        return
+      }
+      if (data.logo) setLogo(data.logo)
+      setToast("Logo actualizado")
+      window.setTimeout(() => setToast(""), 2500)
+      router.refresh()
+    } catch {
+      setError("No se pudo subir el logo. Probá de nuevo.")
+    } finally {
+      setUploadingLogo(false)
+      if (logoInputRef.current) logoInputRef.current.value = ""
+    }
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-lg flex-col gap-5">
       <header className="flex flex-col gap-0.5">
@@ -202,19 +236,73 @@ export default function SettingsForm({
           Marca
         </div>
 
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-medium text-stone-800">Logo</span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => logoInputRef.current?.click()}
+              disabled={uploadingLogo}
+              className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#E7E5E4] bg-[#FAFAF9] transition hover:border-[var(--color-primary,#F97316)] disabled:opacity-60"
+              aria-label="Subir logo del comercio"
+            >
+              {logo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={logo}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span
+                  className="flex h-full w-full items-center justify-center text-xl font-bold text-white"
+                  style={{
+                    backgroundColor: primaryOk ? primary : "#F97316",
+                  }}
+                >
+                  {previewInitial}
+                </span>
+              )}
+              <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 bg-black/45 py-0.5 text-[10px] font-semibold text-white">
+                <Camera className="h-3 w-3" aria-hidden />
+                {uploadingLogo ? "…" : "Subir"}
+              </span>
+            </button>
+            <div className="min-w-0 flex-1 text-xs leading-relaxed text-stone-500">
+              JPEG, PNG o WebP. Máximo 2 MB. Se reemplaza el logo anterior.
+            </div>
+          </div>
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={(e) => onLogoSelected(e.target.files?.[0] ?? null)}
+          />
+        </div>
+
         <button
           type="button"
           onClick={openClientPreview}
           disabled={clientPreviews.length === 0}
           className="flex w-full items-center gap-3 rounded-2xl border-2 border-[#E7E5E4] bg-[#FAFAF9] p-3 text-left transition active:bg-stone-100 disabled:opacity-50"
         >
-          <div
-            aria-hidden
-            className="flex h-12 w-12 items-center justify-center rounded-[14px] text-lg font-bold text-white"
-            style={{ backgroundColor: primaryOk ? primary : "#F97316" }}
-          >
-            {previewInitial}
-          </div>
+          {logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logo}
+              alt=""
+              className="h-12 w-12 rounded-[14px] object-cover"
+            />
+          ) : (
+            <div
+              aria-hidden
+              className="flex h-12 w-12 items-center justify-center rounded-[14px] text-lg font-bold text-white"
+              style={{ backgroundColor: primaryOk ? primary : "#F97316" }}
+            >
+              {previewInitial}
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <div className="truncate text-sm font-bold text-stone-900">
               {name.trim() || "Tu comercio"}
