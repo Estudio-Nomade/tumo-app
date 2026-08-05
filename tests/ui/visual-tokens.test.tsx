@@ -62,12 +62,15 @@ describe("visual tokens vs Pencil", () => {
     expect(src).toContain("text-[10px]")
   })
 
-  test("dashboard home has goal gradient card", () => {
+  test("dashboard home has goal gradient card without mock people", () => {
     const src = read("modules/loyalty/dashboard/widgets.tsx")
     expect(src).toContain("Meta de la semana")
     expect(src).toContain("from-[var(--color-primary")
     expect(src).toContain("to-[var(--color-primary-deep,#EA580C)]")
     expect(src).toContain("Top clientes")
+    expect(src).not.toContain("MOCK_TOP_CUSTOMERS")
+    expect(src).not.toContain("María López")
+    expect(src).not.toContain('trend="+12%"')
   })
 
   test("employee panel search uses surface-soft bar styling", () => {

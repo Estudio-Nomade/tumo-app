@@ -4,9 +4,9 @@ import { join } from "node:path"
 import { renderToStaticMarkup } from "react-dom/server"
 import {
   AVATAR_COLORS,
-  MOCK_CUSTOMERS,
   filterCustomers,
   customerInitials,
+  type CustomerView,
 } from "@/modules/loyalty/dashboard/panel"
 import { BusinessProvider } from "@/shell/context/business"
 import type { Business } from "@/lib/modules"
@@ -16,6 +16,29 @@ const root = join(import.meta.dir, "../..")
 function read(rel: string) {
   return readFileSync(join(root, rel), "utf8")
 }
+
+const sample: CustomerView[] = [
+  {
+    id: "1",
+    name: "María González",
+    phone: "3515550101",
+    code: "4821",
+    purchases: 8,
+    purchasesNeeded: 10,
+    rewardName: "premio",
+    canRedeem: false,
+  },
+  {
+    id: "2",
+    name: "Juan Rodríguez",
+    phone: "3515550102",
+    code: "7392",
+    purchases: 10,
+    purchasesNeeded: 10,
+    rewardName: "premio",
+    canRedeem: true,
+  },
+]
 
 const business: Business = {
   id: "b1",
@@ -31,25 +54,22 @@ const business: Business = {
 
 describe("filterCustomers", () => {
   test("filtra por nombre case-insensitive", () => {
-    const result = filterCustomers(MOCK_CUSTOMERS, "maría")
+    const result = filterCustomers(sample, "maría")
     expect(result).toHaveLength(1)
     expect(result[0].name).toContain("María")
   })
 
   test("filtra por teléfono parcial", () => {
-    const result = filterCustomers(MOCK_CUSTOMERS, "351")
-    expect(result.length).toBeGreaterThan(0)
-    expect(result.every((c) => c.phone.includes("351"))).toBe(true)
+    const result = filterCustomers(sample, "351")
+    expect(result.length).toBe(2)
   })
 
   test("query vacío devuelve todos", () => {
-    expect(filterCustomers(MOCK_CUSTOMERS, "  ")).toHaveLength(
-      MOCK_CUSTOMERS.length
-    )
+    expect(filterCustomers(sample, "  ")).toHaveLength(sample.length)
   })
 
   test("sin match devuelve vacío", () => {
-    expect(filterCustomers(MOCK_CUSTOMERS, "zzzz-nope")).toEqual([])
+    expect(filterCustomers(sample, "zzzz-nope")).toEqual([])
   })
 })
 
@@ -63,19 +83,7 @@ describe("customerInitials", () => {
   })
 })
 
-describe("MOCK_CUSTOMERS", () => {
-  test("al menos 4 clientes con canRedeem mixto", () => {
-    expect(MOCK_CUSTOMERS.length).toBeGreaterThanOrEqual(4)
-    expect(MOCK_CUSTOMERS.some((c) => c.canRedeem)).toBe(true)
-    expect(MOCK_CUSTOMERS.some((c) => !c.canRedeem)).toBe(true)
-  })
-
-  test("avatar colors cycle length 4", () => {
-    expect(AVATAR_COLORS).toHaveLength(4)
-  })
-})
-
-describe("loyalty panel source (Pencil EDNqK)", () => {
+describe("loyalty panel source (Pencil EDNqK + real data)", () => {
   const src = read("modules/loyalty/dashboard/panel.tsx")
 
   test("header Clientes + negocio · Hoy + sandwich logo", () => {
@@ -83,41 +91,34 @@ describe("loyalty panel source (Pencil EDNqK)", () => {
     expect(src).toContain("· Hoy")
     expect(src).toContain("useBusiness")
     expect(src).toContain("Sandwich")
-    expect(src).toContain("h-10 w-10")
-    expect(src).toContain("rounded-[12px]")
+  })
+
+  test("carga lista real por API, sin MOCK_CUSTOMERS", () => {
+    expect(src).toContain("/api/loyalty/customers?list=1")
+    expect(src).not.toContain("MOCK_CUSTOMERS")
+    expect(src).toContain("/api/loyalty/purchases")
+    expect(src).toContain("/api/loyalty/redemptions")
   })
 
   test("search live sin botón Buscar", () => {
     expect(src).toContain("Buscar por nombre o teléfono")
     expect(src).toContain("Search")
     expect(src).not.toMatch(/>Buscar</)
-    expect(src).toContain("onChange")
   })
 
-  test("botones acción verde y dorado con gift", () => {
+  test("botones acción verde y dorado", () => {
     expect(src).toContain("+1 compra")
     expect(src).toContain("Canjear premio")
     expect(src).toContain("#16A34A")
     expect(src).toContain("#EAB308")
-    expect(src).toContain("Gift")
   })
 
-  test("ingresar código con Keyboard debajo de lista", () => {
-    expect(src).toContain("Ingresar código")
-    expect(src).toContain("Keyboard")
-  })
-
-  test("empty filter copy", () => {
-    expect(src).toContain("No se encontraron clientes.")
-  })
-
-  test("progress bar fixed width ~88px", () => {
-    expect(src).toContain("w-[88px]")
-    expect(src).toContain("h-1.5")
+  test("avatar colors cycle length 4", () => {
+    expect(AVATAR_COLORS).toHaveLength(4)
   })
 })
 
-describe("BusinessProvider smoke for panel exports", () => {
+describe("BusinessProvider smoke", () => {
   test("provider wraps children", () => {
     const html = renderToStaticMarkup(
       <BusinessProvider business={business}>

@@ -87,3 +87,75 @@ export async function getRecentActivity(
     .sort((a, b) => b.timestamp - a.timestamp)
     .slice(0, limit)
 }
+
+export type TopCustomerRow = {
+  id: string
+  name: string
+  purchases: number
+  purchasesNeeded: number
+  rewardName: string
+  canRedeem: boolean
+}
+
+export async function getTopCustomers(
+  deps: MetricsDeps,
+  input: {
+    businessId: string
+    purchasesNeeded: number
+    rewardName: string
+    limit?: number
+  }
+): Promise<TopCustomerRow[]> {
+  const businessId = input.businessId
+  const purchasesNeeded = input.purchasesNeeded
+  const rewardName = input.rewardName
+  const limit =
+    Number.isFinite(input.limit) && (input.limit as number) > 0
+      ? Math.min(Math.floor(input.limit as number), 20)
+      : 5
+
+  const rows = (await deps.sql`
+    SELECT id, name, purchases
+    FROM customers
+    WHERE business_id = ${businessId}
+    ORDER BY purchases DESC, total_purchases DESC, name ASC
+    LIMIT ${limit}
+  `) as { id: string; name: string; purchases: number }[]
+
+  return rows.map((row) => {
+    const purchases = Number(row.purchases ?? 0)
+    return {
+      id: row.id,
+      name: row.name,
+      purchases,
+      purchasesNeeded,
+      rewardName,
+      canRedeem: purchases >= purchasesNeeded,
+    }
+  })
+}
+
+export async function getWeeklyRedemptions(
+  deps: MetricsDeps,
+  input: { businessId: string }
+): Promise<{ thisWeek: number; lastWeek: number }> {
+  const { businessId } = input
+
+  const [thisWeek] = (await deps.sql`
+    SELECT COUNT(*)::int AS count FROM redemptions
+    WHERE business_id = ${businessId}
+      AND created_at >= date_trunc('week', now())
+  `) as CountRow[]
+
+  const [lastWeek] = (await deps.sql`
+    SELECT COUNT(*)::int AS count FROM redemptions
+    WHERE business_id = ${businessId}
+      AND created_at >= date_trunc('week', now()) - interval '7 days'
+      AND created_at < date_trunc('week', now())
+  `) as CountRow[]
+
+  return {
+    thisWeek: Number(thisWeek?.count ?? 0),
+    lastWeek: Number(lastWeek?.count ?? 0),
+  }
+}

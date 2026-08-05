@@ -1,6 +1,7 @@
 import { describe, expect, mock, test } from "bun:test"
 import {
   getCustomer,
+  listCustomers,
   registerCustomer,
   type CustomerDeps,
 } from "@/modules/loyalty/api/customers"
@@ -164,5 +165,87 @@ describe("getCustomer", () => {
 
     const result = await getCustomer(deps, { code: "0000", slug: "carri" })
     expect(result.status).toBe(404)
+  })
+})
+
+describe("listCustomers", () => {
+  test("lista clientes del negocio con canRedeem", async () => {
+    const sql = mock(() =>
+      Promise.resolve([
+        { ...customerRow, purchases: 10 },
+        {
+          id: "cust-2",
+          name: "Ana",
+          phone: "+549222",
+          code: "9999",
+          purchases: 2,
+          total_purchases: 2,
+          business_id: "biz-1",
+        },
+      ])
+    )
+    const deps = makeDeps({ sql: sql as unknown as CustomerDeps["sql"] })
+
+    const result = await listCustomers(deps, {
+      businessId: "biz-1",
+      purchasesNeeded: 10,
+      rewardName: "hamburguesa gratis",
+    })
+
+    expect(result.status).toBe(200)
+    expect(Array.isArray(result.body.customers)).toBe(true)
+    const customers = result.body.customers as {
+      id: string
+      canRedeem: boolean
+      purchasesNeeded: number
+    }[]
+    expect(customers).toHaveLength(2)
+    expect(customers[0]).toMatchObject({
+      id: "cust-1",
+      canRedeem: true,
+      purchasesNeeded: 10,
+      rewardName: "hamburguesa gratis",
+    })
+    expect(customers[1].canRedeem).toBe(false)
+  })
+
+  test("filtra por query nombre o phone o code", async () => {
+    const sql = mock((strings: TemplateStringsArray, ...values: unknown[]) => {
+      const q = strings.join("?")
+      expect(q.toLowerCase()).toContain("ilike")
+      expect(values.some((v) => String(v).includes("ana"))).toBe(true)
+      return Promise.resolve([
+        {
+          id: "cust-2",
+          name: "Ana",
+          phone: "+549222",
+          code: "9999",
+          purchases: 2,
+          total_purchases: 2,
+          business_id: "biz-1",
+        },
+      ])
+    })
+    const deps = makeDeps({ sql: sql as unknown as CustomerDeps["sql"] })
+
+    const result = await listCustomers(deps, {
+      businessId: "biz-1",
+      purchasesNeeded: 10,
+      rewardName: "premio",
+      query: "ana",
+    })
+
+    expect(result.status).toBe(200)
+    expect((result.body.customers as unknown[]).length).toBe(1)
+  })
+
+  test("businessId vacío → 400", async () => {
+    const deps = makeDeps()
+    const result = await listCustomers(deps, {
+      businessId: "",
+      purchasesNeeded: 10,
+      rewardName: "x",
+    })
+    expect(result.status).toBe(400)
   })
 })

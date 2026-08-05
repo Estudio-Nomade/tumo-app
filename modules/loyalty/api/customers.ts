@@ -138,3 +138,62 @@ export async function getCustomer(
 
   return { status: 200, body: toCustomerBody(rows[0], business) }
 }
+
+export async function listCustomers(
+  deps: Pick<CustomerDeps, "sql">,
+  input: {
+    businessId: string
+    purchasesNeeded: number
+    rewardName: string
+    query?: string
+    limit?: number
+  }
+): Promise<JsonResult> {
+  const businessId = input.businessId?.trim() ?? ""
+  if (!businessId) {
+    return { status: 400, body: { error: "businessId es requerido." } }
+  }
+
+  const limit =
+    Number.isFinite(input.limit) && (input.limit as number) > 0
+      ? Math.min(Math.floor(input.limit as number), 200)
+      : 100
+  const q = input.query?.trim() ?? ""
+
+  let rows: CustomerRow[]
+  if (q) {
+    const pattern = `%${q}%`
+    rows = (await deps.sql`
+      SELECT id, name, phone, code, purchases, total_purchases, business_id
+      FROM customers
+      WHERE business_id = ${businessId}
+        AND (
+          name ILIKE ${pattern}
+          OR phone ILIKE ${pattern}
+          OR code ILIKE ${pattern}
+        )
+      ORDER BY purchases DESC, name ASC
+      LIMIT ${limit}
+    `) as CustomerRow[]
+  } else {
+    rows = (await deps.sql`
+      SELECT id, name, phone, code, purchases, total_purchases, business_id
+      FROM customers
+      WHERE business_id = ${businessId}
+      ORDER BY purchases DESC, name ASC
+      LIMIT ${limit}
+    `) as CustomerRow[]
+  }
+
+  const businessLike = {
+    purchases_needed: input.purchasesNeeded,
+    reward_name: input.rewardName,
+  } as Business
+
+  return {
+    status: 200,
+    body: {
+      customers: rows.map((row) => toCustomerBody(row, businessLike)),
+    },
+  }
+}

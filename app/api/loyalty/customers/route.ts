@@ -1,9 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server"
 import {
   getCustomer,
+  listCustomers,
   registerCustomer,
 } from "@/modules/loyalty/api/customers"
 import { customerDeps } from "@/modules/loyalty/lib/default-deps"
+import { validateSession } from "@/shell/auth/session"
+import { getBusinessById } from "@/shell/db/business"
 
 export async function POST(req: NextRequest) {
   let body: {
@@ -40,6 +43,37 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
+  const wantsList = searchParams.get("list") === "1"
+
+  if (wantsList) {
+    const token = req.cookies.get("session_token")?.value
+    if (!token) {
+      return NextResponse.json({ error: "No autenticado." }, { status: 401 })
+    }
+    const session = await validateSession(token)
+    if (!session) {
+      return NextResponse.json({ error: "No autenticado." }, { status: 401 })
+    }
+
+    const business = await getBusinessById(session.businessId)
+    if (!business) {
+      return NextResponse.json(
+        { error: "Negocio no encontrado" },
+        { status: 404 }
+      )
+    }
+
+    const limit = Number(searchParams.get("limit") ?? "100")
+    const result = await listCustomers(customerDeps, {
+      businessId: session.businessId,
+      purchasesNeeded: business.purchases_needed,
+      rewardName: business.reward_name,
+      query: searchParams.get("q") ?? undefined,
+      limit: Number.isFinite(limit) ? limit : 100,
+    })
+    return NextResponse.json(result.body, { status: result.status })
+  }
+
   const result = await getCustomer(customerDeps, {
     code: searchParams.get("code") ?? undefined,
     phone: searchParams.get("phone") ?? undefined,

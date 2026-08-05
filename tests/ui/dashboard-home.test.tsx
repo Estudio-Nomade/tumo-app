@@ -6,64 +6,114 @@ import {
   TopCustomers,
 } from "@/modules/loyalty/dashboard/widgets"
 
-describe("DashboardHome", () => {
-  const metrics = {
-    customers: 128,
-    purchasesThisMonth: 47,
-    redemptionsThisMonth: 9,
-  }
+const metrics = {
+  customers: 128,
+  purchasesThisMonth: 47,
+  redemptionsThisMonth: 9,
+}
 
+const topCustomers = [
+  {
+    id: "1",
+    name: "María Real",
+    purchases: 9,
+    purchasesNeeded: 10,
+    rewardName: "premio",
+    canRedeem: false,
+  },
+  {
+    id: "2",
+    name: "Juan Listo",
+    purchases: 10,
+    purchasesNeeded: 10,
+    rewardName: "premio",
+    canRedeem: true,
+  },
+]
+
+describe("DashboardHome", () => {
   test("saludo personalizado con nombre", () => {
     const html = renderToStaticMarkup(
-      <DashboardHome metrics={metrics} employeeName="Nico" />
+      <DashboardHome
+        metrics={metrics}
+        employeeName="Nico"
+        topCustomers={topCustomers}
+        weeklyGoal={{ thisWeek: 4, lastWeek: 7 }}
+      />
     )
     expect(html).toContain("Panel")
     expect(html).toContain("Hola, Nico. Así va tu comercio hoy.")
   })
 
   test("saludo sin nombre usa fallback", () => {
-    const html = renderToStaticMarkup(<DashboardHome metrics={metrics} />)
+    const html = renderToStaticMarkup(
+      <DashboardHome
+        metrics={metrics}
+        topCustomers={[]}
+        weeklyGoal={{ thisWeek: 0, lastWeek: 0 }}
+      />
+    )
     expect(html).toContain("Hola. Así va tu comercio hoy.")
   })
 
-  test("incluye meta semanal y top clientes, no actividad", () => {
+  test("incluye meta y top con datos reales pasados por props", () => {
     const html = renderToStaticMarkup(
-      <DashboardHome metrics={metrics} employeeName="Nico" />
+      <DashboardHome
+        metrics={metrics}
+        employeeName="Nico"
+        topCustomers={topCustomers}
+        weeklyGoal={{ thisWeek: 4, lastWeek: 7 }}
+      />
     )
     expect(html).toContain("Meta de la semana")
-    expect(html).toContain("Top clientes")
+    expect(html).toContain("4 / 7 canjes")
+    expect(html).toContain("María Real")
+    expect(html).toContain("Juan Listo")
     expect(html).not.toContain("Actividad reciente")
+    expect(html).not.toContain("+12%")
   })
 
-  test("métricas con labels Pencil", () => {
+  test("métricas con labels Pencil sin trends inventados", () => {
     const html = renderToStaticMarkup(
-      <DashboardHome metrics={metrics} employeeName="Nico" />
+      <DashboardHome
+        metrics={metrics}
+        employeeName="Nico"
+        topCustomers={topCustomers}
+        weeklyGoal={{ thisWeek: 1, lastWeek: 0 }}
+      />
     )
     expect(html).toContain("Clientes")
     expect(html).toContain("Compras del mes")
     expect(html).toContain("Premios canjeados")
-    expect(html).toContain("+12%")
+    expect(html).not.toContain("+12%")
+    expect(html).not.toContain("+8%")
   })
 })
 
 describe("GoalCard", () => {
-  test("muestra progreso y mensaje eta", () => {
+  test("muestra progreso real vs target", () => {
     const html = renderToStaticMarkup(
-      <GoalCard current={18} target={25} eta="sábado" />
+      <GoalCard current={4} target={7} />
     )
     expect(html).toContain("Meta de la semana")
-    expect(html).toContain("18 / 25 canjes")
-    expect(html).toContain("A este ritmo, cumplís la meta el sábado.")
-    expect(html).toContain("from-[var(--color-primary")
-    expect(html).toContain("to-[var(--color-primary-deep,#EA580C)]")
+    expect(html).toContain("4 / 7 canjes")
+    expect(html).toContain("semana pasada")
   })
 })
 
 describe("TopCustomers", () => {
-  test("lista clientes mock con acciones", () => {
-    const html = renderToStaticMarkup(<TopCustomers />)
+  test("lista clientes reales", () => {
+    const html = renderToStaticMarkup(
+      <TopCustomers customers={topCustomers} />
+    )
     expect(html).toContain("Top clientes")
-    expect(html).toContain("Ver todos")
-    expect(html).toMatch(/Canjear|\+1 compra/)
+    expect(html).toContain("María Real")
+    expect(html).toContain("Listo")
+  })
+
+  test("empty state sin inventar gente", () => {
+    const html = renderToStaticMarkup(<TopCustomers customers={[]} />)
+    expect(html).toContain("Todavía no hay clientes")
+    expect(html).not.toContain("María López")
   })
 })

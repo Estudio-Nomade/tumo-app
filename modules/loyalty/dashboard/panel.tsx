@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { Gift, Keyboard, Sandwich, Search } from "lucide-react"
 import { useBusiness } from "@/shell/context/business"
 
@@ -21,49 +21,6 @@ export const AVATAR_COLORS = [
   "#F5F5F4",
   "#EFF6FF",
 ] as const
-
-export const MOCK_CUSTOMERS: CustomerView[] = [
-  {
-    id: "1",
-    name: "María González",
-    phone: "3515550101",
-    code: "4821",
-    purchases: 8,
-    purchasesNeeded: 10,
-    rewardName: "hamburguesa gratis",
-    canRedeem: false,
-  },
-  {
-    id: "2",
-    name: "Juan Rodríguez",
-    phone: "3515550102",
-    code: "7392",
-    purchases: 10,
-    purchasesNeeded: 10,
-    rewardName: "hamburguesa gratis",
-    canRedeem: true,
-  },
-  {
-    id: "3",
-    name: "Pedro López",
-    phone: "3515550103",
-    code: "1056",
-    purchases: 3,
-    purchasesNeeded: 10,
-    rewardName: "hamburguesa gratis",
-    canRedeem: false,
-  },
-  {
-    id: "4",
-    name: "Sofía Márquez",
-    phone: "3515550104",
-    code: "6284",
-    purchases: 6,
-    purchasesNeeded: 10,
-    rewardName: "hamburguesa gratis",
-    canRedeem: false,
-  },
-]
 
 export function filterCustomers(
   customers: CustomerView[],
@@ -91,60 +48,115 @@ export default function LoyaltyPanel() {
   const [query, setQuery] = useState("")
   const [codeMode, setCodeMode] = useState(false)
   const [code, setCode] = useState("")
-  const [customers, setCustomers] = useState<CustomerView[]>(MOCK_CUSTOMERS)
-  const [booting, setBooting] = useState(true)
+  const [customers, setCustomers] = useState<CustomerView[]>([])
+  const [loading, setLoading] = useState(true)
   const [actingId, setActingId] = useState<string | null>(null)
   const [error, setError] = useState("")
   const [toast, setToast] = useState("")
   const [highlightId, setHighlightId] = useState<string | null>(null)
-
-  useEffect(() => {
-    const t = window.setTimeout(() => setBooting(false), 500)
-    return () => window.clearTimeout(t)
-  }, [])
 
   function showToast(msg: string) {
     setToast(msg)
     window.setTimeout(() => setToast(""), 2500)
   }
 
+  const loadCustomers = useCallback(async () => {
+    setLoading(true)
+    setError("")
+    try {
+      const res = await fetch("/api/loyalty/customers?list=1&limit=100")
+      const data = (await res.json()) as {
+        customers?: CustomerView[]
+        error?: string
+      }
+      if (!res.ok) {
+        setError(data.error ?? "No se pudieron cargar los clientes.")
+        setCustomers([])
+        return
+      }
+      setCustomers(Array.isArray(data.customers) ? data.customers : [])
+    } catch {
+      setError("No se pudieron cargar los clientes.")
+      setCustomers([])
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadCustomers()
+  }, [loadCustomers])
+
   const visible = useMemo(
     () => filterCustomers(customers, query),
     [customers, query]
   )
 
-  function addVisit(id: string) {
+  async function addVisit(id: string) {
     setActingId(id)
     setError("")
-    setCustomers((prev) =>
-      prev.map((c) => {
-        if (c.id !== id) return c
-        const purchases = Math.min(c.purchases + 1, c.purchasesNeeded)
-        return {
-          ...c,
-          purchases,
-          canRedeem: purchases >= c.purchasesNeeded,
-        }
+    try {
+      const res = await fetch("/api/loyalty/purchases", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customerId: id }),
       })
-    )
-    showToast("¡Visita sumada!")
-    setActingId(null)
+      const data = (await res.json()) as CustomerView & { error?: string }
+      if (!res.ok) {
+        setError(data.error ?? "No se pudo sumar la visita.")
+        return
+      }
+      setCustomers((prev) =>
+        prev.map((c) =>
+          c.id === id
+            ? {
+                ...c,
+                ...data,
+                canRedeem: Boolean(
+                  data.canRedeem ?? data.purchases >= data.purchasesNeeded
+                ),
+              }
+            : c
+        )
+      )
+      showToast("¡Visita sumada!")
+    } catch {
+      setError("No se pudo sumar la visita.")
+    } finally {
+      setActingId(null)
+    }
   }
 
-  function redeem(id: string) {
+  async function redeem(id: string) {
     const target = customers.find((c) => c.id === id)
     if (!target) return
     setActingId(id)
     setError("")
-    setCustomers((prev) =>
-      prev.map((c) =>
-        c.id === id
-          ? { ...c, purchases: 0, canRedeem: false }
-          : c
+    try {
+      const res = await fetch("/api/loyalty/redemptions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ customerId: id }),
+      })
+      const data = (await res.json()) as {
+        success?: boolean
+        error?: string
+      }
+      if (!res.ok) {
+        setError(data.error ?? "No se pudo canjear.")
+        return
+      }
+      setCustomers((prev) =>
+        prev.map((c) =>
+          c.id === id ? { ...c, purchases: 0, canRedeem: false } : c
+        )
       )
-    )
-    showToast(`¡${target.rewardName} canjeado!`)
-    setActingId(null)
+      showToast(`¡${target.rewardName} canjeado!`)
+    } catch {
+      setError("No se pudo canjear.")
+    } finally {
+      setActingId(null)
+    }
   }
 
   function submitCode() {
@@ -225,13 +237,17 @@ export default function LoyaltyPanel() {
         </p>
       ) : null}
 
-      {booting ? (
+      {loading ? (
         <div className="flex min-h-[180px] items-center justify-center rounded-2xl bg-[#F5F5F4] px-6 py-8 text-center">
           <p className="text-sm font-medium text-stone-500">Cargando…</p>
         </div>
       ) : (
         <ul className="flex max-h-[min(52vh,420px)] flex-col gap-2.5 overflow-y-auto">
-          {visible.length === 0 ? (
+          {customers.length === 0 ? (
+            <li className="flex min-h-[120px] items-center justify-center rounded-2xl bg-[#F5F5F4] px-6 py-8 text-center text-sm text-stone-500">
+              Todavía no hay clientes registrados.
+            </li>
+          ) : visible.length === 0 ? (
             <li className="flex min-h-[120px] items-center justify-center rounded-2xl bg-[#F5F5F4] px-6 py-8 text-center text-sm text-stone-500">
               No se encontraron clientes.
             </li>
@@ -284,7 +300,7 @@ export default function LoyaltyPanel() {
                     <button
                       type="button"
                       disabled={acting}
-                      onClick={() => redeem(customer.id)}
+                      onClick={() => void redeem(customer.id)}
                       className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#EAB308] px-3 py-2.5 text-xs font-bold text-white disabled:opacity-70"
                     >
                       <Gift size={14} strokeWidth={2.5} aria-hidden />
@@ -294,7 +310,7 @@ export default function LoyaltyPanel() {
                     <button
                       type="button"
                       disabled={acting}
-                      onClick={() => addVisit(customer.id)}
+                      onClick={() => void addVisit(customer.id)}
                       className="shrink-0 rounded-full bg-[#16A34A] px-3 py-2.5 text-xs font-bold text-white disabled:opacity-70"
                     >
                       +1 compra

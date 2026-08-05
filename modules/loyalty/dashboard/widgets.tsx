@@ -1,4 +1,5 @@
 import type { ActivityEvent } from "@/lib/modules"
+import type { TopCustomerRow } from "@/modules/loyalty/api/metrics"
 import MetricCard from "@/shell/ui/MetricCard"
 import { Gift, ShoppingBag, Users } from "lucide-react"
 
@@ -63,6 +64,13 @@ export function groupActivityByDay(events: ActivityEvent[]) {
   return groups
 }
 
+function initialsOf(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return "?"
+  if (parts.length === 1) return parts[0][0]!.toUpperCase()
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+}
+
 export function LoyaltyMetrics({
   customers,
   purchasesThisMonth,
@@ -77,7 +85,6 @@ export function LoyaltyMetrics({
       <MetricCard
         value={customers}
         label="Clientes"
-        trend="+12%"
         icon={
           <Users
             size={18}
@@ -89,7 +96,6 @@ export function LoyaltyMetrics({
       <MetricCard
         value={purchasesThisMonth}
         label="Compras del mes"
-        trend="+8%"
         icon={
           <ShoppingBag
             size={18}
@@ -102,7 +108,6 @@ export function LoyaltyMetrics({
         value={redemptionsThisMonth}
         label="Premios canjeados"
         variant="highlight"
-        trend="+3%"
         icon={<Gift size={18} className="text-[#D97706]" strokeWidth={2} />}
       />
     </div>
@@ -110,13 +115,11 @@ export function LoyaltyMetrics({
 }
 
 export function GoalCard({
-  current = 18,
-  target = 25,
-  eta = "sábado",
+  current,
+  target,
 }: {
-  current?: number
-  target?: number
-  eta?: string
+  current: number
+  target: number
 }) {
   const safeCurrent = Number.isFinite(current) ? Math.max(0, current) : 0
   const safeTarget = Number.isFinite(target) && target > 0 ? target : 0
@@ -125,88 +128,84 @@ export function GoalCard({
       ? Math.min(100, Math.round((safeCurrent / safeTarget) * 100))
       : 0
 
+  const remaining = Math.max(0, safeTarget - safeCurrent)
+  const message =
+    safeTarget === 0
+      ? "Todavía no hay canjes esta semana."
+      : safeCurrent >= safeTarget
+        ? "¡Meta de la semana cumplida!"
+        : remaining === 1
+          ? "Te falta 1 canje para igualar la semana pasada."
+          : `Te faltan ${remaining} canjes para igualar la semana pasada.`
+
   return (
     <section className="flex flex-col gap-3 rounded-[20px] bg-gradient-to-b from-[var(--color-primary,#F97316)] to-[var(--color-primary-deep,#EA580C)] p-[18px]">
       <div className="flex items-center justify-between gap-2">
         <span className="text-[13px] text-[#FFEDD5]">Meta de la semana</span>
         <span className="text-[13px] font-bold text-white">
-          {safeCurrent} / {safeTarget || target} canjes
+          {safeCurrent} / {safeTarget || "—"} canjes
         </span>
       </div>
-      <div className="h-3 w-full overflow-hidden rounded-full bg-[#FFFFFF40]">
-        <div
-          className="h-full rounded-full bg-[var(--color-secondary,#FACC15)]"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <p className="text-xs text-[#FFEDD5]">
-        A este ritmo, cumplís la meta el {eta}.
-      </p>
+      {safeTarget > 0 ? (
+        <div className="h-3 w-full overflow-hidden rounded-full bg-[#FFFFFF40]">
+          <div
+            className="h-full rounded-full bg-[var(--color-secondary,#FACC15)]"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      ) : null}
+      <p className="text-xs text-[#FFEDD5]">{message}</p>
     </section>
   )
 }
 
-type TopCustomer = {
-  name: string
-  detail: string
-  initials: string
-  action: "redeem" | "purchase"
-}
+export function TopCustomers({ customers }: { customers: TopCustomerRow[] }) {
+  if (customers.length === 0) {
+    return (
+      <section className="flex flex-col gap-2.5">
+        <h2 className="text-sm font-semibold text-stone-900">Top clientes</h2>
+        <div className="rounded-2xl border border-[#E7E5E4] bg-[#F5F5F4] px-4 py-8 text-center text-sm text-stone-500">
+          Todavía no hay clientes para mostrar.
+        </div>
+      </section>
+    )
+  }
 
-const MOCK_TOP_CUSTOMERS: TopCustomer[] = [
-  {
-    name: "María López",
-    detail: "9/10 compras · casi lista",
-    initials: "ML",
-    action: "purchase",
-  },
-  {
-    name: "Carlos Ruiz",
-    detail: "Premio listo para canjear",
-    initials: "CR",
-    action: "redeem",
-  },
-  {
-    name: "Ana Gómez",
-    detail: "6/10 compras este mes",
-    initials: "AG",
-    action: "purchase",
-  },
-]
-
-export function TopCustomers({
-  customers = MOCK_TOP_CUSTOMERS,
-}: {
-  customers?: TopCustomer[]
-}) {
   return (
     <section className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-sm font-semibold text-stone-900">Top clientes</h2>
-        <span className="text-xs font-semibold text-[var(--color-primary,#F97316)]">
-          Ver todos
-        </span>
       </div>
       <ul className="flex flex-col gap-2.5">
         {customers.map((c) => (
           <li
-            key={c.name}
+            key={c.id}
             className="flex items-center gap-3 rounded-2xl border border-[#E7E5E4] bg-white p-3"
           >
             <div
               aria-hidden
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FFF7ED] text-xs font-bold text-[var(--color-primary,#F97316)]"
             >
-              {c.initials}
+              {initialsOf(c.name)}
             </div>
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-semibold text-stone-900">
                 {c.name}
               </div>
-              <div className="truncate text-xs text-stone-500">{c.detail}</div>
+              <div className="truncate text-xs text-stone-500">
+                {c.canRedeem
+                  ? "Premio listo para canjear"
+                  : `${c.purchases}/${c.purchasesNeeded} compras`}
+              </div>
             </div>
-            <span className="shrink-0 rounded-full bg-[#DCFCE7] px-2.5 py-1 text-[11px] font-semibold text-[#16A34A]">
-              {c.action === "redeem" ? "Canjear" : "+1 compra"}
+            <span
+              className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+                c.canRedeem
+                  ? "bg-[#FEF9C3] text-[#A16207]"
+                  : "bg-[#DCFCE7] text-[#16A34A]"
+              }`}
+            >
+              {c.canRedeem ? "Listo" : "En curso"}
             </span>
           </li>
         ))}
@@ -287,6 +286,8 @@ export function LoyaltyTimeline({ events }: { events: ActivityEvent[] }) {
 export function DashboardHome({
   metrics,
   employeeName,
+  topCustomers,
+  weeklyGoal,
 }: {
   metrics: {
     customers: number
@@ -294,11 +295,20 @@ export function DashboardHome({
     redemptionsThisMonth: number
   }
   employeeName?: string
+  topCustomers: TopCustomerRow[]
+  weeklyGoal: { thisWeek: number; lastWeek: number }
 }) {
   const name = employeeName?.trim()
   const greeting = name
     ? `Hola, ${name}. Así va tu comercio hoy.`
     : "Hola. Así va tu comercio hoy."
+
+  const goalTarget =
+    weeklyGoal.lastWeek > 0
+      ? weeklyGoal.lastWeek
+      : weeklyGoal.thisWeek > 0
+        ? weeklyGoal.thisWeek
+        : 0
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-col gap-[18px]">
@@ -309,8 +319,8 @@ export function DashboardHome({
         <p className="text-[13px] text-stone-500">{greeting}</p>
       </header>
       <LoyaltyMetrics {...metrics} />
-      <GoalCard />
-      <TopCustomers />
+      <GoalCard current={weeklyGoal.thisWeek} target={goalTarget} />
+      <TopCustomers customers={topCustomers} />
     </div>
   )
 }
