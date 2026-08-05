@@ -1,9 +1,10 @@
 import { describe, expect, test } from "bun:test"
-import { readFileSync } from "node:fs"
+import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 
+const root = join(import.meta.dir, "../..")
 const src = readFileSync(
-  join(import.meta.dir, "../../modules/loyalty/public/registration.tsx"),
+  join(root, "modules/loyalty/public/registration.tsx"),
   "utf8"
 )
 
@@ -18,13 +19,11 @@ describe("LoyaltyRegistration birthday field (Pencil bd)", () => {
     expect(src).toMatch(/birthdayEnabled|setBirthdayEnabled/)
   })
 
-  test("el date picker vive dentro de un contenedor con borde (no vuela)", () => {
-    expect(src).toMatch(/type=["']date["']/)
+  test("usa DatePicker shadcn (no input type=date nativo)", () => {
+    expect(src).toContain('import DatePicker from "@/shell/ui/date-picker"')
+    expect(src).toContain("<DatePicker")
+    expect(src).not.toMatch(/type=["']date["']/)
     expect(src).toMatch(/id=["']birthday-field["']/)
-    expect(src).toMatch(
-      /birthday-field[\s\S]{0,200}h-\[52px\][\s\S]{0,120}border-\[#E7E5E4\]/
-    )
-    expect(src).toContain("Calendar")
     expect(src).not.toMatch(
       /<Input[\s\S]*label=["']Cumpleaños[\s\S]*type=["']date["']/
     )
@@ -40,5 +39,39 @@ describe("LoyaltyRegistration birthday field (Pencil bd)", () => {
     expect(src).toContain('id="birthday-label"')
     expect(src).toContain('aria-labelledby="birthday-label"')
     expect(src).toContain('aria-controls="birthday-field"')
+  })
+})
+
+describe("shadcn date picker stack", () => {
+  test("existe DatePicker compuesto con Calendar + Popover", () => {
+    const pickerPath = join(root, "shell/ui/date-picker.tsx")
+    expect(existsSync(pickerPath)).toBe(true)
+    const picker = readFileSync(pickerPath, "utf8")
+    expect(picker).toMatch(/from ["']@\/components\/ui\/calendar["']/)
+    expect(picker).toMatch(/from ["']@\/components\/ui\/popover["']/)
+    expect(picker).toMatch(/PopoverTrigger|PopoverContent/)
+    expect(picker).toContain("h-[52px]")
+    expect(picker).toMatch(/border-border|border-\[#E7E5E4\]/)
+    expect(picker).toMatch(/date-fns\/locale|react-day-picker\/locale/)
+  })
+
+  test("registration valida birthday vacío con switch ON", () => {
+    expect(src).toContain('Elegí tu fecha de cumpleaños.')
+    expect(src).toMatch(/birthdayEnabled && !birthday/)
+  })
+
+  test("calendar y popover de shadcn están instalados", () => {
+    expect(existsSync(join(root, "components/ui/calendar.tsx"))).toBe(true)
+    expect(existsSync(join(root, "components/ui/popover.tsx"))).toBe(true)
+    expect(existsSync(join(root, "components.json"))).toBe(true)
+  })
+})
+
+describe("AGENTS.md shadcn policy", () => {
+  test("documenta preferir shadcn para componentes UI complejos", () => {
+    const agents = readFileSync(join(root, "AGENTS.md"), "utf8")
+    expect(agents.toLowerCase()).toMatch(/shadcn/)
+    expect(agents).toMatch(/calendar|date.?picker|popover|dialog|select/i)
+    expect(agents).toMatch(/not\s+\*\*reinvent|Prefer shadcn|npx shadcn/i)
   })
 })

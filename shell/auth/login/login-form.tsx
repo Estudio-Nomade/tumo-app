@@ -3,28 +3,10 @@
 import { FormEvent, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Button from "@/shell/ui/Button"
-import Input from "@/shell/ui/Input"
+import PhoneInput from "@/shell/ui/phone-input"
 import { useBusiness } from "@/shell/context/business"
 
 type Status = "idle" | "loading" | "error"
-
-function SmartphoneIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
-      <path d="M12 18h.01" />
-    </svg>
-  )
-}
 
 export default function LoginForm() {
   const params = useParams<{ slug: string }>()
@@ -101,21 +83,15 @@ export default function LoginForm() {
           Ingresá al panel
         </h2>
 
-        <div className="relative [&_label]:gap-0 [&_label>span]:sr-only">
-          <span className="pointer-events-none absolute top-1/2 left-4 z-10 -translate-y-1/2 text-[var(--color-primary,#F97316)]">
-            <SmartphoneIcon className="h-5 w-5" />
-          </span>
-          <Input
+        <div className="[&_label]:gap-0 [&_label>span]:sr-only [&_div.h-\[52px\]]:h-[60px] [&_div.h-\[52px\]]:rounded-2xl [&_div.h-\[52px\]]:bg-white">
+          <PhoneInput
             label="Tu WhatsApp"
             name="phone"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            placeholder="+54 9 11 1234-5678"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={setPhone}
             required
-            className="h-[60px] !rounded-2xl !border-0 !bg-white pl-11 text-base text-stone-800 shadow-none placeholder:text-[#A8A29E] focus:!border-transparent focus:!ring-2 focus:!ring-stone-900/20"
+            disabled={status === "loading"}
+            placeholder="9 11 1234-5678"
           />
         </div>
 

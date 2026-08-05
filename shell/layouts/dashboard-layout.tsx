@@ -119,6 +119,8 @@ export default function DashboardLayout({
         style={
           {
             ["--color-primary" as string]: business.primary_color,
+            ["--primary" as string]: business.primary_color,
+            ["--primary-foreground" as string]: "#ffffff",
             ["--color-primary-deep" as string]: business.primary_color,
             ["--color-secondary" as string]: business.secondary_color,
           } as CSSProperties

@@ -2,13 +2,15 @@
 
 import { FormEvent, useState } from "react"
 import { useParams } from "next/navigation"
-import { Calendar } from "lucide-react"
 import Button from "@/shell/ui/Button"
+import DatePicker from "@/shell/ui/date-picker"
 import Input from "@/shell/ui/Input"
+import PhoneInput from "@/shell/ui/phone-input"
 import LoyaltyCard, {
   type LoyaltyCardData,
 } from "@/modules/loyalty/public/card"
 import { useBusiness } from "@/shell/context/business"
+import { isPhoneValid } from "@/lib/countries"
 
 type Mode = "register" | "login"
 
@@ -37,8 +39,16 @@ export default function LoyaltyRegistration({
 
   async function onRegister(e: FormEvent) {
     e.preventDefault()
-    setLoading(true)
     setError("")
+    if (birthdayEnabled && !birthday) {
+      setError("Elegí tu fecha de cumpleaños.")
+      return
+    }
+    if (!isPhoneValid(phone)) {
+      setError("Ingresá un WhatsApp válido con su prefijo.")
+      return
+    }
+    setLoading(true)
     try {
       const res = await fetch("/api/loyalty/customers", {
         method: "POST",
@@ -65,8 +75,12 @@ export default function LoyaltyRegistration({
 
   async function onLogin(e: FormEvent) {
     e.preventDefault()
-    setLoading(true)
     setError("")
+    if (!isPhoneValid(phone)) {
+      setError("Ingresá un WhatsApp válido con su prefijo.")
+      return
+    }
+    setLoading(true)
     try {
       const qs = new URLSearchParams({ phone, slug })
       const res = await fetch(`/api/loyalty/customers?${qs.toString()}`)
@@ -142,15 +156,13 @@ export default function LoyaltyRegistration({
               />
             </div>
             <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-stone-900">
-              <Input
+              <PhoneInput
                 label="WhatsApp"
                 name="phone"
-                type="tel"
-                placeholder="+54 9 11 1234-5678"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={setPhone}
                 required
-                className={inputClassName}
+                disabled={loading}
               />
             </div>
             <div className="flex w-full flex-col gap-2.5">
@@ -189,24 +201,16 @@ export default function LoyaltyRegistration({
                 </button>
               </div>
               {birthdayEnabled ? (
-                <div
-                  id="birthday-field"
-                  className="relative flex h-[52px] w-full items-center overflow-hidden rounded-[14px] border border-[#E7E5E4] bg-white px-4 focus-within:ring-2 focus-within:ring-[var(--color-primary,#F97316)]/30"
-                >
-                  <input
+                <div id="birthday-field" className="w-full">
+                  <DatePicker
                     id="birthday"
                     name="birthday"
-                    type="date"
                     required
                     disabled={loading}
                     aria-labelledby="birthday-label"
                     value={birthday}
-                    onChange={(e) => setBirthday(e.target.value)}
-                    className="h-full min-w-0 flex-1 border-0 bg-transparent text-[15px] text-stone-900 outline-none [color-scheme:light] focus:ring-0 disabled:opacity-70 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
-                  />
-                  <Calendar
-                    aria-hidden
-                    className="pointer-events-none h-[18px] w-[18px] shrink-0 text-[var(--color-primary,#F97316)]"
+                    onChange={setBirthday}
+                    placeholder="Elegí tu fecha"
                   />
                 </div>
               ) : null}
@@ -237,15 +241,13 @@ export default function LoyaltyRegistration({
         ) : (
           <form onSubmit={onLogin} className="flex flex-col gap-3">
             <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-stone-900">
-              <Input
+              <PhoneInput
                 label="WhatsApp"
                 name="phone"
-                type="tel"
-                placeholder="+54 9 11 1234-5678"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={setPhone}
                 required
-                className={inputClassName}
+                disabled={loading}
               />
             </div>
             <Button

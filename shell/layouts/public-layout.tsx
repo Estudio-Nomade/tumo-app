@@ -17,6 +17,8 @@ export default function PublicLayout({
         style={
           {
             ["--color-primary" as string]: business.primary_color,
+            ["--primary" as string]: business.primary_color,
+            ["--primary-foreground" as string]: "#ffffff",
             ["--color-secondary" as string]: business.secondary_color,
             minHeight: "100vh",
           } as React.CSSProperties
