@@ -131,6 +131,16 @@ describe("loyalty panel source (Pencil EDNqK + real data)", () => {
     expect(src).toMatch(/Canjear\s+\{|Canjear premio/)
   })
 
+  test("panel empleado ancho completo en mobile, tope centrado en md+", () => {
+    const rootMatch = src.match(
+      /<div className="(relative mx-auto flex w-full flex-col gap-4[^"]*)">/
+    )
+    expect(rootMatch).not.toBeNull()
+    expect(rootMatch![1]).toContain("w-full")
+    expect(rootMatch![1]).toContain("md:max-w-2xl")
+    expect(rootMatch![1]).not.toContain("max-w-lg")
+  })
+
   test("código es CTA primaria por encima de la lista", () => {
     const codeIdx = src.indexOf("Ingresar código")
     const listIdx = src.indexOf("max-h-[min(52vh,420px)]")

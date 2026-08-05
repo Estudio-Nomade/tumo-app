@@ -266,7 +266,7 @@ export default function LoyaltyPanel({
   }
 
   return (
-    <div className="relative mx-auto flex w-full max-w-lg flex-col gap-4">
+    <div className="relative mx-auto flex w-full flex-col gap-4 md:max-w-2xl">
       <header className="flex items-center justify-between gap-3">
         <div className="min-w-0 flex flex-col gap-0.5">
           <h1 className="text-[22px] font-bold tracking-tight text-stone-900">

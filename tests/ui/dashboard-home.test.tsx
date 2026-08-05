@@ -244,6 +244,16 @@ describe("Loyalty module insights", () => {
     expect(insights).toContain("TopByPrizesList")
     expect(insights).toContain("getWeeklyRedemptions")
   })
+
+  test("panel empleado (Clientes) va primero que las tarjetas de insights", () => {
+    const page = read("app/(dashboard)/[slug]/dashboard/loyalty/page.tsx")
+    const jsx = page.slice(page.indexOf("return ("))
+    const panelIdx = jsx.indexOf("LoyaltyPanel")
+    const insightsIdx = jsx.indexOf("LoyaltyModuleInsights")
+    expect(panelIdx).toBeGreaterThan(-1)
+    expect(insightsIdx).toBeGreaterThan(-1)
+    expect(panelIdx).toBeLessThan(insightsIdx)
+  })
 })
 
 describe("LoyaltyTimeline (Pencil 6 · Actividad)", () => {

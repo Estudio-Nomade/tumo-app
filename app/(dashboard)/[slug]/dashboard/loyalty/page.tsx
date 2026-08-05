@@ -28,7 +28,6 @@ export default async function DashboardLoyaltyPage({ params }: PageProps) {
 
   return (
     <div className="p-2">
-      <LoyaltyModuleInsights slug={slug} business={business} />
       <Suspense
         fallback={
           <div className="flex min-h-[180px] items-center justify-center text-sm text-stone-500">
@@ -38,6 +37,7 @@ export default async function DashboardLoyaltyPage({ params }: PageProps) {
       >
         <LoyaltyPanel canEditProgram={canEditProgram} />
       </Suspense>
+      <LoyaltyModuleInsights slug={slug} business={business} />
     </div>
   )
 }
