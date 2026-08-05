@@ -430,20 +430,18 @@ export default function LoyaltyPanel() {
                   >
                     {customerInitials(customer.name)}
                   </div>
-                  <div className="min-w-0 flex-1">
+                  <div className="flex min-w-0 flex-1 flex-col gap-1">
                     <div className="truncate text-sm font-semibold text-stone-900">
                       {customer.name}
                     </div>
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <div className="h-1.5 w-[88px] shrink-0 overflow-hidden rounded-full bg-[#F5F5F4]">
-                        <div
-                          className="h-full rounded-full bg-[var(--color-primary,#F97316)] transition-all duration-500 ease-out"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <span className="shrink-0 text-[11px] font-semibold text-[#A8A29E]">
-                        {customer.purchases}/{customer.purchasesNeeded}
-                      </span>
+                    <span className="text-xs font-semibold text-stone-500">
+                      {customer.purchases}/{customer.purchasesNeeded}
+                    </span>
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#F5F5F4]">
+                      <div
+                        className="h-full rounded-full bg-[var(--color-primary,#F97316)] transition-all duration-500 ease-out"
+                        style={{ width: `${pct}%` }}
+                      />
                     </div>
                   </div>
                   {customer.canRedeem ? (

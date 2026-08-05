@@ -134,6 +134,21 @@ describe("loyalty panel source (Pencil EDNqK + real data)", () => {
   test("avatar colors cycle length 4", () => {
     expect(AVATAR_COLORS).toHaveLength(4)
   })
+
+  test("contador N/M va debajo del nombre (mobile-first), barra full-width abajo", () => {
+    const blockStart = src.indexOf("flex min-w-0 flex-1 flex-col gap-1")
+    expect(blockStart).toBeGreaterThan(-1)
+    const block = src.slice(blockStart, blockStart + 500)
+    const nameIdx = block.indexOf("{customer.name}")
+    const countIdx = block.indexOf(
+      "{customer.purchases}/{customer.purchasesNeeded}"
+    )
+    const barIdx = block.indexOf("w-full")
+    expect(nameIdx).toBeGreaterThan(-1)
+    expect(countIdx).toBeGreaterThan(nameIdx)
+    expect(barIdx).toBeGreaterThan(countIdx)
+    expect(block).not.toContain("w-[88px]")
+  })
 })
 
 describe("BusinessProvider smoke", () => {
