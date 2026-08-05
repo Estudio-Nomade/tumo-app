@@ -1,7 +1,7 @@
 import type { ActivityEvent } from "@/lib/modules"
 import type { TopCustomerRow } from "@/modules/loyalty/api/metrics"
 import MetricCard from "@/shell/ui/MetricCard"
-import { Gift, ShoppingBag, Users } from "lucide-react"
+import { Gift, QrCode, ShoppingBag, Users } from "lucide-react"
 
 function formatEventTime(timestamp: number) {
   const date = new Date(timestamp)
@@ -335,17 +335,19 @@ export function DashboardHome({
         <p className="text-[13px] text-stone-500">{greeting}</p>
       </header>
 
-      <div className="flex flex-col gap-2.5 sm:flex-row">
+      <div className="grid grid-cols-2 gap-2.5">
         <a
           href={`/${slug}/dashboard/loyalty`}
-          className="inline-flex h-[50px] flex-1 items-center justify-center rounded-[14px] bg-[var(--color-primary,#F97316)] text-[15px] font-bold text-white"
+          className="inline-flex min-h-[72px] flex-col items-center justify-center gap-1.5 rounded-2xl bg-[var(--color-primary,#F97316)] px-3 py-3.5 text-center text-sm font-bold text-white shadow-sm"
         >
+          <Users size={22} strokeWidth={2.25} aria-hidden />
           Atender clientes
         </a>
         <a
           href={`/${slug}/dashboard/loyalty/qr`}
-          className="inline-flex h-[50px] flex-1 items-center justify-center rounded-[14px] border border-[var(--color-primary,#F97316)] bg-white text-[15px] font-bold text-[var(--color-primary,#F97316)]"
+          className="inline-flex min-h-[72px] flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-[var(--color-primary,#F97316)] bg-white px-3 py-3.5 text-center text-sm font-bold text-[var(--color-primary,#F97316)] shadow-sm"
         >
+          <QrCode size={22} strokeWidth={2.25} aria-hidden />
           Mostrar QR
         </a>
       </div>

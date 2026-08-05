@@ -45,6 +45,8 @@ describe("DashboardHome", () => {
     expect(html).toContain("Panel")
     expect(html).toContain("Hola, Nico. Así va tu comercio hoy.")
     expect(html).toContain("Atender clientes")
+    expect(html).toContain("min-h-[72px]")
+    expect(html).toContain("Mostrar QR")
   })
 
   test("saludo sin nombre usa fallback", () => {
