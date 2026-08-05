@@ -26,16 +26,24 @@ describe("BrandedQr + ShareProgram (prod)", () => {
     expect(src).toContain("getLoyaltyPublicUrl")
   })
 
-  test("settings es shell-only sin ShareProgram", () => {
-    const src = read("app/(dashboard)/[slug]/dashboard/settings/page.tsx")
-    expect(src).not.toContain("ShareProgram")
-    expect(src).toContain("Ver módulos")
+  test("settings es marca/negocio, QR vive en loyalty", () => {
+    const settings = read(
+      "app/(dashboard)/[slug]/dashboard/settings/page.tsx"
+    )
+    const form = read("shell/ui/settings-form.tsx")
+    expect(settings).toContain("SettingsForm")
+    expect(settings).not.toContain("ShareProgram")
+    expect(form).toContain("Nombre del comercio")
+    expect(form).toContain("Programa de fidelización")
+    expect(form).toContain("Ver módulos")
   })
 
-  test("panel tiene entrada a Mostrar QR", () => {
+  test("panel tiene entrada a Mostrar QR y programa (owner)", () => {
     const src = read("modules/loyalty/dashboard/panel.tsx")
     expect(src).toContain("Mostrar QR")
     expect(src).toContain("/dashboard/loyalty/qr")
+    expect(src).toContain("/dashboard/loyalty/programa")
+    expect(src).toContain("canEditProgram")
   })
 
   test("ruta fullscreen QR del empleado existe", () => {

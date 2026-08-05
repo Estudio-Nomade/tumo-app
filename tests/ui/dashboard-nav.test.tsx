@@ -50,14 +50,21 @@ describe("dashboard owner nav (Pencil)", () => {
     expect(src).toContain("business.location")
   })
 
-  test("settings es cuenta/comercio, no QR de loyalty", () => {
+  test("settings usa form editable de negocio/marca", () => {
     const settings = read(
       "app/(dashboard)/[slug]/dashboard/settings/page.tsx"
     )
-    expect(settings).toContain("LogoutButton")
-    expect(settings).toContain("Tu comercio y tu cuenta")
+    const form = read("shell/ui/settings-form.tsx")
+    expect(settings).toContain("SettingsForm")
     expect(settings).not.toContain("ShareProgram")
-    expect(settings).not.toContain("Regla del programa")
-    expect(settings).toContain("Ver módulos")
+    expect(form).toContain("LogoutButton")
+    expect(form).toContain("Tu comercio y tu cuenta")
+    expect(form).toContain("Nombre del comercio")
+    expect(form).toContain("Guardar cambios")
+    expect(form).toContain("/api/business")
+    expect(form).toContain("Programa de fidelización")
+    expect(form).toContain("Ver módulos")
+    expect(form).not.toContain("contactá a soporte")
   })
 })
+
