@@ -50,10 +50,14 @@ describe("dashboard owner nav (Pencil)", () => {
     expect(src).toContain("business.location")
   })
 
-  test("settings page offers mobile logout path", () => {
+  test("settings es cuenta/comercio, no QR de loyalty", () => {
     const settings = read(
       "app/(dashboard)/[slug]/dashboard/settings/page.tsx"
     )
     expect(settings).toContain("LogoutButton")
+    expect(settings).toContain("Tu comercio y tu cuenta")
+    expect(settings).not.toContain("ShareProgram")
+    expect(settings).not.toContain("Regla del programa")
+    expect(settings).toContain("Ver módulos")
   })
 })
