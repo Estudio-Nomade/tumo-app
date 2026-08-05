@@ -1,5 +1,6 @@
 import { cookies } from "next/headers"
 import { notFound, redirect } from "next/navigation"
+import ShareProgram from "@/modules/loyalty/dashboard/share-program"
 import { validateSession } from "@/shell/auth/session"
 import { getBusiness } from "@/shell/db/business"
 import LogoutButton from "@/shell/ui/logout-button"
@@ -32,9 +33,7 @@ export default async function DashboardSettingsPage({ params }: PageProps) {
         <h1 className="text-[22px] font-bold tracking-tight text-stone-900">
           Ajustes
         </h1>
-        <p className="text-[13px] text-stone-500">
-          Datos de tu comercio
-        </p>
+        <p className="text-[13px] text-stone-500">Programa y cuenta</p>
       </header>
 
       <section className="flex flex-col gap-3 rounded-2xl border border-[#E7E5E4] bg-white p-4">
@@ -68,9 +67,7 @@ export default async function DashboardSettingsPage({ params }: PageProps) {
         </div>
       </section>
 
-      <div className="rounded-2xl border border-dashed border-[#E7E5E4] bg-[#F5F5F4] px-4 py-8 text-center text-sm text-stone-500">
-        Próximamente
-      </div>
+      <ShareProgram business={business} />
 
       <LogoutButton
         slug={slug}

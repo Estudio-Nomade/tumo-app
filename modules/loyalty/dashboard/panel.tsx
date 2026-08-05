@@ -1,7 +1,8 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { Gift, Keyboard, Sandwich, Search } from "lucide-react"
+import Link from "next/link"
+import { Gift, Keyboard, QrCode, Sandwich, Search } from "lucide-react"
 import { useBusiness } from "@/shell/context/business"
 
 export type CustomerView = {
@@ -323,56 +324,66 @@ export default function LoyaltyPanel() {
         </ul>
       )}
 
-      {codeMode ? (
-        <div className="flex flex-col gap-2 rounded-2xl border border-[#E7E5E4] bg-white p-3">
-          <label className="text-xs font-semibold text-stone-500">
-            Código de 4 dígitos
-          </label>
-          <div className="flex gap-2">
-            <input
-              inputMode="numeric"
-              maxLength={4}
-              value={code}
-              onChange={(e) =>
-                setCode(e.target.value.replace(/\D/g, "").slice(0, 4))
-              }
-              placeholder="••••"
-              className="h-[50px] min-w-0 flex-1 rounded-[14px] border-0 bg-[#F5F5F4] px-4 text-center text-lg font-bold tracking-[0.35em] text-stone-900 outline-none placeholder:tracking-normal placeholder:text-[#A8A29E] focus:ring-2 focus:ring-[var(--color-primary,#F97316)]/25"
-              autoFocus
-            />
+      <div className="flex flex-col gap-2.5">
+        <Link
+          href={`/${business.slug}/dashboard/loyalty/qr`}
+          className="inline-flex h-[50px] w-full items-center justify-center gap-2 rounded-[14px] bg-[var(--color-primary,#F97316)] text-[15px] font-bold text-white"
+        >
+          <QrCode size={18} strokeWidth={2} aria-hidden />
+          Mostrar QR del programa
+        </Link>
+
+        {codeMode ? (
+          <div className="flex flex-col gap-2 rounded-2xl border border-[#E7E5E4] bg-white p-3">
+            <label className="text-xs font-semibold text-stone-500">
+              Código de 4 dígitos
+            </label>
+            <div className="flex gap-2">
+              <input
+                inputMode="numeric"
+                maxLength={4}
+                value={code}
+                onChange={(e) =>
+                  setCode(e.target.value.replace(/\D/g, "").slice(0, 4))
+                }
+                placeholder="••••"
+                className="h-[50px] min-w-0 flex-1 rounded-[14px] border-0 bg-[#F5F5F4] px-4 text-center text-lg font-bold tracking-[0.35em] text-stone-900 outline-none placeholder:tracking-normal placeholder:text-[#A8A29E] focus:ring-2 focus:ring-[var(--color-primary,#F97316)]/25"
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={submitCode}
+                className="h-[50px] shrink-0 rounded-[14px] bg-[var(--color-primary,#F97316)] px-4 text-sm font-bold text-white"
+              >
+                OK
+              </button>
+            </div>
             <button
               type="button"
-              onClick={submitCode}
-              className="h-[50px] shrink-0 rounded-[14px] bg-[var(--color-primary,#F97316)] px-4 text-sm font-bold text-white"
+              onClick={() => {
+                setCodeMode(false)
+                setCode("")
+                setError("")
+              }}
+              className="text-xs font-semibold text-stone-500"
             >
-              OK
+              Cancelar
             </button>
           </div>
+        ) : (
           <button
             type="button"
             onClick={() => {
-              setCodeMode(false)
-              setCode("")
+              setCodeMode(true)
               setError("")
             }}
-            className="text-xs font-semibold text-stone-500"
+            className="inline-flex h-[50px] w-full items-center justify-center gap-2 rounded-[14px] border border-[var(--color-primary,#F97316)] bg-white text-[15px] font-bold text-[var(--color-primary,#F97316)]"
           >
-            Cancelar
+            <Keyboard size={18} strokeWidth={2} aria-hidden />
+            Ingresar código
           </button>
-        </div>
-      ) : (
-        <button
-          type="button"
-          onClick={() => {
-            setCodeMode(true)
-            setError("")
-          }}
-          className="inline-flex h-[50px] w-full items-center justify-center gap-2 rounded-[14px] border border-[var(--color-primary,#F97316)] bg-white text-[15px] font-bold text-[var(--color-primary,#F97316)]"
-        >
-          <Keyboard size={18} strokeWidth={2} aria-hidden />
-          Ingresar código
-        </button>
-      )}
+        )}
+      </div>
     </div>
   )
 }
