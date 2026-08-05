@@ -5,10 +5,12 @@ import { useParams } from "next/navigation"
 import Button from "@/shell/ui/Button"
 import DatePicker from "@/shell/ui/date-picker"
 import Input from "@/shell/ui/Input"
+import PhoneInput from "@/shell/ui/phone-input"
 import LoyaltyCard, {
   type LoyaltyCardData,
 } from "@/modules/loyalty/public/card"
 import { useBusiness } from "@/shell/context/business"
+import { isPhoneValid } from "@/lib/countries"
 
 type Mode = "register" | "login"
 
@@ -42,6 +44,10 @@ export default function LoyaltyRegistration({
       setError("Elegí tu fecha de cumpleaños.")
       return
     }
+    if (!isPhoneValid(phone)) {
+      setError("Ingresá un WhatsApp válido con su prefijo.")
+      return
+    }
     setLoading(true)
     try {
       const res = await fetch("/api/loyalty/customers", {
@@ -69,8 +75,12 @@ export default function LoyaltyRegistration({
 
   async function onLogin(e: FormEvent) {
     e.preventDefault()
-    setLoading(true)
     setError("")
+    if (!isPhoneValid(phone)) {
+      setError("Ingresá un WhatsApp válido con su prefijo.")
+      return
+    }
+    setLoading(true)
     try {
       const qs = new URLSearchParams({ phone, slug })
       const res = await fetch(`/api/loyalty/customers?${qs.toString()}`)
@@ -146,15 +156,13 @@ export default function LoyaltyRegistration({
               />
             </div>
             <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-stone-900">
-              <Input
+              <PhoneInput
                 label="WhatsApp"
                 name="phone"
-                type="tel"
-                placeholder="+54 9 11 1234-5678"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={setPhone}
                 required
-                className={inputClassName}
+                disabled={loading}
               />
             </div>
             <div className="flex w-full flex-col gap-2.5">
@@ -233,15 +241,13 @@ export default function LoyaltyRegistration({
         ) : (
           <form onSubmit={onLogin} className="flex flex-col gap-3">
             <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-stone-900">
-              <Input
+              <PhoneInput
                 label="WhatsApp"
                 name="phone"
-                type="tel"
-                placeholder="+54 9 11 1234-5678"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={setPhone}
                 required
-                className={inputClassName}
+                disabled={loading}
               />
             </div>
             <Button

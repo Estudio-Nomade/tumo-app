@@ -65,3 +65,7 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-shadcn-birthday-datepicker.md`
   summary: Dual Button primitives (shell/ui/Button vs components/ui/button)
   evidence: Calendar shadcn depende del button de components/ui; shell Button se mantiene para CTAs brand
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-phone-country-prefix.md`
+  summary: Login employee sigue mandando phone en query string del verify
+  evidence: Preexistente en login-form; fuera del scope del PhoneInput
