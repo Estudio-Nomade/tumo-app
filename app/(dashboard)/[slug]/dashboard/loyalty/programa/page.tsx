@@ -1,15 +1,14 @@
-import { Suspense } from "react"
 import { cookies } from "next/headers"
 import { notFound, redirect } from "next/navigation"
-import LoyaltyPanel from "@/modules/loyalty/dashboard/panel"
 import { validateSession } from "@/shell/auth/session"
 import { getBusiness } from "@/shell/db/business"
+import ProgramForm from "@/modules/loyalty/dashboard/program-form"
 
 type PageProps = {
   params: Promise<{ slug: string }>
 }
 
-export default async function DashboardLoyaltyPage({ params }: PageProps) {
+export default async function LoyaltyProgramPage({ params }: PageProps) {
   const { slug } = await params
   const business = await getBusiness(slug)
   if (!business) notFound()
@@ -23,19 +22,15 @@ export default async function DashboardLoyaltyPage({ params }: PageProps) {
     redirect(`/${slug}/login`)
   }
 
-  const canEditProgram = session.role === "owner"
+  if (session.role !== "owner") {
+    redirect(`/${slug}/dashboard/loyalty`)
+  }
 
   return (
-    <div className="p-2">
-      <Suspense
-        fallback={
-          <div className="flex min-h-[180px] items-center justify-center text-sm text-stone-500">
-            Cargando…
-          </div>
-        }
-      >
-        <LoyaltyPanel canEditProgram={canEditProgram} />
-      </Suspense>
-    </div>
+    <ProgramForm
+      slug={slug}
+      initialNeeded={business.purchases_needed}
+      initialReward={business.reward_name}
+    />
   )
 }

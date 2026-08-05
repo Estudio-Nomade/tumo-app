@@ -3,7 +3,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { Gift, Keyboard, QrCode, Sandwich, Search } from "lucide-react"
+import {
+  Gift,
+  Keyboard,
+  QrCode,
+  Sandwich,
+  Search,
+  SlidersHorizontal,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -54,7 +61,11 @@ export function customerInitials(name: string): string {
   return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
 }
 
-export default function LoyaltyPanel() {
+export default function LoyaltyPanel({
+  canEditProgram = false,
+}: {
+  canEditProgram?: boolean
+} = {}) {
   const business = useBusiness()
   const searchParams = useSearchParams()
   const highlightFromUrl = searchParams.get("highlight")
@@ -367,6 +378,15 @@ export default function LoyaltyPanel() {
           <QrCode size={18} strokeWidth={2} aria-hidden />
           Mostrar QR del programa
         </Link>
+        {canEditProgram ? (
+          <Link
+            href={`/${business.slug}/dashboard/loyalty/programa`}
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-[14px] text-sm font-semibold text-stone-600"
+          >
+            <SlidersHorizontal size={16} strokeWidth={2} aria-hidden />
+            Configurar programa
+          </Link>
+        ) : null}
       </div>
 
       {error ? (
