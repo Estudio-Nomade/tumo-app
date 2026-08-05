@@ -50,6 +50,13 @@ describe("dashboard owner nav (Pencil)", () => {
     expect(src).toContain("business.location")
   })
 
+  test("QR programa usa canvas phone-first sin sidebar", () => {
+    expect(src).toContain("isQrCanvas")
+    expect(src).toContain("test(pathname)")
+    expect(src).toContain("max-w-md")
+    expect(src).toContain("md:rounded-[28px]")
+  })
+
   test("settings usa form editable de negocio/marca", () => {
     const settings = read(
       "app/(dashboard)/[slug]/dashboard/settings/page.tsx"

@@ -100,6 +100,8 @@ export default function DashboardLayout({
 
   // Employees work full-screen on the loyalty panel — no mobile bottom pill.
   const showBottomNav = isOwner && navItems.length > 0
+  // QR programa: canvas phone-first (Pencil 7/8) — sin chrome desktop.
+  const isQrCanvas = /\/dashboard\/loyalty\/qr\/?$/.test(pathname)
 
   async function onLogout() {
     try {
@@ -112,19 +114,36 @@ export default function DashboardLayout({
     }
   }
 
+  const brandStyle = {
+    ["--color-primary" as string]: business.primary_color,
+    ["--primary" as string]: business.primary_color,
+    ["--primary-foreground" as string]: "#ffffff",
+    ["--color-primary-deep" as string]: business.primary_color,
+    ["--color-secondary" as string]: business.secondary_color,
+  } as CSSProperties
+
+  if (isQrCanvas) {
+    return (
+      <BusinessProvider business={business}>
+        <div
+          className="flex min-h-[100dvh] w-full justify-center bg-[#F5F5F4] text-stone-900 md:bg-[#E7E5E4]/60"
+          style={brandStyle}
+        >
+          <div className="flex min-h-[100dvh] w-full max-w-md flex-col bg-white px-5 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-none md:min-h-[min(100dvh,852px)] md:my-6 md:rounded-[28px] md:shadow-xl">
+            <main className="mx-auto flex w-full max-w-md flex-1 flex-col py-2">
+              {children}
+            </main>
+          </div>
+        </div>
+      </BusinessProvider>
+    )
+  }
+
   return (
     <BusinessProvider business={business}>
       <div
         className="flex min-h-[100dvh] bg-white text-stone-900"
-        style={
-          {
-            ["--color-primary" as string]: business.primary_color,
-            ["--primary" as string]: business.primary_color,
-            ["--primary-foreground" as string]: "#ffffff",
-            ["--color-primary-deep" as string]: business.primary_color,
-            ["--color-secondary" as string]: business.secondary_color,
-          } as CSSProperties
-        }
+        style={brandStyle}
       >
         <aside className="sticky top-0 hidden h-[100dvh] w-60 shrink-0 flex-col border-r border-[#E7E5E4] bg-white md:flex">
           <div className="flex flex-col items-center gap-3 px-5 pt-8 pb-5">

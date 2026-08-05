@@ -81,3 +81,12 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-redemptions-ranking-home.md`
   summary: Redeem path no-transaccional sesga rankings del home
   evidence: INSERT redemptions + UPDATE purchases=0 sin txn; preexistente, amplificado porque el ledger es headline del Panel
+
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-owner-qr-programa-pencil.md`
+  summary: Descarga/impresión real del QR (PNG/PDF poster)
+  evidence: UI dice "Imprimí" y "Próximamente: poster"; sin export aún
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-owner-qr-programa-pencil.md`
+  summary: Tests de QR son source-string, no comportamiento render/clipboard
+  evidence: branded-qr.test.tsx lee archivos; preexistente en suite UI del repo
