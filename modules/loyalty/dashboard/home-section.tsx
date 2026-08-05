@@ -6,7 +6,6 @@ import {
 import { metricsDeps } from "@/modules/loyalty/lib/default-deps"
 import {
   GoalCard,
-  LoyaltyHomeQuickActions,
   LoyaltyMetrics,
   TopCustomers,
 } from "@/modules/loyalty/dashboard/widgets"
@@ -39,8 +38,15 @@ export async function LoyaltyHomeSection({
 
   return (
     <section className="flex flex-col gap-[18px]">
-      <h2 className="text-sm font-semibold text-stone-900">Fidelización</h2>
-      <LoyaltyHomeQuickActions slug={slug} />
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold text-stone-900">Fidelización</h2>
+        <a
+          href={`/${slug}/dashboard/loyalty`}
+          className="text-xs font-semibold text-[var(--color-primary,#F97316)]"
+        >
+          Abrir Fidelización →
+        </a>
+      </div>
       <LoyaltyMetrics {...metrics} />
       <GoalCard current={weeklyGoal.thisWeek} target={goalTarget} />
       <TopCustomers customers={topCustomers} slug={slug} />

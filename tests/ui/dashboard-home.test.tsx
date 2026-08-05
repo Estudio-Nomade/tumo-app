@@ -63,14 +63,21 @@ describe("DashboardHome shell (multi-módulo)", () => {
   })
 })
 
-describe("LoyaltyHomeQuickActions", () => {
-  test("CTAs chunky con íconos", () => {
+describe("Loyalty home section (lectura, no operación)", () => {
+  test("home-section no monta CTAs Atender/Mostrar QR", () => {
+    const src = read("modules/loyalty/dashboard/home-section.tsx")
+    expect(src).toContain("Abrir Fidelización")
+    expect(src).not.toContain("LoyaltyHomeQuickActions")
+    expect(src).not.toContain("Atender clientes")
+    expect(src).not.toContain("Mostrar QR")
+  })
+
+  test("quick actions siguen existiendo para reuso en panel si hace falta", () => {
     const html = renderToStaticMarkup(
       <LoyaltyHomeQuickActions slug="carri" />
     )
     expect(html).toContain("Atender clientes")
     expect(html).toContain("Mostrar QR")
-    expect(html).toContain("min-h-[72px]")
   })
 })
 
