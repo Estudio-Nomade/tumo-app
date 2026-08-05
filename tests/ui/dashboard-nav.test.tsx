@@ -11,16 +11,16 @@ function read(rel: string) {
 describe("dashboard owner nav (Pencil)", () => {
   const src = read("shell/layouts/dashboard-layout.tsx")
 
-  test("owner tabs incluyen Panel Clientes Actividad Ajustes", () => {
+  test("owner tabs incluyen Panel Actividad Módulos Ajustes", () => {
     expect(src).toContain("LayoutDashboard")
-    expect(src).toContain("Users")
+    expect(src).toContain("LayoutGrid")
     expect(src).toContain("Activity")
     expect(src).toContain("Settings")
     expect(src).toContain('label: "Panel"')
-    expect(src).toContain('label: "Clientes"')
     expect(src).toContain('label: "Actividad"')
+    expect(src).toContain('label: "Módulos"')
     expect(src).toContain('label: "Ajustes"')
-    expect(src).toContain("/dashboard/loyalty")
+    expect(src).toContain("/dashboard/modules")
     expect(src).toContain("/dashboard/activity")
     expect(src).toContain("/dashboard/settings")
   })

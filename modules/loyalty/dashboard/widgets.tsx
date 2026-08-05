@@ -114,6 +114,28 @@ export function LoyaltyMetrics({
   )
 }
 
+/** Quick actions for owner home (module-owned). */
+export function LoyaltyHomeQuickActions({ slug }: { slug: string }) {
+  return (
+    <div className="grid grid-cols-2 gap-2.5">
+      <a
+        href={`/${slug}/dashboard/loyalty`}
+        className="inline-flex min-h-[72px] flex-col items-center justify-center gap-1.5 rounded-2xl bg-[var(--color-primary,#F97316)] px-3 py-3.5 text-center text-sm font-bold text-white shadow-sm"
+      >
+        <Users size={22} strokeWidth={2.25} aria-hidden />
+        Atender clientes
+      </a>
+      <a
+        href={`/${slug}/dashboard/loyalty/qr`}
+        className="inline-flex min-h-[72px] flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-[var(--color-primary,#F97316)] bg-white px-3 py-3.5 text-center text-sm font-bold text-[var(--color-primary,#F97316)] shadow-sm"
+      >
+        <QrCode size={22} strokeWidth={2.25} aria-hidden />
+        Mostrar QR
+      </a>
+    </div>
+  )
+}
+
 export function GoalCard({
   current,
   target,
@@ -293,68 +315,6 @@ export function LoyaltyTimeline({ events }: { events: ActivityEvent[] }) {
           </ul>
         </div>
       ))}
-    </div>
-  )
-}
-
-export function DashboardHome({
-  metrics,
-  employeeName,
-  topCustomers,
-  weeklyGoal,
-  slug,
-}: {
-  metrics: {
-    customers: number
-    purchasesThisMonth: number
-    redemptionsThisMonth: number
-  }
-  employeeName?: string
-  topCustomers: TopCustomerRow[]
-  weeklyGoal: { thisWeek: number; lastWeek: number }
-  slug: string
-}) {
-  const name = employeeName?.trim()
-  const greeting = name
-    ? `Hola, ${name}. Así va tu comercio hoy.`
-    : "Hola. Así va tu comercio hoy."
-
-  const goalTarget =
-    weeklyGoal.lastWeek > 0
-      ? weeklyGoal.lastWeek
-      : weeklyGoal.thisWeek > 0
-        ? weeklyGoal.thisWeek
-        : 0
-
-  return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-[18px]">
-      <header className="flex flex-col gap-0.5">
-        <h1 className="text-[22px] font-bold tracking-tight text-stone-900">
-          Panel
-        </h1>
-        <p className="text-[13px] text-stone-500">{greeting}</p>
-      </header>
-
-      <div className="grid grid-cols-2 gap-2.5">
-        <a
-          href={`/${slug}/dashboard/loyalty`}
-          className="inline-flex min-h-[72px] flex-col items-center justify-center gap-1.5 rounded-2xl bg-[var(--color-primary,#F97316)] px-3 py-3.5 text-center text-sm font-bold text-white shadow-sm"
-        >
-          <Users size={22} strokeWidth={2.25} aria-hidden />
-          Atender clientes
-        </a>
-        <a
-          href={`/${slug}/dashboard/loyalty/qr`}
-          className="inline-flex min-h-[72px] flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-[var(--color-primary,#F97316)] bg-white px-3 py-3.5 text-center text-sm font-bold text-[var(--color-primary,#F97316)] shadow-sm"
-        >
-          <QrCode size={22} strokeWidth={2.25} aria-hidden />
-          Mostrar QR
-        </a>
-      </div>
-
-      <LoyaltyMetrics {...metrics} />
-      <GoalCard current={weeklyGoal.thisWeek} target={goalTarget} />
-      <TopCustomers customers={topCustomers} slug={slug} />
     </div>
   )
 }

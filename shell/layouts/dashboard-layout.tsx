@@ -7,6 +7,7 @@ import {
   Activity,
   Gift,
   LayoutDashboard,
+  LayoutGrid,
   Sandwich,
   Settings,
   Users,
@@ -31,6 +32,8 @@ const MODULE_ICONS: Record<string, LucideIcon> = {
   layout: LayoutDashboard,
   activity: Activity,
   settings: Settings,
+  users: Users,
+  grid: LayoutGrid,
 }
 
 function resolveModuleIcon(name: string): LucideIcon {
@@ -73,14 +76,14 @@ export default function DashboardLayout({
           exact: true,
         },
         {
-          href: `/${slug}/dashboard/loyalty`,
-          label: "Clientes",
-          icon: Users,
-        },
-        {
           href: `/${slug}/dashboard/activity`,
           label: "Actividad",
           icon: Activity,
+        },
+        {
+          href: `/${slug}/dashboard/modules`,
+          label: "Módulos",
+          icon: LayoutGrid,
         },
         {
           href: `/${slug}/dashboard/settings`,

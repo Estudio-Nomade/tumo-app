@@ -1,12 +1,7 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import {
-  getMetrics,
-  getTopCustomers,
-  getWeeklyRedemptions,
-} from "@/modules/loyalty/api/metrics"
-import { metricsDeps } from "@/modules/loyalty/lib/default-deps"
-import { DashboardHome } from "@/modules/loyalty/dashboard/widgets"
+import { getActiveModules } from "@/lib/modules"
+import DashboardHome from "@/shell/dashboard/dashboard-home"
 import { validateSession } from "@/shell/auth/session"
 import { getBusinessById } from "@/shell/db/business"
 
@@ -30,24 +25,22 @@ export default async function DashboardHomePage({ params }: PageProps) {
   const business = await getBusinessById(session.businessId)
   if (!business) redirect(`/${slug}/login`)
 
-  const [metrics, topCustomers, weeklyGoal] = await Promise.all([
-    getMetrics(metricsDeps, { businessId: session.businessId }),
-    getTopCustomers(metricsDeps, {
-      businessId: session.businessId,
-      purchasesNeeded: business.purchases_needed,
-      rewardName: business.reward_name,
-      limit: 3,
-    }),
-    getWeeklyRedemptions(metricsDeps, { businessId: session.businessId }),
-  ])
+  const modules = getActiveModules(business)
 
   return (
-    <DashboardHome
-      metrics={metrics}
-      employeeName={session.name}
-      topCustomers={topCustomers}
-      weeklyGoal={weeklyGoal}
-      slug={slug}
-    />
+    <DashboardHome employeeName={session.name}>
+      {modules.map((mod) => {
+        const Section = mod.HomeSection
+        if (!Section) return null
+        return (
+          <Section key={mod.id} slug={slug} business={business} />
+        )
+      })}
+      {modules.every((m) => !m.HomeSection) ? (
+        <p className="rounded-2xl border border-[#E7E5E4] bg-[#F5F5F4] px-4 py-8 text-center text-sm text-stone-500">
+          No hay módulos activos con panel todavía.
+        </p>
+      ) : null}
+    </DashboardHome>
   )
 }

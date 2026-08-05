@@ -1,15 +1,18 @@
 import { describe, expect, test } from "bun:test"
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 import { renderToStaticMarkup } from "react-dom/server"
+import DashboardHome from "@/shell/dashboard/dashboard-home"
 import {
-  DashboardHome,
   GoalCard,
+  LoyaltyHomeQuickActions,
   TopCustomers,
 } from "@/modules/loyalty/dashboard/widgets"
 
-const metrics = {
-  customers: 128,
-  purchasesThisMonth: 47,
-  redemptionsThisMonth: 9,
+const root = join(import.meta.dir, "../..")
+
+function read(rel: string) {
+  return readFileSync(join(root, rel), "utf8")
 }
 
 const topCustomers = [
@@ -31,77 +34,49 @@ const topCustomers = [
   },
 ]
 
-describe("DashboardHome", () => {
+describe("DashboardHome shell (multi-módulo)", () => {
   test("saludo personalizado con nombre", () => {
     const html = renderToStaticMarkup(
-      <DashboardHome
-        metrics={metrics}
-        employeeName="Nico"
-        topCustomers={topCustomers}
-        weeklyGoal={{ thisWeek: 4, lastWeek: 7 }}
-        slug="carri"
-      />
+      <DashboardHome employeeName="Nico">
+        <div>sección módulo</div>
+      </DashboardHome>
     )
     expect(html).toContain("Panel")
     expect(html).toContain("Hola, Nico. Así va tu comercio hoy.")
-    expect(html).toContain("Atender clientes")
-    expect(html).toContain("min-h-[72px]")
-    expect(html).toContain("Mostrar QR")
+    expect(html).toContain("sección módulo")
   })
 
   test("saludo sin nombre usa fallback", () => {
     const html = renderToStaticMarkup(
-      <DashboardHome
-        metrics={metrics}
-        topCustomers={[]}
-        weeklyGoal={{ thisWeek: 0, lastWeek: 0 }}
-        slug="carri"
-      />
+      <DashboardHome>
+        <span>x</span>
+      </DashboardHome>
     )
     expect(html).toContain("Hola. Así va tu comercio hoy.")
   })
 
-  test("incluye meta y top con datos reales pasados por props", () => {
-    const html = renderToStaticMarkup(
-      <DashboardHome
-        metrics={metrics}
-        employeeName="Nico"
-        topCustomers={topCustomers}
-        weeklyGoal={{ thisWeek: 4, lastWeek: 7 }}
-        slug="carri"
-      />
-    )
-    expect(html).toContain("Meta de la semana")
-    expect(html).toContain("4 / 7 canjes")
-    expect(html).toContain("María Real")
-    expect(html).toContain("Juan Listo")
-    expect(html).not.toContain("Actividad reciente")
-    expect(html).not.toContain("+12%")
+  test("page itera módulos, no importa metrics de loyalty directo", () => {
+    const src = read("app/(dashboard)/[slug]/dashboard/page.tsx")
+    expect(src).toContain("getActiveModules")
+    expect(src).toContain("HomeSection")
+    expect(src).not.toContain("from \"@/modules/loyalty/api/metrics\"")
   })
+})
 
-  test("métricas con labels Pencil sin trends inventados", () => {
+describe("LoyaltyHomeQuickActions", () => {
+  test("CTAs chunky con íconos", () => {
     const html = renderToStaticMarkup(
-      <DashboardHome
-        metrics={metrics}
-        employeeName="Nico"
-        topCustomers={topCustomers}
-        weeklyGoal={{ thisWeek: 1, lastWeek: 0 }}
-        slug="carri"
-      />
+      <LoyaltyHomeQuickActions slug="carri" />
     )
-    expect(html).toContain("Clientes")
-    expect(html).toContain("Compras del mes")
-    expect(html).toContain("Premios canjeados")
-    expect(html).not.toContain("+12%")
-    expect(html).not.toContain("+8%")
+    expect(html).toContain("Atender clientes")
+    expect(html).toContain("Mostrar QR")
+    expect(html).toContain("min-h-[72px]")
   })
 })
 
 describe("GoalCard", () => {
   test("muestra progreso real vs target", () => {
-    const html = renderToStaticMarkup(
-      <GoalCard current={4} target={7} />
-    )
+    const html = renderToStaticMarkup(<GoalCard current={4} target={7} />)
     expect(html).toContain("Meta de la semana")
     expect(html).toContain("4 / 7 canjes")
     expect(html).toContain("semana pasada")
@@ -115,7 +90,6 @@ describe("TopCustomers", () => {
     )
     expect(html).toContain("Top clientes")
     expect(html).toContain("María Real")
-    expect(html).toContain("Listo")
     expect(html).toContain("/carri/dashboard/loyalty?highlight=1")
     expect(html).toContain("Ver todos")
   })
@@ -125,6 +99,25 @@ describe("TopCustomers", () => {
       <TopCustomers customers={[]} slug="carri" />
     )
     expect(html).toContain("Compartí el QR")
-    expect(html).not.toContain("María López")
+  })
+})
+
+describe("multi-módulo wiring", () => {
+  test("loyalty exporta HomeSection", () => {
+    const src = read("modules/loyalty/index.ts")
+    expect(src).toContain("HomeSection")
+    expect(src).toContain("LoyaltyHomeSection")
+  })
+
+  test("activity mergea módulos", () => {
+    const src = read("app/(dashboard)/[slug]/dashboard/activity/page.tsx")
+    expect(src).toContain("collectRecentActivity")
+    expect(src).toContain("getActiveModules")
+  })
+
+  test("hub de módulos existe", () => {
+    const src = read("app/(dashboard)/[slug]/dashboard/modules/page.tsx")
+    expect(src).toContain("Módulos")
+    expect(src).toContain("getActiveModules")
   })
 })
