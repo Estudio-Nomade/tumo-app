@@ -1,5 +1,6 @@
 import type { ActivityEvent } from "@/lib/modules"
 import type {
+  TopBuyerRow,
   TopCustomerByPrizesRow,
   TopCustomerRow,
 } from "@/modules/loyalty/api/metrics"
@@ -74,6 +75,41 @@ function initialsOf(name: string) {
   return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
 }
 
+export function HomeActivityMetrics({
+  customers,
+  purchasesThisMonth,
+}: {
+  customers: number
+  purchasesThisMonth: number
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-2.5">
+      <MetricCard
+        value={customers}
+        label="Clientes"
+        icon={
+          <Users
+            size={18}
+            className="text-[var(--color-primary,#F97316)]"
+            strokeWidth={2}
+          />
+        }
+      />
+      <MetricCard
+        value={purchasesThisMonth}
+        label="Compras del mes"
+        icon={
+          <ShoppingBag
+            size={18}
+            className="text-[var(--color-primary,#F97316)]"
+            strokeWidth={2}
+          />
+        }
+      />
+    </div>
+  )
+}
+
 export function LoyaltyMetrics({
   customers,
   purchasesThisMonth,
@@ -114,6 +150,70 @@ export function LoyaltyMetrics({
         icon={<Gift size={18} className="text-[#D97706]" strokeWidth={2} />}
       />
     </div>
+  )
+}
+
+export function FeaturedCustomers({
+  customers,
+  slug,
+}: {
+  customers: TopBuyerRow[]
+  slug: string
+}) {
+  if (customers.length === 0) {
+    return (
+      <section className="flex flex-col gap-2.5">
+        <h2 className="text-sm font-semibold text-stone-900">
+          Clientes destacados
+        </h2>
+        <div className="rounded-2xl border border-[#E7E5E4] bg-[#F5F5F4] px-4 py-8 text-center text-sm text-stone-500">
+          Compartí el QR del programa para conseguir tu primer cliente.
+        </div>
+      </section>
+    )
+  }
+
+  return (
+    <section className="flex flex-col gap-2.5">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-sm font-semibold text-stone-900">
+          Clientes destacados
+        </h2>
+        <a
+          href={`/${slug}/dashboard/loyalty`}
+          className="text-xs font-semibold text-[var(--color-primary,#F97316)]"
+        >
+          Ver todos
+        </a>
+      </div>
+      <ul className="flex flex-col gap-2.5">
+        {customers.map((c) => (
+          <li key={c.id}>
+            <a
+              href={`/${slug}/dashboard/loyalty?highlight=${encodeURIComponent(c.id)}`}
+              className="flex items-center gap-3 rounded-2xl border border-[#E7E5E4] bg-white p-3 transition hover:border-[var(--color-primary,#F97316)]/40"
+            >
+              <div
+                aria-hidden
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#FFF7ED] text-xs font-bold text-[var(--color-primary,#F97316)]"
+              >
+                {initialsOf(c.name)}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-semibold text-stone-900">
+                  {c.name}
+                </div>
+                <div className="truncate text-xs text-stone-500">
+                  {c.totalPurchases === 1
+                    ? "1 compra"
+                    : `${c.totalPurchases} compras`}
+                </div>
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
   )
 }
 

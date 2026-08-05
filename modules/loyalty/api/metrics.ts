@@ -138,6 +138,40 @@ export type TopCustomerRow = {
   canRedeem: boolean
 }
 
+export type TopBuyerRow = {
+  id: string
+  name: string
+  totalPurchases: number
+}
+
+function clampLimit(limit: number | undefined): number {
+  return Number.isFinite(limit) && (limit as number) > 0
+    ? Math.min(Math.max(Math.floor(limit as number), 1), 20)
+    : 5
+}
+
+export async function getTopBuyers(
+  deps: MetricsDeps,
+  input: { businessId: string; limit?: number }
+): Promise<TopBuyerRow[]> {
+  const businessId = input.businessId
+  const limit = clampLimit(input.limit)
+
+  const rows = (await deps.sql`
+    SELECT id, name, total_purchases
+    FROM customers
+    WHERE business_id = ${businessId}
+    ORDER BY total_purchases DESC, name ASC
+    LIMIT ${limit}
+  `) as { id: string; name: string; total_purchases: number }[]
+
+  return rows.map((row) => ({
+    id: row.id,
+    name: row.name,
+    totalPurchases: Number(row.total_purchases ?? 0),
+  }))
+}
+
 export async function getTopCustomers(
   deps: MetricsDeps,
   input: {

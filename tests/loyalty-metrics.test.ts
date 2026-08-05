@@ -3,6 +3,7 @@ import {
   countCustomersWithRedemptions,
   getMetrics,
   getRecentActivity,
+  getTopBuyers,
   getTopCustomers,
   getTopCustomersByPrizes,
   getWeeklyRedemptions,
@@ -261,6 +262,34 @@ describe("getTopCustomersByPrizes", () => {
   test("lista vacía cuando no hay canjes", async () => {
     const sql = mock(() => Promise.resolve([]))
     const result = await getTopCustomersByPrizes(
+      { sql: sql as unknown as MetricsDeps["sql"] },
+      { businessId: "biz-1" }
+    )
+    expect(result).toEqual([])
+  })
+})
+
+describe("getTopBuyers", () => {
+  test("mapea clientes por total_purchases histórico", async () => {
+    const sql = mock(() =>
+      Promise.resolve([
+        { id: "c1", name: "Ana", total_purchases: 50 },
+        { id: "c2", name: "Bob", total_purchases: 12 },
+      ])
+    )
+    const result = await getTopBuyers(
+      { sql: sql as unknown as MetricsDeps["sql"] },
+      { businessId: "biz-1", limit: 3 }
+    )
+    expect(result).toEqual([
+      { id: "c1", name: "Ana", totalPurchases: 50 },
+      { id: "c2", name: "Bob", totalPurchases: 12 },
+    ])
+  })
+
+  test("lista vacía sin clientes", async () => {
+    const sql = mock(() => Promise.resolve([]))
+    const result = await getTopBuyers(
       { sql: sql as unknown as MetricsDeps["sql"] },
       { businessId: "biz-1" }
     )

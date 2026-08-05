@@ -4,7 +4,9 @@ import { join } from "node:path"
 import { renderToStaticMarkup } from "react-dom/server"
 import DashboardHome from "@/shell/dashboard/dashboard-home"
 import {
+  FeaturedCustomers,
   GoalCard,
+  HomeActivityMetrics,
   LoyaltyHomeQuickActions,
   LoyaltyTimeline,
   TopByPrizesList,
@@ -176,15 +178,71 @@ describe("TopByPrizesList (lista B — más premios ganados)", () => {
   })
 })
 
-describe("LoyaltyHomeSection wire ranking", () => {
-  test("home-section carga ambos rankings y conteo de canjeadores", () => {
+describe("HomeActivityMetrics (Panel medio)", () => {
+  test("solo clientes y compras del mes", () => {
+    const html = renderToStaticMarkup(
+      <HomeActivityMetrics customers={2} purchasesThisMonth={12} />
+    )
+    expect(html).toContain("Clientes")
+    expect(html).toContain("Compras del mes")
+    expect(html).toContain(">2<")
+    expect(html).toContain(">12<")
+    expect(html).not.toContain("Premios canjeados")
+  })
+})
+
+describe("FeaturedCustomers (destacados por volumen)", () => {
+  test("lista por total de compras e highlight", () => {
+    const html = renderToStaticMarkup(
+      <FeaturedCustomers
+        customers={[
+          { id: "1", name: "Ana Heavy", totalPurchases: 40 },
+          { id: "2", name: "Bob Light", totalPurchases: 1 },
+        ]}
+        slug="carri"
+      />
+    )
+    expect(html).toContain("Clientes destacados")
+    expect(html).toContain("Ana Heavy")
+    expect(html).toContain("40 compras")
+    expect(html).toContain("1 compra")
+    expect(html).toContain("/carri/dashboard/loyalty?highlight=1")
+    expect(html).not.toContain("Más cerca del premio")
+    expect(html).not.toContain("premios ganados")
+  })
+
+  test("empty empuja a QR", () => {
+    const html = renderToStaticMarkup(
+      <FeaturedCustomers customers={[]} slug="carri" />
+    )
+    expect(html).toContain("Clientes destacados")
+    expect(html).toContain("Compartí el QR")
+  })
+})
+
+describe("LoyaltyHomeSection wire panel medio", () => {
+  test("home solo actividad + destacados; sin meta ni rankings premio", () => {
     const src = read("modules/loyalty/dashboard/home-section.tsx")
-    expect(src).toContain("getTopCustomers")
-    expect(src).toContain("getTopCustomersByPrizes")
-    expect(src).toContain("countCustomersWithRedemptions")
-    expect(src).toContain("TopByPrizesList")
-    expect(src).toContain("TopCustomers")
+    expect(src).toContain("getTopBuyers")
+    expect(src).toContain("HomeActivityMetrics")
+    expect(src).toContain("FeaturedCustomers")
+    expect(src).not.toContain("GoalCard")
+    expect(src).not.toContain("getTopCustomersByPrizes")
+    expect(src).not.toContain("TopByPrizesList")
+    expect(src).not.toContain("getTopCustomers(")
     expect(src).not.toContain("LoyaltyHomeQuickActions")
+  })
+})
+
+describe("Loyalty module insights", () => {
+  test("página loyalty monta insights de programa", () => {
+    const page = read("app/(dashboard)/[slug]/dashboard/loyalty/page.tsx")
+    expect(page).toContain("LoyaltyModuleInsights")
+    const insights = read("modules/loyalty/dashboard/module-insights.tsx")
+    expect(insights).toContain("GoalCard")
+    expect(insights).toContain("TopCustomers")
+    expect(insights).toContain("TopByPrizesList")
+    expect(insights).toContain("getWeeklyRedemptions")
   })
 })
 
