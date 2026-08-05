@@ -1,11 +1,10 @@
 "use client"
 
-import { FormEvent, useState } from "react"
-import { useParams } from "next/navigation"
-import Button from "@/shell/ui/Button"
-import Input from "@/shell/ui/Input"
+import { useEffect, useMemo, useState } from "react"
+import { Gift, Keyboard, Sandwich, Search } from "lucide-react"
+import { useBusiness } from "@/shell/context/business"
 
-type CustomerView = {
+export type CustomerView = {
   id: string
   name: string
   phone: string
@@ -16,185 +15,197 @@ type CustomerView = {
   canRedeem: boolean
 }
 
-const inputClassName =
-  "h-[50px] !rounded-[14px] !border-0 !bg-[#F5F5F4] px-4 text-sm text-stone-900 placeholder:text-[#A8A29E] focus:!ring-2 focus:!ring-[var(--color-primary,#F97316)]/25"
+export const AVATAR_COLORS = [
+  "#FFF7ED",
+  "#FEF9C3",
+  "#F5F5F4",
+  "#EFF6FF",
+] as const
+
+export const MOCK_CUSTOMERS: CustomerView[] = [
+  {
+    id: "1",
+    name: "María González",
+    phone: "3515550101",
+    code: "4821",
+    purchases: 8,
+    purchasesNeeded: 10,
+    rewardName: "hamburguesa gratis",
+    canRedeem: false,
+  },
+  {
+    id: "2",
+    name: "Juan Rodríguez",
+    phone: "3515550102",
+    code: "7392",
+    purchases: 10,
+    purchasesNeeded: 10,
+    rewardName: "hamburguesa gratis",
+    canRedeem: true,
+  },
+  {
+    id: "3",
+    name: "Pedro López",
+    phone: "3515550103",
+    code: "1056",
+    purchases: 3,
+    purchasesNeeded: 10,
+    rewardName: "hamburguesa gratis",
+    canRedeem: false,
+  },
+  {
+    id: "4",
+    name: "Sofía Márquez",
+    phone: "3515550104",
+    code: "6284",
+    purchases: 6,
+    purchasesNeeded: 10,
+    rewardName: "hamburguesa gratis",
+    canRedeem: false,
+  },
+]
+
+export function filterCustomers(
+  customers: CustomerView[],
+  query: string
+): CustomerView[] {
+  const q = query.trim().toLowerCase()
+  if (!q) return customers
+  return customers.filter(
+    (c) =>
+      c.name.toLowerCase().includes(q) ||
+      c.phone.includes(q) ||
+      c.code.includes(q)
+  )
+}
+
+export function customerInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return "?"
+  if (parts.length === 1) return parts[0][0]!.toUpperCase()
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+}
 
 export default function LoyaltyPanel() {
-  const params = useParams<{ slug: string }>()
-  const slug = params.slug
+  const business = useBusiness()
   const [query, setQuery] = useState("")
   const [codeMode, setCodeMode] = useState(false)
   const [code, setCode] = useState("")
-  const [customer, setCustomer] = useState<CustomerView | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [acting, setActing] = useState(false)
+  const [customers, setCustomers] = useState<CustomerView[]>(MOCK_CUSTOMERS)
+  const [booting, setBooting] = useState(true)
+  const [actingId, setActingId] = useState<string | null>(null)
   const [error, setError] = useState("")
   const [toast, setToast] = useState("")
+  const [highlightId, setHighlightId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const t = window.setTimeout(() => setBooting(false), 500)
+    return () => window.clearTimeout(t)
+  }, [])
 
   function showToast(msg: string) {
     setToast(msg)
     window.setTimeout(() => setToast(""), 2500)
   }
 
-  async function search(e: FormEvent) {
-    e.preventDefault()
-    setLoading(true)
+  const visible = useMemo(
+    () => filterCustomers(customers, query),
+    [customers, query]
+  )
+
+  function addVisit(id: string) {
+    setActingId(id)
     setError("")
-    setCustomer(null)
-    try {
-      const qs = new URLSearchParams({ slug })
-      if (codeMode) qs.set("code", code)
-      else {
-        if (/^\d{4}$/.test(query.trim())) qs.set("code", query.trim())
-        else qs.set("phone", query.trim())
-      }
-      const res = await fetch(`/api/loyalty/customers?${qs.toString()}`)
-      const data = (await res.json()) as CustomerView & { error?: string }
-      if (!res.ok) {
-        setError(data.error ?? "Cliente no encontrado")
-        return
-      }
-      setCustomer({
-        ...data,
-        canRedeem: data.canRedeem ?? data.purchases >= data.purchasesNeeded,
+    setCustomers((prev) =>
+      prev.map((c) => {
+        if (c.id !== id) return c
+        const purchases = Math.min(c.purchases + 1, c.purchasesNeeded)
+        return {
+          ...c,
+          purchases,
+          canRedeem: purchases >= c.purchasesNeeded,
+        }
       })
-    } catch {
-      setError("No pudimos buscar. Probá de nuevo.")
-    } finally {
-      setLoading(false)
-    }
+    )
+    showToast("¡Visita sumada!")
+    setActingId(null)
   }
 
-  async function addVisit() {
-    if (!customer) return
-    setActing(true)
+  function redeem(id: string) {
+    const target = customers.find((c) => c.id === id)
+    if (!target) return
+    setActingId(id)
     setError("")
-    try {
-      const res = await fetch("/api/loyalty/purchases", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customerId: customer.id }),
-      })
-      const data = (await res.json()) as CustomerView & { error?: string }
-      if (!res.ok) {
-        setError(data.error ?? "No se pudo sumar la visita.")
-        return
-      }
-      setCustomer({
-        ...customer,
-        ...data,
-        canRedeem: Boolean(data.canRedeem),
-      })
-      showToast("¡Visita sumada!")
-    } catch {
-      setError("No se pudo sumar la visita.")
-    } finally {
-      setActing(false)
-    }
+    setCustomers((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? { ...c, purchases: 0, canRedeem: false }
+          : c
+      )
+    )
+    showToast(`¡${target.rewardName} canjeado!`)
+    setActingId(null)
   }
 
-  async function redeem() {
-    if (!customer) return
-    setActing(true)
-    setError("")
-    try {
-      const res = await fetch("/api/loyalty/redemptions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customerId: customer.id }),
-      })
-      const data = (await res.json()) as {
-        success?: boolean
-        purchases?: number
-        error?: string
-      }
-      if (!res.ok) {
-        setError(data.error ?? "No se pudo canjear.")
-        return
-      }
-      setCustomer({
-        ...customer,
-        purchases: 0,
-        canRedeem: false,
-      })
-      showToast(`¡${customer.rewardName} canjeado!`)
-    } catch {
-      setError("No se pudo canjear.")
-    } finally {
-      setActing(false)
+  function submitCode() {
+    const digits = code.replace(/\D/g, "").slice(0, 4)
+    if (digits.length !== 4) {
+      setError("Ingresá un código de 4 dígitos")
+      return
     }
+    const found = customers.find((c) => c.code === digits)
+    if (!found) {
+      setError("Cliente no encontrado")
+      setHighlightId(null)
+      return
+    }
+    setError("")
+    setQuery(found.name)
+    setHighlightId(found.id)
+    setCodeMode(false)
+    setCode("")
+    showToast(`Encontramos a ${found.name}`)
   }
-
-  const pct =
-    customer && customer.purchasesNeeded > 0
-      ? Math.min(
-          (customer.purchases / customer.purchasesNeeded) * 100,
-          100
-        )
-      : 0
-
-  const customerInitial = (customer?.name?.trim()?.[0] ?? "C").toUpperCase()
 
   return (
     <div className="relative mx-auto flex w-full max-w-lg flex-col gap-4">
-      <header className="flex flex-col gap-0.5">
-        <h1 className="text-[22px] font-bold tracking-tight text-stone-900">
-          Clientes
-        </h1>
-        <p className="text-xs text-stone-500">Buscá y sumá compras</p>
+      <header className="flex items-center justify-between gap-3">
+        <div className="min-w-0 flex flex-col gap-0.5">
+          <h1 className="text-[22px] font-bold tracking-tight text-stone-900">
+            Clientes
+          </h1>
+          <p className="truncate text-xs text-stone-500">
+            {business.name} · Hoy
+          </p>
+        </div>
+        <div
+          aria-hidden
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--color-primary,#F97316)] text-white"
+        >
+          <Sandwich size={22} strokeWidth={2} />
+        </div>
       </header>
 
-      <form onSubmit={search} className="flex flex-col gap-3">
-        {codeMode ? (
-          <div className="[&_label>span]:sr-only">
-            <Input
-              label="Código de 4 dígitos"
-              name="code"
-              inputMode="numeric"
-              maxLength={4}
-              placeholder="Código de 4 dígitos"
-              value={code}
-              onChange={(e) =>
-                setCode(e.target.value.replace(/\D/g, "").slice(0, 4))
-              }
-              required
-              className={inputClassName}
-            />
-          </div>
-        ) : (
-          <div className="[&_label>span]:sr-only">
-            <Input
-              label="Buscar por nombre o teléfono"
-              name="query"
-              placeholder="Buscar por nombre o teléfono"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              required
-              className={inputClassName}
-            />
-          </div>
-        )}
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Button
-            type="submit"
-            disabled={loading}
-            className="h-[50px] flex-1 !rounded-[14px] text-sm font-bold disabled:opacity-70"
-          >
-            {loading ? "Buscando…" : "Buscar"}
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => {
-              setCodeMode((v) => !v)
-              setError("")
-            }}
-            className="h-[50px] flex-1 !rounded-[14px] !border-[var(--color-primary,#F97316)] text-sm font-bold"
-          >
-            {codeMode ? "Buscar por WhatsApp" : "Ingresar código"}
-          </Button>
-        </div>
-      </form>
+      <div className="relative">
+        <Search
+          size={18}
+          strokeWidth={2}
+          aria-hidden
+          className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-[#A8A29E]"
+        />
+        <input
+          type="search"
+          name="query"
+          aria-label="Buscar por nombre o teléfono"
+          placeholder="Buscar por nombre o teléfono"
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value)
+            setHighlightId(null)
+          }}
+          className="h-[50px] w-full rounded-[14px] border-0 bg-[#F5F5F4] pr-4 pl-11 text-sm text-stone-900 outline-none placeholder:text-[#A8A29E] focus:ring-2 focus:ring-[var(--color-primary,#F97316)]/25"
+        />
+      </div>
 
       {error ? (
         <p
@@ -214,64 +225,138 @@ export default function LoyaltyPanel() {
         </p>
       ) : null}
 
-      {loading && !customer ? (
-        <div className="flex min-h-[140px] items-center justify-center rounded-2xl bg-[#F5F5F4] px-6 py-8 text-center">
-          <p className="text-sm font-medium text-stone-500">Buscando…</p>
+      {booting ? (
+        <div className="flex min-h-[180px] items-center justify-center rounded-2xl bg-[#F5F5F4] px-6 py-8 text-center">
+          <p className="text-sm font-medium text-stone-500">Cargando…</p>
         </div>
-      ) : null}
-
-      {customer ? (
-        <div className="flex items-center gap-3 rounded-2xl border border-[#E7E5E4] bg-white p-3">
-          <div
-            aria-hidden
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#FFF7ED] text-sm font-bold text-[var(--color-primary,#F97316)]"
-          >
-            {customerInitial}
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-sm font-semibold text-stone-900">
-              {customer.name}
-            </div>
-            <div className="mt-1 flex items-center gap-2">
-              <div className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-[#F5F5F4]">
-                <div
-                  className="h-full rounded-full bg-[var(--color-primary,#F97316)] transition-all duration-500 ease-out"
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-              <span className="shrink-0 text-[11px] font-semibold text-[#A8A29E]">
-                {customer.purchases}/{customer.purchasesNeeded}
-              </span>
-            </div>
-          </div>
-          {customer.canRedeem ? (
-            <Button
-              type="button"
-              disabled={acting}
-              onClick={() => void redeem()}
-              className="shrink-0 !rounded-full !border-0 !bg-[#EAB308] px-3 py-2.5 text-xs font-bold !text-white disabled:opacity-70"
-            >
-              {acting ? "…" : "Canjear"}
-            </Button>
+      ) : (
+        <ul className="flex max-h-[min(52vh,420px)] flex-col gap-2.5 overflow-y-auto">
+          {visible.length === 0 ? (
+            <li className="flex min-h-[120px] items-center justify-center rounded-2xl bg-[#F5F5F4] px-6 py-8 text-center text-sm text-stone-500">
+              No se encontraron clientes.
+            </li>
           ) : (
-            <Button
-              type="button"
-              disabled={acting}
-              onClick={() => void addVisit()}
-              className="shrink-0 !rounded-full !border-0 !bg-[#16A34A] px-3 py-2.5 text-xs font-bold !text-white disabled:opacity-70"
-            >
-              {acting ? "…" : "+1 compra"}
-            </Button>
+            visible.map((customer, index) => {
+              const pct =
+                customer.purchasesNeeded > 0
+                  ? Math.min(
+                      (customer.purchases / customer.purchasesNeeded) * 100,
+                      100
+                    )
+                  : 0
+              const bg = AVATAR_COLORS[index % AVATAR_COLORS.length]
+              const acting = actingId === customer.id
+              const highlighted = highlightId === customer.id
+
+              return (
+                <li
+                  key={customer.id}
+                  className={`flex items-center gap-3 rounded-2xl border bg-white p-3 ${
+                    highlighted
+                      ? "border-[var(--color-primary,#F97316)] ring-2 ring-[var(--color-primary,#F97316)]/20"
+                      : "border-[#E7E5E4]"
+                  }`}
+                >
+                  <div
+                    aria-hidden
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold text-[var(--color-primary,#F97316)]"
+                    style={{ backgroundColor: bg }}
+                  >
+                    {customerInitials(customer.name)}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-semibold text-stone-900">
+                      {customer.name}
+                    </div>
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <div className="h-1.5 w-[88px] shrink-0 overflow-hidden rounded-full bg-[#F5F5F4]">
+                        <div
+                          className="h-full rounded-full bg-[var(--color-primary,#F97316)] transition-all duration-500 ease-out"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <span className="shrink-0 text-[11px] font-semibold text-[#A8A29E]">
+                        {customer.purchases}/{customer.purchasesNeeded}
+                      </span>
+                    </div>
+                  </div>
+                  {customer.canRedeem ? (
+                    <button
+                      type="button"
+                      disabled={acting}
+                      onClick={() => redeem(customer.id)}
+                      className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#EAB308] px-3 py-2.5 text-xs font-bold text-white disabled:opacity-70"
+                    >
+                      <Gift size={14} strokeWidth={2.5} aria-hidden />
+                      Canjear premio
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={acting}
+                      onClick={() => addVisit(customer.id)}
+                      className="shrink-0 rounded-full bg-[#16A34A] px-3 py-2.5 text-xs font-bold text-white disabled:opacity-70"
+                    >
+                      +1 compra
+                    </button>
+                  )}
+                </li>
+              )
+            })
           )}
+        </ul>
+      )}
+
+      {codeMode ? (
+        <div className="flex flex-col gap-2 rounded-2xl border border-[#E7E5E4] bg-white p-3">
+          <label className="text-xs font-semibold text-stone-500">
+            Código de 4 dígitos
+          </label>
+          <div className="flex gap-2">
+            <input
+              inputMode="numeric"
+              maxLength={4}
+              value={code}
+              onChange={(e) =>
+                setCode(e.target.value.replace(/\D/g, "").slice(0, 4))
+              }
+              placeholder="••••"
+              className="h-[50px] min-w-0 flex-1 rounded-[14px] border-0 bg-[#F5F5F4] px-4 text-center text-lg font-bold tracking-[0.35em] text-stone-900 outline-none placeholder:tracking-normal placeholder:text-[#A8A29E] focus:ring-2 focus:ring-[var(--color-primary,#F97316)]/25"
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={submitCode}
+              className="h-[50px] shrink-0 rounded-[14px] bg-[var(--color-primary,#F97316)] px-4 text-sm font-bold text-white"
+            >
+              OK
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setCodeMode(false)
+              setCode("")
+              setError("")
+            }}
+            className="text-xs font-semibold text-stone-500"
+          >
+            Cancelar
+          </button>
         </div>
-      ) : !loading && !error ? (
-        <div className="flex min-h-[140px] items-center justify-center rounded-2xl bg-[#F5F5F4] px-6 py-8 text-center">
-          <p className="max-w-xs text-sm leading-relaxed text-stone-500">
-            Buscá por código o WhatsApp para ver la tarjeta del cliente y sumar
-            visitas.
-          </p>
-        </div>
-      ) : null}
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            setCodeMode(true)
+            setError("")
+          }}
+          className="inline-flex h-[50px] w-full items-center justify-center gap-2 rounded-[14px] border border-[var(--color-primary,#F97316)] bg-white text-[15px] font-bold text-[var(--color-primary,#F97316)]"
+        >
+          <Keyboard size={18} strokeWidth={2} aria-hidden />
+          Ingresar código
+        </button>
+      )}
     </div>
   )
 }

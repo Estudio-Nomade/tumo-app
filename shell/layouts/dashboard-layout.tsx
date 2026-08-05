@@ -89,6 +89,9 @@ export default function DashboardLayout({
         exact: true,
       }))
 
+  // Employees work full-screen on the loyalty panel — no mobile bottom pill.
+  const showBottomNav = isOwner && navItems.length > 0
+
   async function onLogout() {
     try {
       const res = await fetch("/api/auth/logout", { method: "POST" })
@@ -224,14 +227,14 @@ export default function DashboardLayout({
 
           <main
             className={`flex-1 px-5 py-2 md:px-8 md:py-8 ${
-              navItems.length > 0 ? "pb-28 md:pb-8" : "pb-5 md:pb-8"
+              showBottomNav ? "pb-28 md:pb-8" : "pb-5 md:pb-8"
             }`}
           >
             {children}
           </main>
         </div>
 
-        {navItems.length > 0 ? (
+        {showBottomNav ? (
           <nav
             aria-label="Navegación principal"
             className="fixed inset-x-0 bottom-0 z-20 bg-transparent px-[21px] pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:hidden"
