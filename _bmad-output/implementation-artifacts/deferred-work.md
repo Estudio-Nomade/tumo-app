@@ -33,3 +33,19 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-loyalty-visual-refactor.md`
   summary: shellClassName brand duplicado entre login/verify/card/registration
   evidence: riesgo de drift; conviene extraer helper compartido
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-owner-nav-dashboard-home.md`
+  summary: Owner no tiene acceso en nav al panel staff `/dashboard/loyalty`
+  evidence: Nav fijo Panel/Actividad/Ajustes omite módulos; ruta loyalty sigue viva
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-owner-nav-dashboard-home.md`
+  summary: Business.location tipado pero no se lee de DB
+  evidence: getBusiness no SELECT location; UI solo muestra si se hidrata el campo
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-owner-nav-dashboard-home.md`
+  summary: Meta/top clientes/trends son mocks sin etiqueta demo
+  evidence: Spec permite mocks; riesgo de leerse como datos reales en producción
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-owner-nav-dashboard-home.md`
+  summary: Hoy/Ayer del timeline usan TZ del server en RSC
+  evidence: groupActivityByDay corre en server; desfase cerca de medianoche vs usuario AR

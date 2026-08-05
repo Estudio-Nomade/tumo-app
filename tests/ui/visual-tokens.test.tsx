@@ -47,17 +47,27 @@ describe("visual tokens vs Pencil", () => {
     expect(src).toContain("rounded-[18px]")
     expect(src).toContain("text-[22px]")
     expect(src).toContain("font-extrabold")
-    expect(src).not.toContain("items-center justify-center")
+    expect(src).toContain("h-[34px]")
+    expect(src).toContain("variant")
   })
 
-  test("dashboard mobile nav is pill with labels", () => {
+  test("dashboard mobile nav is pill with fixed owner tabs", () => {
     const src = read("shell/layouts/dashboard-layout.tsx")
     expect(src).toContain("rounded-[36px]")
     expect(src).toContain("rounded-[26px]")
     expect(src).toContain("flex-col items-center justify-center")
-    // label text visible on mobile, not icon-only
-    expect(src).toContain("{item.label}")
+    expect(src).toContain('label: "Panel"')
+    expect(src).toContain('label: "Actividad"')
+    expect(src).toContain('label: "Ajustes"')
     expect(src).toContain("text-[10px]")
+  })
+
+  test("dashboard home has goal gradient card", () => {
+    const src = read("modules/loyalty/dashboard/widgets.tsx")
+    expect(src).toContain("Meta de la semana")
+    expect(src).toContain("from-[var(--color-primary")
+    expect(src).toContain("to-[var(--color-primary-deep,#EA580C)]")
+    expect(src).toContain("Top clientes")
   })
 
   test("employee panel search uses surface-soft bar styling", () => {

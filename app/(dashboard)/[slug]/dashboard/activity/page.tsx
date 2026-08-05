@@ -1,15 +1,15 @@
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
-import { getMetrics } from "@/modules/loyalty/api/metrics"
+import { getRecentActivity } from "@/modules/loyalty/api/metrics"
 import { metricsDeps } from "@/modules/loyalty/lib/default-deps"
-import { DashboardHome } from "@/modules/loyalty/dashboard/widgets"
+import { ActivityPage } from "@/modules/loyalty/dashboard/widgets"
 import { validateSession } from "@/shell/auth/session"
 
 type PageProps = {
   params: Promise<{ slug: string }>
 }
 
-export default async function DashboardHomePage({ params }: PageProps) {
+export default async function DashboardActivityPage({ params }: PageProps) {
   const { slug } = await params
   const cookieStore = await cookies()
   const token = cookieStore.get("session_token")?.value
@@ -22,11 +22,10 @@ export default async function DashboardHomePage({ params }: PageProps) {
     redirect(`/${slug}/dashboard/loyalty`)
   }
 
-  const metrics = await getMetrics(metricsDeps, {
+  const activity = await getRecentActivity(metricsDeps, {
     businessId: session.businessId,
+    limit: 30,
   })
 
-  return (
-    <DashboardHome metrics={metrics} employeeName={session.name} />
-  )
+  return <ActivityPage events={activity} />
 }

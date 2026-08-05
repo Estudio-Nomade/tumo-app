@@ -30,4 +30,37 @@ describe("MetricCard", () => {
     expect(asNumber).toContain(">42<")
     expect(asString).toContain(">N/A<")
   })
+
+  test("renderiza icon y trend badge", () => {
+    const html = renderToStaticMarkup(
+      <MetricCard
+        value={128}
+        label="Clientes"
+        icon={<span data-testid="metric-icon">U</span>}
+        trend="+12%"
+      />
+    )
+    expect(html).toContain("metric-icon")
+    expect(html).toContain("+12%")
+    expect(html).toContain("h-[34px]")
+    expect(html).toContain("w-[34px]")
+    expect(html).toContain("rounded-[10px]")
+    expect(html).toContain("#DCFCE7")
+  })
+
+  test("variant highlight usa fondo amarillo", () => {
+    const html = renderToStaticMarkup(
+      <MetricCard value={9} label="Premios canjeados" variant="highlight" />
+    )
+    expect(html).toContain("bg-[#FEF9C3]")
+    expect(html).toContain("border-[#FDE68A]")
+  })
+
+  test("variant default usa fondo naranja suave", () => {
+    const html = renderToStaticMarkup(
+      <MetricCard value={3} label="Compras" variant="default" />
+    )
+    expect(html).toContain("bg-[#FFF7ED]")
+    expect(html).toContain("border-[#FED7AA]")
+  })
 })

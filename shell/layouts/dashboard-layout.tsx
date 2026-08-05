@@ -1,18 +1,39 @@
 "use client"
 
-import type { CSSProperties, ReactNode } from "react"
+import type { CSSProperties, ComponentType, ReactNode, SVGProps } from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
+import {
+  Activity,
+  Gift,
+  LayoutDashboard,
+  Sandwich,
+  Settings,
+} from "lucide-react"
 import type { Business } from "@/lib/modules"
 import { BusinessProvider } from "@/shell/context/business"
 
 type SidebarModule = { id: string; name: string; icon: string }
 
+type LucideIcon = ComponentType<SVGProps<SVGSVGElement> & { size?: number | string }>
+
 type NavItem = {
   href: string
   label: string
-  icon: string
+  icon: LucideIcon
   exact?: boolean
+}
+
+const MODULE_ICONS: Record<string, LucideIcon> = {
+  gift: Gift,
+  Gift: Gift,
+  layout: LayoutDashboard,
+  activity: Activity,
+  settings: Settings,
+}
+
+function resolveModuleIcon(name: string): LucideIcon {
+  return MODULE_ICONS[name] ?? LayoutDashboard
 }
 
 function isActivePath(pathname: string, href: string, exact?: boolean) {
@@ -33,33 +54,40 @@ export default function DashboardLayout({
   employeeName?: string
   children: ReactNode
 }) {
-  const showDashboard = role === "owner"
+  const isOwner = role === "owner"
   const slug = business.slug
   const pathname = usePathname()
   const router = useRouter()
   const displayName =
-    employeeName?.trim() || (role === "owner" ? "Dueño" : "Empleado")
+    employeeName?.trim() || (isOwner ? "Dueño" : "Empleado")
   const initial = (displayName[0] ?? "U").toUpperCase()
-  const businessInitial = (business.name?.trim()?.[0] ?? "T").toUpperCase()
+  const locationLabel = business.location?.trim() || ""
 
-  const navItems: NavItem[] = [
-    ...(showDashboard
-      ? [
-          {
-            href: `/${slug}/dashboard`,
-            label: "Panel",
-            icon: "▣",
-            exact: true,
-          },
-        ]
-      : []),
-    ...modules.map((mod) => ({
-      href: `/${slug}/dashboard/${mod.id}`,
-      label: mod.name,
-      icon: mod.icon,
-      exact: true,
-    })),
-  ]
+  const navItems: NavItem[] = isOwner
+    ? [
+        {
+          href: `/${slug}/dashboard`,
+          label: "Panel",
+          icon: LayoutDashboard,
+          exact: true,
+        },
+        {
+          href: `/${slug}/dashboard/activity`,
+          label: "Actividad",
+          icon: Activity,
+        },
+        {
+          href: `/${slug}/dashboard/settings`,
+          label: "Ajustes",
+          icon: Settings,
+        },
+      ]
+    : modules.map((mod) => ({
+        href: `/${slug}/dashboard/${mod.id}`,
+        label: mod.name,
+        icon: resolveModuleIcon(mod.icon),
+        exact: true,
+      }))
 
   async function onLogout() {
     try {
@@ -79,6 +107,7 @@ export default function DashboardLayout({
         style={
           {
             ["--color-primary" as string]: business.primary_color,
+            ["--color-primary-deep" as string]: business.primary_color,
             ["--color-secondary" as string]: business.secondary_color,
           } as CSSProperties
         }
@@ -95,9 +124,9 @@ export default function DashboardLayout({
             ) : (
               <div
                 aria-hidden
-                className="flex h-16 w-16 items-center justify-center rounded-[18px] bg-[var(--color-primary,#F97316)] text-2xl font-extrabold text-white"
+                className="flex h-16 w-16 items-center justify-center rounded-[18px] bg-[var(--color-primary,#F97316)] text-white"
               >
-                {businessInitial}
+                <Sandwich size={28} strokeWidth={2} />
               </div>
             )}
             <div className="text-center text-sm font-bold text-stone-900">
@@ -113,6 +142,7 @@ export default function DashboardLayout({
           >
             {navItems.map((item) => {
               const active = isActivePath(pathname, item.href, item.exact)
+              const Icon = item.icon
               return (
                 <Link
                   key={item.href}
@@ -124,9 +154,7 @@ export default function DashboardLayout({
                       : "text-stone-500 hover:bg-[#F5F5F4] hover:text-stone-900"
                   }`}
                 >
-                  <span aria-hidden className="text-base leading-none">
-                    {item.icon}
-                  </span>
+                  <Icon size={18} strokeWidth={2} aria-hidden />
                   {item.label}
                 </Link>
               )
@@ -170,28 +198,28 @@ export default function DashboardLayout({
               ) : (
                 <div
                   aria-hidden
-                  className="flex h-[38px] w-[38px] items-center justify-center rounded-[11px] bg-[var(--color-primary,#F97316)] text-sm font-bold text-white"
+                  className="flex h-[38px] w-[38px] items-center justify-center rounded-[11px] bg-[var(--color-primary,#F97316)] text-white"
                 >
-                  {businessInitial}
+                  <Sandwich size={20} strokeWidth={2} />
                 </div>
               )}
               <div className="min-w-0">
                 <div className="truncate text-sm font-bold text-stone-900">
                   {business.name}
                 </div>
-                <div className="truncate text-[11px] text-stone-500">
-                  {displayName}
-                </div>
+                {locationLabel ? (
+                  <div className="truncate text-[11px] text-stone-500">
+                    {locationLabel}
+                  </div>
+                ) : null}
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => void onLogout()}
-              aria-label="Salir"
-              className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-[#1C1917] text-sm font-bold text-white"
+            <div
+              aria-label={displayName}
+              className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-[#1C1917] text-base font-bold text-white"
             >
               {initial}
-            </button>
+            </div>
           </header>
 
           <main
@@ -208,23 +236,22 @@ export default function DashboardLayout({
             aria-label="Navegación principal"
             className="fixed inset-x-0 bottom-0 z-20 bg-transparent px-[21px] pt-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:hidden"
           >
-            <div className="mx-auto flex h-[62px] max-w-md items-stretch gap-1 overflow-x-auto rounded-[36px] border border-[#E7E5E4] bg-white p-1">
+            <div className="mx-auto flex h-[62px] max-w-md items-stretch gap-1 rounded-[36px] border border-[#E7E5E4] bg-white p-1">
               {navItems.map((item) => {
                 const active = isActivePath(pathname, item.href, item.exact)
+                const Icon = item.icon
                 return (
                   <Link
                     key={`m-${item.href}`}
                     href={item.href}
                     aria-current={active ? "page" : undefined}
-                    className={`flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-[26px] px-1 transition ${
+                    className={`flex h-full min-w-0 flex-1 flex-col items-center justify-center gap-[3px] rounded-[26px] px-1 transition ${
                       active
                         ? "bg-[var(--color-primary,#F97316)] text-white"
-                        : "bg-white text-stone-500"
+                        : "bg-white text-[#78716C]"
                     }`}
                   >
-                    <span aria-hidden className="text-base leading-none">
-                      {item.icon}
-                    </span>
+                    <Icon size={18} strokeWidth={2} aria-hidden />
                     <span className="max-w-full truncate text-[10px] font-semibold tracking-wide">
                       {item.label}
                     </span>

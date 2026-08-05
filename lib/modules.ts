@@ -18,6 +18,7 @@ export type Business = {
   active_modules: string[]
   purchases_needed: number
   reward_name: string
+  location?: string
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

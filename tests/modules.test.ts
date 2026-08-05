@@ -57,7 +57,7 @@ describe("loyaltyModule", () => {
     expect(loyaltyModule.name).toBe("Fidelización")
   })
 
-  test("icon Gift", () => {
-    expect(loyaltyModule.icon).toBe("Gift")
+  test("icon gift (Lucide)", () => {
+    expect(loyaltyModule.icon).toBe("gift")
   })
 })

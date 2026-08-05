@@ -9,7 +9,7 @@ import {
 export const loyaltyModule: Module = {
   id: "loyalty",
   name: "Fidelización",
-  icon: "Gift",
+  icon: "gift",
   dashboardWidgets: [LoyaltyMetrics, LoyaltyTimeline],
   getRecentActivity: (businessId, limit) =>
     getRecentActivity(metricsDeps, { businessId, limit }),

@@ -32,7 +32,12 @@ export default async function Layout({ children, params }: LayoutProps) {
   const sidebarModules = allModules.map((m) => ({ id: m.id, name: m.name, icon: m.icon }))
 
   return (
-    <DashboardLayout business={business} role={session.role} modules={sidebarModules}>
+    <DashboardLayout
+      business={business}
+      role={session.role}
+      modules={sidebarModules}
+      employeeName={session.name}
+    >
       {children}
     </DashboardLayout>
   )
