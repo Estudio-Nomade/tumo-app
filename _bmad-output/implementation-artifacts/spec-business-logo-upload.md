@@ -18,7 +18,7 @@ context: []
 
 ## Boundaries
 
-**Always:** Solo owner; JPEG/PNG/WebP ≤2MB; DI testeable; borrar logo viejo del bucket si era nuestro; env `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`.
+**Always:** Solo owner; JPEG/PNG/WebP ≤2MB; DI testeable; borrar logo viejo del bucket si era nuestro; env modernas `NEXT_PUBLIC_SUPABASE_URL` + `SUPABASE_SECRET_KEY` (`sb_secret_...`); publishable opcional en client.
 
 **Never:** Historial de logos; cliente con service role; base64 en DB.
 

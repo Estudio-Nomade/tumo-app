@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error:
-          "Storage no configurado. Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY.",
+          "Storage no configurado. Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SECRET_KEY.",
       },
       { status: 503 }
     )

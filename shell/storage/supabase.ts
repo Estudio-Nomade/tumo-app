@@ -6,12 +6,40 @@ type GlobalStore = typeof globalThis & {
   __tumoLogoBucketReady?: boolean
 }
 
+/**
+ * Modern Supabase API keys (2025+):
+ * - publishable: sb_publishable_... (public, like legacy anon)
+ * - secret: sb_secret_... (server only, like legacy service_role)
+ * @see https://supabase.com/docs/guides/getting-started/ai-prompts/use-supabase-ai-assistant
+ */
+function resolveSecretKey(): string | undefined {
+  const single = process.env.SUPABASE_SECRET_KEY?.trim()
+  if (single) return single
+
+  // Optional multi-key map: {"default":"sb_secret_..."}
+  const rawMap = process.env.SUPABASE_SECRET_KEYS?.trim()
+  if (rawMap) {
+    try {
+      const map = JSON.parse(rawMap) as Record<string, string>
+      const named =
+        map.default?.trim() ||
+        map.service_role?.trim() ||
+        Object.values(map).find((v) => typeof v === "string" && v.trim())
+      if (named?.trim()) return named.trim()
+    } catch {
+      // ignore invalid JSON
+    }
+  }
+
+  return undefined
+}
+
 function requireEnv(): { url: string; key: string } {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
+  const key = resolveSecretKey()
   if (!url || !key) {
     throw new Error(
-      "Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY"
+      "Faltan NEXT_PUBLIC_SUPABASE_URL o SUPABASE_SECRET_KEY (sb_secret_...)"
     )
   }
   return { url, key }
@@ -22,7 +50,11 @@ export function getSupabaseAdmin(): SupabaseClient {
   if (g.__tumoSupabase) return g.__tumoSupabase
   const { url, key } = requireEnv()
   const client = createClient(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
   })
   g.__tumoSupabase = client
   return client
@@ -80,7 +112,6 @@ export function createSupabaseLogoStorage(): LogoStorage {
 
 export function isSupabaseStorageConfigured(): boolean {
   return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
-      process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
+    process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() && resolveSecretKey()
   )
 }
