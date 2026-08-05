@@ -1,9 +1,18 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { Gift, Keyboard, QrCode, Sandwich, Search } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { useBusiness } from "@/shell/context/business"
 
 export type CustomerView = {
@@ -61,6 +70,9 @@ export default function LoyaltyPanel() {
     highlightFromUrl
   )
   const [lookingUp, setLookingUp] = useState(false)
+  const [redeemTarget, setRedeemTarget] = useState<CustomerView | null>(null)
+  const [redeemError, setRedeemError] = useState("")
+  const redeemInFlight = useRef(false)
 
   function showToast(msg: string) {
     setToast(msg)
@@ -158,15 +170,13 @@ export default function LoyaltyPanel() {
     }
   }
 
-  async function redeem(id: string) {
-    const target = customers.find((c) => c.id === id)
-    if (!target) return
-    const ok = window.confirm(
-      `¿Canjear ${target.rewardName} a ${target.name}?`
-    )
-    if (!ok) return
+  async function confirmRedeem() {
+    const target = redeemTarget
+    if (!target || redeemInFlight.current) return
+    redeemInFlight.current = true
+    const id = target.id
     setActingId(id)
-    setError("")
+    setRedeemError("")
     try {
       const res = await fetch("/api/loyalty/redemptions", {
         method: "POST",
@@ -178,7 +188,7 @@ export default function LoyaltyPanel() {
         error?: string
       }
       if (!res.ok) {
-        setError(data.error ?? "No se pudo canjear.")
+        setRedeemError(data.error ?? "No se pudo canjear. Probá de nuevo.")
         return
       }
       setCustomers((prev) =>
@@ -186,10 +196,12 @@ export default function LoyaltyPanel() {
           c.id === id ? { ...c, purchases: 0, canRedeem: false } : c
         )
       )
+      setRedeemTarget(null)
       showToast(`¡${target.rewardName} canjeado!`)
     } catch {
-      setError("No se pudo canjear.")
+      setRedeemError("No se pudo canjear. Probá de nuevo.")
     } finally {
+      redeemInFlight.current = false
       setActingId(null)
     }
   }
@@ -448,7 +460,10 @@ export default function LoyaltyPanel() {
                     <button
                       type="button"
                       disabled={acting}
-                      onClick={() => void redeem(customer.id)}
+                      onClick={() => {
+                        setRedeemError("")
+                        setRedeemTarget(customer)
+                      }}
                       className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#EAB308] px-3 py-2.5 text-xs font-bold text-white disabled:opacity-70"
                     >
                       <Gift size={14} strokeWidth={2.5} aria-hidden />
@@ -470,6 +485,77 @@ export default function LoyaltyPanel() {
           )}
         </ul>
       )}
+
+      <Dialog
+        open={redeemTarget !== null}
+        onOpenChange={(open) => {
+          if (!open && !redeemInFlight.current) {
+            setRedeemTarget(null)
+            setRedeemError("")
+          }
+        }}
+      >
+        <DialogContent
+          showCloseButton={false}
+          className="gap-0 overflow-hidden p-0 sm:max-w-sm"
+        >
+          <DialogHeader className="gap-3 p-5 pb-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#FEF9C3] text-[#A16207]">
+              <Gift size={24} strokeWidth={2.25} aria-hidden />
+            </div>
+            <DialogTitle className="text-lg font-bold text-stone-900">
+              Confirmar canje
+            </DialogTitle>
+            <DialogDescription className="text-sm leading-relaxed text-stone-500">
+              {redeemTarget ? (
+                <>
+                  ¿Canjear{" "}
+                  <span className="font-semibold text-stone-800">
+                    {redeemTarget.rewardName}
+                  </span>{" "}
+                  a{" "}
+                  <span className="font-semibold text-stone-800">
+                    {redeemTarget.name}
+                  </span>
+                  ? Se reinicia su progreso de visitas.
+                </>
+              ) : (
+                "\u00a0"
+              )}
+            </DialogDescription>
+            {redeemError ? (
+              <p
+                role="alert"
+                className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-700"
+              >
+                {redeemError}
+              </p>
+            ) : null}
+          </DialogHeader>
+          <DialogFooter className="mx-0 mb-0 flex-col-reverse gap-2 rounded-b-xl border-t border-stone-100 bg-stone-50 p-4 sm:flex-col-reverse sm:justify-stretch">
+            <Button
+              type="button"
+              disabled={actingId !== null}
+              onClick={() => void confirmRedeem()}
+              className="h-11 w-full rounded-xl bg-[#EAB308] text-sm font-bold text-white hover:bg-[#CA8A04]"
+            >
+              {actingId !== null ? "Canjeando…" : "Sí, canjear premio"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={actingId !== null}
+              onClick={() => {
+                setRedeemTarget(null)
+                setRedeemError("")
+              }}
+              className="h-11 w-full rounded-xl border-stone-200 bg-white text-sm font-semibold text-stone-700"
+            >
+              Cancelar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

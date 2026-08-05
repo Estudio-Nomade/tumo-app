@@ -120,7 +120,15 @@ describe("loyalty panel source (Pencil EDNqK + real data)", () => {
     expect(src).toContain("Canjear premio")
     expect(src).toContain("#16A34A")
     expect(src).toContain("#EAB308")
-    expect(src).toContain("window.confirm")
+  })
+
+  test("canje usa Dialog de confirmación, no window.confirm", () => {
+    expect(src).not.toContain("window.confirm")
+    expect(src).toContain('from "@/components/ui/dialog"')
+    expect(src).toContain("DialogContent")
+    expect(src).toContain("Confirmar canje")
+    expect(src).toContain("Cancelar")
+    expect(src).toMatch(/Canjear\s+\{|Canjear premio/)
   })
 
   test("código es CTA primaria por encima de la lista", () => {
