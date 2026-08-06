@@ -15,6 +15,8 @@ export type Business = {
   logo: string | null
   primary_color: string
   secondary_color: string
+  surface_color?: string | null
+  tagline?: string | null
   active_modules: string[]
   purchases_needed: number
   reward_name: string

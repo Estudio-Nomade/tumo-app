@@ -3,11 +3,15 @@ import { join } from "path"
 import { sql } from "./pool"
 
 async function migrate() {
-  const migration = readFileSync(
-    join(import.meta.dir, "migrations", "001_initial.sql"),
-    "utf-8"
-  )
-  await sql.unsafe(migration)
+  const files = ["001_initial.sql", "002_business_surface_tagline.sql"]
+  for (const file of files) {
+    const migration = readFileSync(
+      join(import.meta.dir, "migrations", file),
+      "utf-8"
+    )
+    await sql.unsafe(migration)
+    console.log(`OK ${file}`)
+  }
   console.log("Migración ejecutada correctamente")
 }
 

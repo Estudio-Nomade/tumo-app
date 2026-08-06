@@ -98,7 +98,7 @@ export default function LoyaltyCard({
   }
 
   return (
-    <div className="fixed inset-0 z-10 flex min-h-[100dvh] w-full flex-col items-center overflow-y-auto bg-white pt-[max(0.75rem,env(safe-area-inset-top))] pr-[max(1.5rem,env(safe-area-inset-right))] pb-[max(1.5rem,env(safe-area-inset-bottom))] pl-[max(1.5rem,env(safe-area-inset-left))]">
+    <div className="fixed inset-0 z-10 flex min-h-[100dvh] w-full flex-col items-center overflow-y-auto bg-[var(--color-surface-public,#FFFFFF)] pt-[max(0.75rem,env(safe-area-inset-top))] pr-[max(1.5rem,env(safe-area-inset-right))] pb-[max(1.5rem,env(safe-area-inset-bottom))] pl-[max(1.5rem,env(safe-area-inset-left))]">
       <div className="mx-auto flex w-full max-w-sm flex-col gap-5 py-3">
         <header className="flex items-center gap-3">
           <div
@@ -108,10 +108,12 @@ export default function LoyaltyCard({
             {initials || "·"}
           </div>
           <div className="min-w-0 flex-1">
-            <h1 className="truncate text-[19px] font-bold tracking-tight text-stone-900">
+            <h1 className="truncate text-[19px] font-bold tracking-tight text-[var(--color-ink-public,#1C1917)]">
               ¡Hola, {customer.name.split(/\s+/)[0] || customer.name}!
             </h1>
-            <p className="truncate text-xs text-stone-500">{business.name}</p>
+            <p className="truncate text-xs text-[var(--color-muted-public,#78716C)]">
+              {business.name}
+            </p>
           </div>
           <button
             type="button"
@@ -123,9 +125,9 @@ export default function LoyaltyCard({
           </button>
         </header>
 
-        <div className="flex w-full flex-col gap-3.5 rounded-3xl bg-gradient-to-b from-[var(--color-primary,#F97316)] to-[color-mix(in_srgb,var(--color-primary,#F97316)_82%,#9a3412)] p-5 text-white">
+        <div className="flex w-full flex-col gap-3.5 rounded-3xl bg-gradient-to-b from-[var(--color-primary,#F97316)] to-[var(--color-card-to,color-mix(in_srgb,var(--color-primary,#F97316)_82%,#9a3412))] p-5 text-white">
           <div className="flex items-center justify-between">
-            <p className="text-[13px] font-medium text-[#FFEDD5]">
+            <p className="text-[13px] font-medium text-[var(--color-reward-label,#FFEDD5)]">
               Tu próxima recompensa
             </p>
             <span
@@ -140,7 +142,7 @@ export default function LoyaltyCard({
           </p>
           <div className="h-3.5 w-full overflow-hidden rounded-full bg-white/25">
             <div
-              className="h-full rounded-full bg-[var(--color-secondary,#FACC15)] transition-all duration-500 ease-out"
+              className="h-full rounded-full bg-[var(--color-progress-fill,var(--color-secondary,#FACC15))] transition-all duration-500 ease-out"
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -156,7 +158,7 @@ export default function LoyaltyCard({
 
         <div className="flex w-full flex-col gap-4 rounded-3xl border border-[#E7E5E4] bg-white p-5">
           <div className="flex items-center justify-between gap-2">
-            <p className="text-[13px] font-medium text-stone-500">
+            <p className="text-[13px] font-medium text-[var(--color-muted-public,#78716C)]">
               Mostrá este código al empleado
             </p>
           </div>
@@ -164,7 +166,7 @@ export default function LoyaltyCard({
             {codeDigits.map((digit, i) => (
               <div
                 key={`${digit}-${i}`}
-                className="flex h-[68px] w-[60px] items-center justify-center rounded-[14px] bg-[#F5F5F4] text-[34px] font-extrabold text-stone-900"
+                className="flex h-[68px] w-[60px] items-center justify-center rounded-[14px] bg-[#F5F5F4] text-[34px] font-extrabold text-[var(--color-ink-public,#1C1917)]"
               >
                 {digit}
               </div>
@@ -174,14 +176,14 @@ export default function LoyaltyCard({
             <button
               type="button"
               onClick={() => void share()}
-              className="inline-flex items-center gap-1.5 rounded-full bg-[#FFF7ED] px-3.5 py-2 text-xs font-semibold text-[var(--color-primary,#F97316)]"
+              className="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-share-bg,#FFF7ED)] px-3.5 py-2 text-xs font-semibold text-[var(--color-primary,#F97316)]"
             >
               {copied ? "¡Link copiado!" : "Compartir programa"}
             </button>
           </div>
         </div>
 
-        <p className="text-center text-xs text-[#A8A29E]">
+        <p className="text-center text-xs text-[var(--color-hint-public,#A8A29E)]">
           Cada compra suma. ¡A las {needed}, tu recompensa!
         </p>
 

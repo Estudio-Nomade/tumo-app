@@ -107,8 +107,11 @@ export default function LoyaltyRegistration({
     )
   }
 
+  const tagline =
+    business.tagline?.trim() || "Programa de fidelización"
+
   return (
-    <div className="fixed inset-0 z-10 flex min-h-[100dvh] w-full flex-col items-center overflow-y-auto bg-white pt-[max(0.75rem,env(safe-area-inset-top))] pr-[max(1.5rem,env(safe-area-inset-right))] pb-[max(1.5rem,env(safe-area-inset-bottom))] pl-[max(1.5rem,env(safe-area-inset-left))]">
+    <div className="fixed inset-0 z-10 flex min-h-[100dvh] w-full flex-col items-center overflow-y-auto bg-[var(--color-surface-public,#FFFFFF)] pt-[max(0.75rem,env(safe-area-inset-top))] pr-[max(1.5rem,env(safe-area-inset-right))] pb-[max(1.5rem,env(safe-area-inset-bottom))] pl-[max(1.5rem,env(safe-area-inset-left))]">
       <div className="mx-auto flex w-full max-w-sm flex-col gap-[18px] py-3">
         <header className="flex flex-col items-center gap-2.5 text-center">
           {business.logo ? (
@@ -126,18 +129,20 @@ export default function LoyaltyRegistration({
               {businessInitial}
             </div>
           )}
-          <h1 className="text-xl font-extrabold tracking-tight text-stone-900">
+          <h1 className="text-xl font-extrabold tracking-tight text-[var(--color-ink-public,#1C1917)]">
             {business.name}
           </h1>
-          <p className="text-xs text-stone-500">Programa de fidelización</p>
+          <p className="text-xs text-[var(--color-muted-public,#78716C)]">
+            {tagline}
+          </p>
         </header>
 
-        <h2 className="text-center text-[22px] font-bold tracking-tight text-stone-900">
+        <h2 className="text-center text-[22px] font-bold tracking-tight text-[var(--color-ink-public,#1C1917)]">
           {mode === "register"
             ? "Empezá a sumar puntos"
             : "Ingresá tu WhatsApp"}
         </h2>
-        <p className="text-center text-[13px] leading-relaxed text-stone-500">
+        <p className="text-center text-[13px] leading-relaxed text-[var(--color-muted-public,#78716C)]">
           {mode === "register"
             ? `Registrate en segundos y ganá tu ${business.reward_name || "premio"} en cada ${business.purchases_needed || 10} ${business.purchases_needed === 1 ? "compra" : "compras"}.`
             : "Buscamos tu tarjeta con el número de WhatsApp."}
@@ -145,7 +150,7 @@ export default function LoyaltyRegistration({
 
         {mode === "register" ? (
           <form onSubmit={onRegister} className="flex flex-col gap-3">
-            <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-stone-900">
+            <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-[var(--color-ink-public,#1C1917)]">
               <Input
                 label="Tu nombre"
                 name="name"
@@ -155,7 +160,7 @@ export default function LoyaltyRegistration({
                 className={inputClassName}
               />
             </div>
-            <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-stone-900">
+            <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-[var(--color-ink-public,#1C1917)]">
               <PhoneInput
                 label="WhatsApp"
                 name="phone"
@@ -169,7 +174,7 @@ export default function LoyaltyRegistration({
               <div className="flex items-center justify-between">
                 <span
                   id="birthday-label"
-                  className="text-[15px] text-stone-900"
+                  className="text-[15px] text-[var(--color-ink-public,#1C1917)]"
                 >
                   ¿Fecha de cumpleaños?
                 </span>
@@ -224,7 +229,7 @@ export default function LoyaltyRegistration({
             </Button>
             <button
               type="button"
-              className="flex items-center justify-center gap-1 pt-1 text-center text-xs text-stone-500"
+              className="flex items-center justify-center gap-1 pt-1 text-center text-xs text-[var(--color-muted-public,#78716C)]"
               onClick={() => {
                 setMode("login")
                 setError("")
@@ -240,7 +245,7 @@ export default function LoyaltyRegistration({
           </form>
         ) : (
           <form onSubmit={onLogin} className="flex flex-col gap-3">
-            <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-stone-900">
+            <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-[var(--color-ink-public,#1C1917)]">
               <PhoneInput
                 label="WhatsApp"
                 name="phone"

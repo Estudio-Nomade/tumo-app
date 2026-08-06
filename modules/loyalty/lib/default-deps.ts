@@ -14,6 +14,7 @@ async function getBusinessById(id: string): Promise<Business | null> {
   const [row] = await sql<Business[]>`
     SELECT
       id, name, slug, logo, primary_color, secondary_color,
+      surface_color, tagline,
       active_modules, purchases_needed, reward_name
     FROM businesses
     WHERE id = ${id}

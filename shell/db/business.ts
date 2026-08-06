@@ -12,6 +12,8 @@ export async function getBusiness(slug: string): Promise<Business | null> {
       logo,
       primary_color,
       secondary_color,
+      surface_color,
+      tagline,
       active_modules,
       purchases_needed,
       reward_name
@@ -32,6 +34,8 @@ export async function getBusinessById(id: string): Promise<Business | null> {
       logo,
       primary_color,
       secondary_color,
+      surface_color,
+      tagline,
       active_modules,
       purchases_needed,
       reward_name
@@ -68,6 +72,8 @@ export async function updateBusinessBrand(
       logo,
       primary_color,
       secondary_color,
+      surface_color,
+      tagline,
       active_modules,
       purchases_needed,
       reward_name
@@ -91,6 +97,8 @@ export async function updateBusinessLogo(
       logo,
       primary_color,
       secondary_color,
+      surface_color,
+      tagline,
       active_modules,
       purchases_needed,
       reward_name
@@ -122,6 +130,8 @@ export async function updateBusinessProgram(
       logo,
       primary_color,
       secondary_color,
+      surface_color,
+      tagline,
       active_modules,
       purchases_needed,
       reward_name

@@ -29,17 +29,34 @@ describe("visual tokens vs Pencil", () => {
     expect(src).toMatch(/from-\[color-mix\(in_srgb,var\(--color-primary[^)]*\)_(8[5-9]|9\d)%,white\)\]/)
   })
 
-  test("public registration uses white surface, not full-page orange gradient", () => {
+  test("public registration uses brand surface token, not full-page orange gradient", () => {
     const src = read("modules/loyalty/public/registration.tsx")
     expect(src).not.toMatch(/shellClassName[\s\S]*bg-gradient-to-b/)
-    expect(src).toContain('bg-white')
+    expect(src).toContain("var(--color-surface-public")
+    expect(src).toContain("var(--color-ink-public")
+    expect(src).toContain("var(--color-muted-public")
+    expect(src).not.toMatch(/slug\s*===\s*['"]defe['"]/)
   })
 
-  test("public card uses white surface; gradient only on reward block", () => {
+  test("public card uses brand surface tokens; card-to via CSS var", () => {
     const src = read("modules/loyalty/public/card.tsx")
-    expect(src).not.toMatch(/shellClassName[\s\S]*bg-gradient-to-b from-\[color-mix/)
-    expect(src).toContain('bg-white')
+    expect(src).toContain("var(--color-surface-public")
+    expect(src).toContain("var(--color-ink-public")
     expect(src).toContain("from-[var(--color-primary")
+    expect(src).toContain("var(--color-progress-fill")
+    expect(src).toContain("var(--color-card-to")
+    expect(src).not.toMatch(/slug\s*===\s*['"]defe['"]/)
+  })
+
+  test("public layout exposes surface/ink/muted brand vars", () => {
+    const layout = read("shell/layouts/public-layout.tsx")
+    const tokens = read("shell/brand/public-tokens.ts")
+    expect(layout).toContain("publicBrandCssVars")
+    expect(layout).toContain("surface_color")
+    expect(tokens).toContain("--color-surface-public")
+    expect(tokens).toContain("--color-ink-public")
+    expect(tokens).toContain("--color-muted-public")
+    expect(tokens).toContain("--color-progress-fill")
   })
 
   test("MetricCard matches Pencil metric tile (soft fill, left stack)", () => {
