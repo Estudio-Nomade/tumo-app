@@ -266,8 +266,8 @@ export function GoalCard({
   return (
     <section className="flex flex-col gap-3 rounded-[20px] bg-gradient-to-b from-[var(--color-primary,#F97316)] to-[var(--color-primary-deep,#EA580C)] p-[18px]">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[13px] text-[#FFEDD5]">Meta de la semana</span>
-        <span className="text-[13px] font-bold text-white">
+        <span className="text-base text-[#FFEDD5]">Meta de la semana</span>
+        <span className="text-base font-bold text-white">
           {safeCurrent} / {safeTarget || "—"} canjes
         </span>
       </div>
@@ -279,7 +279,7 @@ export function GoalCard({
           />
         </div>
       ) : null}
-      <p className="text-xs text-[#FFEDD5]">{message}</p>
+      <p className="text-base text-[#FFEDD5]">{message}</p>
     </section>
   )
 }
@@ -307,12 +307,12 @@ export function TopCustomers({
   return (
     <section className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-stone-900">
+        <h2 className="text-base font-semibold text-stone-900">
           Más cerca del premio
         </h2>
         <a
           href={`/${slug}/dashboard/loyalty`}
-          className="text-xs font-semibold text-[var(--color-primary,#F97316)]"
+          className="inline-flex min-h-[48px] items-center text-base font-semibold text-[var(--color-primary,#F97316)]"
         >
           Ver todos
         </a>
@@ -373,10 +373,10 @@ export function TopByPrizesList({
   return (
     <section className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-stone-900">
+        <h2 className="text-base font-semibold text-stone-900">
           Más premios ganados
         </h2>
-        <span className="text-xs font-medium text-stone-500">
+        <span className="text-base font-medium text-stone-700">
           {count === 1 ? "1 cliente canjeó" : `${count} clientes canjearon`}
         </span>
       </div>

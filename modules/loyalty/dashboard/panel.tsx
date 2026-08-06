@@ -7,7 +7,6 @@ import {
   Gift,
   Keyboard,
   QrCode,
-  Sandwich,
   Search,
   SlidersHorizontal,
 } from "lucide-react"
@@ -146,6 +145,85 @@ export default function LoyaltyPanel({
     return [hi, ...filtered.filter((c) => c.id !== highlightId)]
   }, [customers, query, highlightId])
 
+  const readyCustomers = useMemo(
+    () => visible.filter((c) => c.canRedeem),
+    [visible]
+  )
+  const otherCustomers = useMemo(
+    () => visible.filter((c) => !c.canRedeem),
+    [visible]
+  )
+
+  function renderCustomerRow(customer: CustomerView, index: number) {
+    const pct =
+      customer.purchasesNeeded > 0
+        ? Math.min(
+            (customer.purchases / customer.purchasesNeeded) * 100,
+            100
+          )
+        : 0
+    const bg = AVATAR_COLORS[index % AVATAR_COLORS.length]
+    const acting = actingId === customer.id
+    const highlighted = highlightId === customer.id
+
+    return (
+      <li
+        id={`customer-row-${customer.id}`}
+        key={customer.id}
+        className={`flex items-center gap-3 rounded-2xl border bg-white p-3 ${
+          highlighted
+            ? "border-[var(--color-primary,#F97316)] ring-2 ring-[var(--color-primary,#F97316)]/20"
+            : "border-[#E7E5E4]"
+        }`}
+      >
+        <div
+          aria-hidden
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold text-[var(--color-primary,#F97316)]"
+          style={{ backgroundColor: bg }}
+        >
+          {customerInitials(customer.name)}
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <div className="truncate text-base font-semibold text-stone-900">
+            {customer.name}
+          </div>
+          <span className="text-sm font-semibold text-stone-600">
+            {customer.purchases}/{customer.purchasesNeeded}
+          </span>
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#F5F5F4]">
+            <div
+              className="h-full rounded-full bg-[var(--color-primary,#F97316)] transition-all duration-500 ease-out"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        </div>
+        {customer.canRedeem ? (
+          <button
+            type="button"
+            disabled={acting}
+            onClick={() => {
+              setRedeemError("")
+              setRedeemTarget(customer)
+            }}
+            className="inline-flex min-h-[48px] shrink-0 items-center gap-1 rounded-full bg-[#EAB308] px-3 py-2.5 text-sm font-bold text-white disabled:opacity-70"
+          >
+            <Gift size={14} strokeWidth={2.5} aria-hidden />
+            Canjear premio
+          </button>
+        ) : (
+          <button
+            type="button"
+            disabled={acting}
+            onClick={() => void addVisit(customer.id)}
+            className="min-h-[48px] shrink-0 rounded-full bg-[#16A34A] px-3 py-2.5 text-sm font-bold text-white disabled:opacity-70"
+          >
+            {acting ? "…" : "+1 compra"}
+          </button>
+        )}
+      </li>
+    )
+  }
+
   async function addVisit(id: string) {
     setActingId(id)
     setError("")
@@ -267,24 +345,33 @@ export default function LoyaltyPanel({
 
   return (
     <div className="relative mx-auto flex w-full flex-col gap-4 md:max-w-2xl">
-      <header className="flex items-center justify-between gap-3">
+      <header className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex flex-col gap-0.5">
           <h1 className="text-[22px] font-bold tracking-tight text-stone-900">
             Clientes
           </h1>
-          <p className="truncate text-xs text-stone-500">
+          <p className="truncate text-base text-stone-700">
             {business.name} · Hoy
           </p>
         </div>
-        <div
-          aria-hidden
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--color-primary,#F97316)] text-white"
-        >
-          <Sandwich size={22} strokeWidth={2} />
+        <div className="flex shrink-0 items-center gap-1">
+          <Link
+            href={`/${business.slug}/dashboard/loyalty/numeros`}
+            className="inline-flex min-h-[48px] items-center justify-center rounded-xl px-3 text-base font-semibold text-[var(--color-primary,#F97316)]"
+          >
+            Cómo va
+          </Link>
+          <Link
+            href={`/${business.slug}/dashboard/loyalty/qr`}
+            className="inline-flex min-h-[48px] min-w-[48px] items-center justify-center gap-1.5 rounded-xl border border-[var(--color-primary,#F97316)] px-3 text-base font-semibold text-[var(--color-primary,#F97316)]"
+          >
+            <QrCode size={20} strokeWidth={2} aria-hidden />
+            QR
+          </Link>
         </div>
       </header>
 
-      <div className="relative">
+      <div className="relative sticky top-0 z-10 bg-[#FAFAF9] py-1">
         <Search
           size={18}
           strokeWidth={2}
@@ -301,7 +388,7 @@ export default function LoyaltyPanel({
             setQuery(e.target.value)
             setHighlightId(null)
           }}
-          className="h-[50px] w-full rounded-[14px] border-0 bg-[#F5F5F4] pr-4 pl-11 text-sm text-stone-900 outline-none placeholder:text-[#A8A29E] focus:ring-2 focus:ring-[var(--color-primary,#F97316)]/25"
+          className="h-[52px] w-full rounded-[14px] border-0 bg-[#F5F5F4] pr-4 pl-11 text-base text-stone-900 outline-none placeholder:text-stone-500 focus:ring-2 focus:ring-[var(--color-primary,#F97316)]/25"
         />
       </div>
 
@@ -409,101 +496,56 @@ export default function LoyaltyPanel({
 
       {loading ? (
         <div className="flex min-h-[180px] items-center justify-center rounded-2xl bg-[#F5F5F4] px-6 py-8 text-center">
-          <p className="text-sm font-medium text-stone-500">Cargando…</p>
+          <p className="text-base font-medium text-stone-600">Cargando…</p>
         </div>
       ) : (
-        <ul className="flex max-h-[min(52vh,420px)] flex-col gap-2.5 overflow-y-auto">
+        <div className="flex max-h-[min(52vh,420px)] flex-col gap-3 overflow-y-auto">
           {customers.length === 0 ? (
-            <li className="flex min-h-[120px] flex-col items-center justify-center gap-3 rounded-2xl bg-[#F5F5F4] px-6 py-8 text-center">
-              <p className="text-sm text-stone-500">
+            <div className="flex min-h-[120px] flex-col items-center justify-center gap-3 rounded-2xl bg-[#F5F5F4] px-6 py-8 text-center">
+              <p className="text-base text-stone-700">
                 Todavía no hay clientes. Mostrá el QR para que se registren.
               </p>
               <Link
                 href={`/${business.slug}/dashboard/loyalty/qr`}
-                className="text-sm font-bold text-[var(--color-primary,#F97316)]"
+                className="inline-flex min-h-[48px] items-center text-base font-bold text-[var(--color-primary,#F97316)]"
               >
                 Abrir QR del programa
               </Link>
-            </li>
+            </div>
           ) : visible.length === 0 ? (
-            <li className="flex min-h-[120px] flex-col items-center justify-center gap-2 rounded-2xl bg-[#F5F5F4] px-6 py-8 text-center text-sm text-stone-500">
+            <div className="flex min-h-[120px] flex-col items-center justify-center gap-2 rounded-2xl bg-[#F5F5F4] px-6 py-8 text-center text-base text-stone-700">
               <p>No se encontraron clientes.</p>
-              <p className="text-xs text-stone-400">
+              <p className="text-base text-stone-600">
                 Probá con el código de 4 dígitos de la tarjeta.
               </p>
-            </li>
+            </div>
           ) : (
-            visible.map((customer, index) => {
-              const pct =
-                customer.purchasesNeeded > 0
-                  ? Math.min(
-                      (customer.purchases / customer.purchasesNeeded) * 100,
-                      100
+            <>
+              {readyCustomers.length > 0 ? (
+                <section className="flex flex-col gap-2.5">
+                  <h2 className="text-base font-bold text-stone-900">
+                    Listos para canjear
+                  </h2>
+                  <ul className="flex flex-col gap-2.5">
+                    {readyCustomers.map((customer, index) =>
+                      renderCustomerRow(customer, index)
+                    )}
+                  </ul>
+                </section>
+              ) : null}
+              {otherCustomers.length > 0 ? (
+                <ul className="flex flex-col gap-2.5">
+                  {otherCustomers.map((customer, index) =>
+                    renderCustomerRow(
+                      customer,
+                      index + readyCustomers.length
                     )
-                  : 0
-              const bg = AVATAR_COLORS[index % AVATAR_COLORS.length]
-              const acting = actingId === customer.id
-              const highlighted = highlightId === customer.id
-
-              return (
-                <li
-                  id={`customer-row-${customer.id}`}
-                  key={customer.id}
-                  className={`flex items-center gap-3 rounded-2xl border bg-white p-3 ${
-                    highlighted
-                      ? "border-[var(--color-primary,#F97316)] ring-2 ring-[var(--color-primary,#F97316)]/20"
-                      : "border-[#E7E5E4]"
-                  }`}
-                >
-                  <div
-                    aria-hidden
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold text-[var(--color-primary,#F97316)]"
-                    style={{ backgroundColor: bg }}
-                  >
-                    {customerInitials(customer.name)}
-                  </div>
-                  <div className="flex min-w-0 flex-1 flex-col gap-1">
-                    <div className="truncate text-sm font-semibold text-stone-900">
-                      {customer.name}
-                    </div>
-                    <span className="text-xs font-semibold text-stone-500">
-                      {customer.purchases}/{customer.purchasesNeeded}
-                    </span>
-                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#F5F5F4]">
-                      <div
-                        className="h-full rounded-full bg-[var(--color-primary,#F97316)] transition-all duration-500 ease-out"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-                  {customer.canRedeem ? (
-                    <button
-                      type="button"
-                      disabled={acting}
-                      onClick={() => {
-                        setRedeemError("")
-                        setRedeemTarget(customer)
-                      }}
-                      className="inline-flex shrink-0 items-center gap-1 rounded-full bg-[#EAB308] px-3 py-2.5 text-xs font-bold text-white disabled:opacity-70"
-                    >
-                      <Gift size={14} strokeWidth={2.5} aria-hidden />
-                      Canjear premio
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled={acting}
-                      onClick={() => void addVisit(customer.id)}
-                      className="shrink-0 rounded-full bg-[#16A34A] px-3 py-2.5 text-xs font-bold text-white disabled:opacity-70"
-                    >
-                      {acting ? "…" : "+1 compra"}
-                    </button>
                   )}
-                </li>
-              )
-            })
+                </ul>
+              ) : null}
+            </>
           )}
-        </ul>
+        </div>
       )}
 
       <Dialog

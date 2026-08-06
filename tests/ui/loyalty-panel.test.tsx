@@ -86,11 +86,18 @@ describe("customerInitials", () => {
 describe("loyalty panel source (Pencil EDNqK + real data)", () => {
   const src = read("modules/loyalty/dashboard/panel.tsx")
 
-  test("header Clientes + negocio · Hoy + sandwich logo", () => {
+  test("header Clientes + Cómo va + QR", () => {
     expect(src).toContain("Clientes")
     expect(src).toContain("· Hoy")
     expect(src).toContain("useBusiness")
-    expect(src).toContain("Sandwich")
+    expect(src).toContain("Cómo va")
+    expect(src).toContain("/dashboard/loyalty/numeros")
+    expect(src).toContain("/dashboard/loyalty/qr")
+  })
+
+  test("bloque Listos para canjear aparece en el panel", () => {
+    expect(src).toContain("Listos para canjear")
+    expect(src).toContain("canRedeem")
   })
 
   test("carga lista real por API, sin MOCK_CUSTOMERS", () => {

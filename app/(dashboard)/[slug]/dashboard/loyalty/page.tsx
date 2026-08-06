@@ -2,7 +2,6 @@ import { Suspense } from "react"
 import { cookies } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import LoyaltyPanel from "@/modules/loyalty/dashboard/panel"
-import { LoyaltyModuleInsights } from "@/modules/loyalty/dashboard/module-insights"
 import { validateSession } from "@/shell/auth/session"
 import { getBusiness } from "@/shell/db/business"
 
@@ -30,15 +29,13 @@ export default async function DashboardLoyaltyPage({ params }: PageProps) {
     <div className="p-2">
       <Suspense
         fallback={
-          <div className="flex min-h-[180px] items-center justify-center text-sm text-stone-500">
+          <div className="flex min-h-[180px] items-center justify-center text-base text-stone-600">
             Cargando…
           </div>
         }
       >
         <LoyaltyPanel canEditProgram={canEditProgram} />
       </Suspense>
-      <hr className="my-6 border-t border-[#E7E5E4]" aria-hidden />
-      <LoyaltyModuleInsights slug={slug} business={business} />
     </div>
   )
 }

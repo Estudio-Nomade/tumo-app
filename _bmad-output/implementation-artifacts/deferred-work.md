@@ -90,3 +90,7 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-owner-qr-programa-pencil.md`
   summary: Tests de QR son source-string, no comportamiento render/clipboard
   evidence: branded-qr.test.tsx lee archivos; preexistente en suite UI del repo
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-owner-dashboard-loyalty-ia.md`
+  summary: readyCount del hub se estima con getTopCustomers(limit 20), puede subcontar si hay más listos
+  evidence: home-section filtra canRedeem sobre top 20 por purchases; en comercios grandes el número de listos puede quedar corto

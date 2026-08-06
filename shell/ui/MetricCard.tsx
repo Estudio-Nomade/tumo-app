@@ -36,7 +36,7 @@ export default function MetricCard({
             <span />
           )}
           {trend ? (
-            <span className="rounded-full bg-[#DCFCE7] px-2 py-0.5 text-[10px] font-semibold text-[#16A34A]">
+            <span className="rounded-full bg-[#DCFCE7] px-2 py-0.5 text-sm font-semibold text-[#16A34A]">
               {trend}
             </span>
           ) : null}
@@ -45,7 +45,7 @@ export default function MetricCard({
       <div className="text-[22px] font-extrabold leading-none text-stone-900">
         {value}
       </div>
-      <div className="text-[11px] leading-[1.25] text-stone-500">{label}</div>
+      <div className="text-base leading-[1.25] text-stone-700">{label}</div>
     </div>
   )
 }

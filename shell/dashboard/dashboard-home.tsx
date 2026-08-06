@@ -19,7 +19,7 @@ export default function DashboardHome({
         <h1 className="text-[22px] font-bold tracking-tight text-stone-900">
           Panel
         </h1>
-        <p className="text-[13px] text-stone-500">{greeting}</p>
+        <p className="text-base text-stone-700">{greeting}</p>
       </header>
       {children}
     </div>

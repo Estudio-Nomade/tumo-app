@@ -10,7 +10,7 @@ describe("MetricCard", () => {
     expect(html).toContain("text-[22px]")
     expect(html).toContain(">0<")
     expect(html).toContain("Clientes")
-    expect(html).toContain("text-[11px]")
+    expect(html).toContain("text-base")
   })
 
   test("acepta className extra", () => {

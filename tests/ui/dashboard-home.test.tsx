@@ -67,16 +67,26 @@ describe("DashboardHome shell (multi-módulo)", () => {
   })
 })
 
-describe("Loyalty home section (lectura, no operación)", () => {
-  test("home-section no monta CTAs Atender/Mostrar QR", () => {
+describe("Loyalty home section (hub tarjeta módulo)", () => {
+  test("tarjeta Programa de premios con CTAs Atender y Cómo va", () => {
     const src = read("modules/loyalty/dashboard/home-section.tsx")
-    expect(src).toContain("Abrir Fidelización")
-    expect(src).not.toContain("LoyaltyHomeQuickActions")
-    expect(src).not.toContain("Atender clientes")
-    expect(src).not.toContain("Mostrar QR")
+    expect(src).toContain("Programa de premios")
+    expect(src).toContain("Atender clientes")
+    expect(src).toContain("Cómo va el programa")
+    expect(src).toContain("/dashboard/loyalty/numeros")
+    expect(src).not.toContain("Fidelización")
+    expect(src).not.toContain("Abrir Fidelización")
+    expect(src).not.toContain("FeaturedCustomers")
+    expect(src).not.toContain("HomeActivityMetrics")
   })
 
-  test("quick actions siguen existiendo para reuso en panel si hace falta", () => {
+  test("empty 0 clientes prioriza Mostrar el QR", () => {
+    const src = read("modules/loyalty/dashboard/home-section.tsx")
+    expect(src).toContain("Mostrar el QR")
+    expect(src).toContain("/dashboard/loyalty/qr")
+  })
+
+  test("quick actions siguen existiendo para reuso", () => {
     const html = renderToStaticMarkup(
       <LoyaltyHomeQuickActions slug="carri" />
     )
@@ -220,51 +230,55 @@ describe("FeaturedCustomers (destacados por volumen)", () => {
   })
 })
 
-describe("LoyaltyHomeSection wire panel medio", () => {
-  test("home solo actividad + destacados; sin meta ni rankings premio", () => {
+describe("LoyaltyHomeSection hub wire", () => {
+  test("hub usa metrics y weekly; sin rankings en home", () => {
     const src = read("modules/loyalty/dashboard/home-section.tsx")
-    expect(src).toContain("getTopBuyers")
-    expect(src).toContain("HomeActivityMetrics")
-    expect(src).toContain("FeaturedCustomers")
+    expect(src).toContain("getMetrics")
+    expect(src).toContain("getWeeklyRedemptions")
     expect(src).not.toContain("GoalCard")
-    expect(src).not.toContain("getTopCustomersByPrizes")
     expect(src).not.toContain("TopByPrizesList")
-    expect(src).not.toContain("getTopCustomers(")
+    expect(src).not.toContain("FeaturedCustomers")
     expect(src).not.toContain("LoyaltyHomeQuickActions")
   })
 })
 
-describe("Loyalty module insights", () => {
-  test("página loyalty monta insights de programa", () => {
+describe("Loyalty operate vs observe IA", () => {
+  test("página loyalty solo opera — sin insights", () => {
     const page = read("app/(dashboard)/[slug]/dashboard/loyalty/page.tsx")
+    expect(page).toContain("LoyaltyPanel")
+    expect(page).not.toContain("LoyaltyModuleInsights")
+    expect(page).not.toMatch(/border-t/)
+  })
+
+  test("página numeros monta insights + volver a clientes", () => {
+    const page = read(
+      "app/(dashboard)/[slug]/dashboard/loyalty/numeros/page.tsx"
+    )
     expect(page).toContain("LoyaltyModuleInsights")
+    expect(page).toContain("Volver a clientes")
+    expect(page).toContain("Cómo va el programa")
+    expect(page).toContain("Atender clientes")
     const insights = read("modules/loyalty/dashboard/module-insights.tsx")
     expect(insights).toContain("GoalCard")
     expect(insights).toContain("TopCustomers")
     expect(insights).toContain("TopByPrizesList")
     expect(insights).toContain("getWeeklyRedemptions")
   })
+})
 
-  test("panel empleado (Clientes) va primero que las tarjetas de insights", () => {
-    const page = read("app/(dashboard)/[slug]/dashboard/loyalty/page.tsx")
-    const jsx = page.slice(page.indexOf("return ("))
-    const panelIdx = jsx.indexOf("LoyaltyPanel")
-    const insightsIdx = jsx.indexOf("LoyaltyModuleInsights")
-    expect(panelIdx).toBeGreaterThan(-1)
-    expect(insightsIdx).toBeGreaterThan(-1)
-    expect(panelIdx).toBeLessThan(insightsIdx)
+describe("MetricCard a11y baseline", () => {
+  test("label de KPI usa al menos text-base (16px)", () => {
+    const src = read("shell/ui/MetricCard.tsx")
+    expect(src).toMatch(/text-base|text-\[1[6-9]px\]|text-\[2\dpx\]/)
+    expect(src).not.toContain('text-[11px]')
   })
+})
 
-  test("hay separación visual entre la lista y las tarjetas de insights", () => {
-    const page = read("app/(dashboard)/[slug]/dashboard/loyalty/page.tsx")
-    const jsx = page.slice(page.indexOf("return ("))
-    const panelEndIdx = jsx.indexOf("</Suspense>")
-    const insightsIdx = jsx.indexOf("LoyaltyModuleInsights")
-    expect(panelEndIdx).toBeGreaterThan(-1)
-    expect(insightsIdx).toBeGreaterThan(panelEndIdx)
-    const separator = jsx.slice(panelEndIdx, insightsIdx)
-    expect(separator).toMatch(/border-t/) 
-    expect(separator).toMatch(/my-\d+|py-\d+|mb-\d+|mt-\d+/)
+describe("DashboardHome saludo legible", () => {
+  test("saludo usa al menos 16px", () => {
+    const src = read("shell/dashboard/dashboard-home.tsx")
+    expect(src).toMatch(/text-base|text-\[1[6-9]px\]|text-\[2\dpx\]/)
+    expect(src).not.toContain('text-[13px]')
   })
 })
 
