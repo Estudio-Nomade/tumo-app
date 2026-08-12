@@ -15,26 +15,30 @@ export const DEFAULT_WA_MESSAGE = "Hola, quiero saber más sobre Tumo."
 
 export const PRICE_FROM_ARS = "19.900"
 
-/** Stock editorial (Unsplash). TODO: fotos reales AR. */
+/**
+ * Media servida desde /public (mismo origen en Vercel).
+ * Evita hotlink externo + bug de onLoad con cache.
+ * TODO: reemplazar por fotos reales AR.
+ */
 export const MEDIA = {
   hero: {
-    src: "https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=1600&q=80",
+    src: "/landing/media/hero.jpg",
     alt: "Dueño de comercio en su local al atardecer",
   },
   workshop: {
-    src: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=1600&q=80",
+    src: "/landing/media/workshop.jpg",
     alt: "Manos trabajando en un mostrador de cocina",
   },
   carri: {
-    src: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80",
+    src: "/landing/media/carri.jpg",
     alt: "Interior de local gastronómico cálido",
   },
   defe: {
-    src: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&q=80",
+    src: "/landing/media/defe.jpg",
     alt: "Mesa de restaurante por la noche",
   },
   cta: {
-    src: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1600&q=80",
+    src: "/landing/media/cta.jpg",
     alt: "Fachada de comercio con luces",
   },
 } as const

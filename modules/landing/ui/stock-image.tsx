@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 type Props = {
   src: string
@@ -11,7 +11,11 @@ type Props = {
   priority?: boolean
 }
 
-/** Imagen stock sin next/image + skeleton hasta onLoad */
+/**
+ * Imagen local/stock sin next/image.
+ * Importante: si el browser ya la tiene en cache, onLoad puede no disparar
+ * tras hidratar — por eso checamos img.complete en useEffect.
+ */
 export function StockImage({
   src,
   alt,
@@ -20,7 +24,16 @@ export function StockImage({
   imgClassName = "",
   priority = false,
 }: Props) {
+  const imgRef = useRef<HTMLImageElement>(null)
   const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    const img = imgRef.current
+    if (!img) return
+    if (img.complete && img.naturalWidth > 0) {
+      setLoaded(true)
+    }
+  }, [src])
 
   return (
     <div
@@ -31,11 +44,12 @@ export function StockImage({
       <div
         className={[
           "landing-img-skeleton absolute inset-0 transition-opacity duration-500",
-          loaded ? "opacity-0" : "opacity-100",
+          loaded ? "pointer-events-none opacity-0" : "opacity-100",
         ].join(" ")}
         aria-hidden
       />
       <img
+        ref={imgRef}
         src={src}
         alt={alt}
         className={[
@@ -45,8 +59,8 @@ export function StockImage({
         ].join(" ")}
         loading={priority ? "eager" : "lazy"}
         decoding="async"
-        referrerPolicy="no-referrer"
         onLoad={() => setLoaded(true)}
+        onError={() => setLoaded(true)}
       />
     </div>
   )
