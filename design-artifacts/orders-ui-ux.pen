@@ -1,0 +1,1952 @@
+{
+  "version": "2.17",
+  "children": [
+    {
+      "type": "frame",
+      "id": "bi8Au",
+      "x": 0,
+      "y": 0,
+      "name": "Frame",
+      "clip": true,
+      "width": 800,
+      "height": 600,
+      "fill": "#FFFFFF",
+      "layout": "none"
+    },
+    {
+      "type": "frame",
+      "id": "kNMpX",
+      "x": 880,
+      "y": 0,
+      "name": "Logo / tumo",
+      "reusable": true,
+      "height": 32,
+      "gap": 8,
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "TQfFB",
+          "name": "Isotipo",
+          "clip": true,
+          "width": 28,
+          "height": 28,
+          "layout": "none",
+          "children": [
+            {
+              "type": "rectangle",
+              "id": "XyU1H",
+              "x": 0,
+              "y": 0,
+              "fill": "#FFFFFF",
+              "width": 28,
+              "height": 28
+            },
+            {
+              "type": "path",
+              "id": "QcOSJ",
+              "x": 1.8293,
+              "y": 1.7547,
+              "geometry": "M22.232 0l-20.104 0c-1.08267 0-2.128 0.82133-2.128 2.16533l0 20.12267c0 1.08267 0.76533 2.27733 2.10933 2.27733l20.12267 0c1.21333 0 2.10934-0.896 2.10934-2.10933l0-20.29067c0-1.15733-0.952-2.16533-2.10934-2.16533z",
+              "fillRule": "evenodd",
+              "fill": "#FCFCFD",
+              "width": 24.3413,
+              "height": 24.5653
+            },
+            {
+              "type": "path",
+              "id": "hDHEy",
+              "x": 1.8293,
+              "y": 1.736,
+              "geometry": "M12.18933 0l-10.024 0c-1.10133 0-2.16533 0.82133-2.16533 2.184l0 10.136 4.592 0c0.28-0.03733 0.48533 0.336 0.168 0.63467-0.26133 0.31733-0.46667 0.70933-0.46667 1.08266 0 0.91467 0.65333 1.736 1.736 1.75467 0.952 0 1.88533-0.672 1.88534-1.75467 0-0.46667-0.168-0.85867-0.48534-1.19466-0.26133-0.26133-0.056-0.56 0.20534-0.54134l4.55466 0 0-4.76c0-0.31733-0.336-0.56-0.63466-0.24266-0.336 0.29867-0.672 0.56-1.15734 0.56-0.952 0.01867-1.82933-0.65333-1.82933-1.792 0.056-1.008 0.84-1.77333 1.792-1.77334 0.504 0 0.896 0.18667 1.25067 0.52267 0.31733 0.29867 0.57867 0.03733 0.57866-0.18667l0-4.62933z",
+              "fill": "#7E44F6",
+              "width": 12.1893,
+              "height": 15.792
+            },
+            {
+              "type": "path",
+              "id": "s62ciq",
+              "x": 14.0178,
+              "y": 10.4533,
+              "geometry": "M7.57955 3.584c-0.35466-0.03733-0.448-0.35466-0.18666-0.59733 0.26133-0.26133 0.46667-0.70933 0.46666-1.21334-0.01867-0.952-0.80267-1.75467-1.848-1.77333-0.84 0.03733-1.75467 0.672-1.75466 1.77333 0 0.448 0.18667 0.87733 0.48533 1.21334 0.26133 0.26133 0.056 0.59733-0.20533 0.59733l-4.536 0 0 4.62933c0 0.31733 0.29867 0.41067 0.48533 0.224 0.392-0.29867 0.65333-0.63467 1.30667-0.63466 0.952 0 1.81067 0.70933 1.81066 1.86666-0.03733 0.952-0.76533 1.904-1.848 1.92267-0.52267 0-0.91467-0.20533-1.26933-0.504-0.224-0.224-0.504-0.03733-0.48533 0.18667l0 4.536 10.024 0c1.10133 0 2.128-0.784 2.128-2.072l0-10.15467-4.57334 0z",
+              "fill": "#EDEDED",
+              "width": 12.1529,
+              "height": 15.8107
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "UDuPF",
+          "name": "Wordmark",
+          "fill": "$ink",
+          "content": "tumo",
+          "fontFamily": "Geist",
+          "fontSize": 22,
+          "fontWeight": "700",
+          "letterSpacing": -1
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "S9hVTy",
+      "x": 880,
+      "y": 80,
+      "name": "Btn / Primary",
+      "reusable": true,
+      "height": 52,
+      "fill": "$brand",
+      "cornerRadius": 999,
+      "padding": [
+        0,
+        24
+      ],
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "text",
+          "id": "PGGbw",
+          "name": "Label",
+          "fill": "$ink",
+          "content": "Escribinos",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "600"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "XUk15",
+      "x": 880,
+      "y": 160,
+      "name": "Btn / Outline",
+      "reusable": true,
+      "height": 52,
+      "fill": "$surface",
+      "cornerRadius": 999,
+      "stroke": "$ink",
+      "strokeWidth": 1.5,
+      "padding": [
+        0,
+        24
+      ],
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "text",
+          "id": "YXl5a",
+          "name": "Label",
+          "fill": "$ink",
+          "content": "Outline",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "600"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "D95Kf",
+      "x": 1080,
+      "y": 80,
+      "name": "Chip / Disponible",
+      "reusable": true,
+      "height": 28,
+      "fill": "#7754E333",
+      "cornerRadius": 8,
+      "stroke": "$brand",
+      "strokeWidth": 1,
+      "padding": [
+        0,
+        12
+      ],
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "text",
+          "id": "jZzgD",
+          "name": "Label",
+          "fill": "$brand",
+          "content": "Disponible",
+          "fontFamily": "Geist Mono",
+          "fontSize": 13,
+          "fontWeight": "500",
+          "letterSpacing": 0.5
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "Yc6dV",
+      "x": 1080,
+      "y": 130,
+      "name": "Chip / En desarrollo",
+      "reusable": true,
+      "height": 28,
+      "fill": "#00000000",
+      "cornerRadius": 8,
+      "stroke": "$muted",
+      "strokeWidth": 1,
+      "padding": [
+        0,
+        12
+      ],
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "text",
+          "id": "mLotO",
+          "name": "Label",
+          "fill": "$muted",
+          "content": "En desarrollo",
+          "fontFamily": "Geist Mono",
+          "fontSize": 13,
+          "fontWeight": "500",
+          "letterSpacing": 0.5
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "mjses",
+      "x": 1080,
+      "y": 180,
+      "name": "Chip / Lo desarrollamos",
+      "reusable": true,
+      "height": 28,
+      "fill": "#FFFFFF22",
+      "cornerRadius": 8,
+      "stroke": "$ink",
+      "strokeWidth": 1,
+      "padding": [
+        0,
+        12
+      ],
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "text",
+          "id": "B2fUr",
+          "name": "Label",
+          "fill": "$ink",
+          "content": "Lo desarrollamos",
+          "fontFamily": "Geist Mono",
+          "fontSize": 13,
+          "fontWeight": "500",
+          "letterSpacing": 0.5
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "kZ7yz",
+      "x": 0,
+      "y": 0,
+      "name": "Logo / tumo",
+      "reusable": true,
+      "height": 32,
+      "gap": 8,
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "frame",
+          "id": "TJBke",
+          "name": "Isotipo",
+          "clip": true,
+          "width": 28,
+          "height": 28,
+          "layout": "none",
+          "children": [
+            {
+              "type": "rectangle",
+              "id": "Ng6q8",
+              "x": 0,
+              "y": 1.3763,
+              "fill": "#FFFFFF",
+              "width": 28.0175,
+              "height": 25.2473
+            },
+            {
+              "type": "path",
+              "id": "h5DruE",
+              "x": 12.3081,
+              "y": 7.2674,
+              "geometry": "M2.57733 0c-0.38572 0.03507-0.82405 0.38572-0.82404 0.82405l0 1.80588c-0.36819 0.19286-0.43832-0.31559-0.98184-0.31559-0.57859 0-0.77145 0.47339-0.77145 0.96431 0 0.49092 0.24546 1.10457 0.80651 1.10457 0.36819 0 0.49092-0.40326 0.87665-0.28053l-0.01754 1.78836c-0.01753 0.43832 0.40326 0.87664 0.82405 0.89417l1.78835 0c0.24546-0.24546-0.29806-0.33312-0.28053-1.0169 0.01753-0.40326 0.38572-0.77145 0.92925-0.77145 0.71885 0 0.99937 0.33313 1.0169 0.77145 0 0.54352-0.36819 0.50845-0.31559 1.0169l1.75329 0c0.47339 0 0.84158-0.31559 0.84158-0.82404l0-5.24233c0-0.35066-0.36819-0.71885-0.73638-0.71885l-4.90921 0z",
+              "fill": "#FFFFFF",
+              "width": 8.2229,
+              "height": 6.7852
+            },
+            {
+              "type": "path",
+              "id": "GfGio",
+              "x": 13.9912,
+              "y": 14.0521,
+              "geometry": "M0.84158 0.00053c-0.35066 0-0.71885 0.28053-0.80652 0.59612l-0.01753 0 0 1.98121c0.42079 0.24546 0.47339-0.26299 0.87665-0.24546 0.40326 0.01753 0.84158 0.22793 0.84157 0.94678 0 0.47339-0.35066 0.92924-0.84157 0.94677-0.50845 0.01753-0.52599-0.49092-0.89418-0.31559l0 1.78835c0 0.56105 0.40326 1.08704 0.96431 1.08704l4.69881 0c0.40326 0 0.89417-0.22793 0.89417-0.82404l0-5.13714c0-0.42079-0.33312-0.84158-0.80651-0.82404l-1.78835 0c-0.24546 0.47339 0.33312 0.54352 0.29806 0.98184-0.03506 0.54352-0.40326 0.78898-0.96431 0.78898-0.50845 0-0.98184-0.24546-0.98184-0.78898 0-0.45585 0.45586-0.54352 0.28052-0.98184l-1.75328 0z",
+              "fill": "#E0DFDF",
+              "width": 6.5573,
+              "height": 6.7858
+            },
+            {
+              "type": "path",
+              "id": "e1C3V",
+              "x": 7.4865,
+              "y": 14.0526,
+              "geometry": "M6.5047 3.90983c-0.36819-0.1578-0.38572 0.31559-0.94678 0.31559-0.56105 0-0.77145-0.49092-0.77145-0.9643 0-0.47339 0.28053-0.94678 0.77145-0.92925 0.45585 0 0.54352 0.40326 0.91171 0.263l0-1.77082c0-0.43832-0.38572-0.82405-0.85911-0.82405l-1.61302 0c-0.17533 0.31559 0.26299 0.49092 0.26299 0.99937 0 0.35066-0.22793 0.78898-0.99938 0.78898-0.63118 0-0.99937-0.26299-0.99937-0.82404 0-0.40326 0.45586-0.49092 0.29806-0.96431l-1.68316 0c-0.45585 0-0.87664 0.35066-0.87664 0.84158l0 4.99687c0 0.54352 0.38572 0.94678 0.89418 0.94677l4.75141 0c0.40326 0 0.87664-0.28053 0.87664-0.98184l-0.01753-1.89355z",
+              "fill": "#FFFFFF",
+              "width": 6.5222,
+              "height": 6.7852
+            },
+            {
+              "type": "path",
+              "id": "t9Vrz",
+              "x": 7.4865,
+              "y": 7.2674,
+              "geometry": "M2.57733 6.78522c0.22793-0.28053-0.29806-0.47339-0.29806-0.92924-0.0526-1.01691 1.91108-1.2273 1.98122-0.12273 0.03506 0.59612-0.42079 0.54352-0.29806 1.05197l1.71822 0c0.49092 0 0.85911-0.35066 0.85911-0.85911l0-1.78835c-0.36819-0.24546-0.43832 0.26299-0.92924 0.26299-0.57858 0-0.82404-0.45586-0.82405-0.99937-0.01753-0.54352 0.24546-1.10457 0.87665-1.08704 0.42079 0 0.50845 0.45586 0.85911 0.31559 0 0.07013 0.01753-1.80589 0-1.85848-0.01753-0.42079-0.40326-0.77145-0.84158-0.77145l-4.80401 0c-0.42079 0-0.87664 0.36819-0.87664 0.80651l0 5.10207c0 0.45585 0.36819 0.87664 0.84158 0.87664l1.73575 0z",
+              "fill": "#6F32DC",
+              "width": 6.5398,
+              "height": 6.7852
+            },
+            {
+              "type": "path",
+              "id": "NsCWU",
+              "x": 12.2723,
+              "y": 9.5817,
+              "geometry": "M0.00073 1.06951c0 0.45585 0.19286 1.01691 0.77145 1.0169 0.52599 0.03507 0.52599-0.35066 0.87664-0.35065 0.52599 0 0.57858 0.36819 1.01691 0.36818 0.50845 0.01753 0.78898-0.43832 0.78898-1.0169-0.01753-0.43832-0.19286-1.0695-0.92924-1.06951-0.35066 0-0.45585 0.33312-0.99938 0.36819-0.17533 0.01753-0.26299-0.38572-0.75391-0.38572-0.49092 0-0.78898 0.38572-0.77145 1.06951z",
+              "fill": "#EEEEEF",
+              "width": 3.4547,
+              "height": 2.1044
+            },
+            {
+              "type": "path",
+              "id": "gyO8o",
+              "x": 12.2555,
+              "y": 16.3845,
+              "geometry": "M0 0.94678c0 0.50845 0.26299 0.94678 0.78898 0.94677 0.57858 0.03506 0.52599-0.31559 0.87664-0.31559 0.43832-0.07013 0.47339 0.31559 0.98184 0.31559 0.59612 0 0.82404-0.49092 0.82405-0.96431 0-0.47339-0.21039-0.92924-0.85911-0.92924-0.33312 0-0.49092 0.31559-0.73638 0.31559-0.33312 0.03506-0.43832-0.31559-1.03444-0.31559-0.47339 0-0.84158 0.36819-0.84158 0.94678z",
+              "fill": "#EEEEEF",
+              "width": 3.4715,
+              "height": 1.896
+            },
+            {
+              "type": "path",
+              "id": "V9QV35",
+              "x": 9.7477,
+              "y": 12.2467,
+              "geometry": "M0.0006 2.78773c-0.01753 0.49092 0.35066 0.80651 0.99937 0.80651 0.59612 0 0.99937-0.26299 0.99938-0.75391 0.03506-0.54352-0.36819-0.54352-0.36819-0.99938-0.03507-0.63118 0.36819-0.49092 0.36819-1.01691 0-0.45585-0.38572-0.82404-0.96431-0.82404-0.42079 0-1.01691 0.17533-1.01691 0.77145-0.03507 0.54352 0.40326 0.57858 0.35066 0.89417 0.08766 0.59612-0.26299 0.59612-0.36819 1.12211z",
+              "fill": "#EEEEEF",
+              "width": 2.0015,
+              "height": 3.5942
+            },
+            {
+              "type": "path",
+              "id": "bI2Iv",
+              "x": 16.2833,
+              "y": 12.2467,
+              "geometry": "M0.00473 0.77145c-0.0526 0.63118 0.35066 0.57858 0.35066 0.92924 0.12273 0.59612-0.35066 0.52599-0.35066 1.08704 0 0.47339 0.35066 0.78898 0.99938 0.78898 0.61365 0 0.96431-0.31559 0.9643-0.78898 0.03507-0.49092-0.42079-0.56105-0.31559-0.98184-0.08766-0.47339 0.31559-0.49092 0.31559-0.98185 0-0.54352-0.38572-0.82404-0.9643-0.82404-0.57859 0-0.99937 0.29806-0.99938 0.77145z",
+              "fill": "#EEEEEF",
+              "width": 1.9703,
+              "height": 3.5767
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "id": "WMPzg",
+          "name": "Wordmark",
+          "fill": "$ink",
+          "content": "tumo",
+          "fontFamily": "Geist",
+          "fontSize": 22,
+          "fontWeight": "700",
+          "letterSpacing": -1
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "pxxI3",
+      "x": 0,
+      "y": 60,
+      "name": "Btn / Primary",
+      "reusable": true,
+      "height": 52,
+      "fill": "$brand",
+      "cornerRadius": 999,
+      "padding": [
+        0,
+        24
+      ],
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "text",
+          "id": "G7eUB",
+          "name": "Label",
+          "fill": "$ink",
+          "content": "Escribinos",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "600"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "yibr6",
+      "x": 0,
+      "y": 130,
+      "name": "Btn / Ghost",
+      "reusable": true,
+      "height": 48,
+      "fill": "#FFFFFF18",
+      "cornerRadius": 999,
+      "stroke": "#FFFFFF55",
+      "strokeWidth": 1,
+      "padding": [
+        0,
+        20
+      ],
+      "justifyContent": "center",
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "text",
+          "id": "VnyJ8",
+          "name": "Label",
+          "fill": "$ink",
+          "content": "Ghost",
+          "fontFamily": "Inter",
+          "fontSize": 15,
+          "fontWeight": "500"
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "onB2C",
+      "x": 400,
+      "y": 0,
+      "name": "1 · Navbar",
+      "clip": true,
+      "width": 375,
+      "height": 64,
+      "fill": "#000000B3",
+      "effect": {
+        "type": "background_blur",
+        "radius": 20
+      },
+      "padding": [
+        12,
+        16
+      ],
+      "justifyContent": "space_between",
+      "alignItems": "center",
+      "children": [
+        {
+          "id": "OdSng",
+          "type": "ref",
+          "ref": "kZ7yz",
+          "name": "Logo"
+        },
+        {
+          "id": "fMYrR",
+          "type": "ref",
+          "ref": "pxxI3",
+          "name": "CTA",
+          "height": 40,
+          "padding": [
+            0,
+            16
+          ],
+          "descendants": {
+            "G7eUB": {
+              "content": "Escribinos",
+              "fontSize": 14
+            }
+          }
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "n8pcs",
+      "x": 400,
+      "y": 64,
+      "name": "2 · Hero",
+      "clip": true,
+      "width": 375,
+      "height": 720,
+      "layout": "none",
+      "children": [
+        {
+          "type": "frame",
+          "id": "v2U98",
+          "x": 0,
+          "y": 0,
+          "name": "Hero photo",
+          "metadata": {
+            "type": "unsplash",
+            "username": "rumanamin",
+            "link": "https://unsplash.com/@rumanamin",
+            "author": "Rumman Amin"
+          },
+          "width": 375,
+          "height": 720,
+          "fill": {
+            "type": "image",
+            "enabled": true,
+            "url": "https://images.unsplash.com/photo-1577495976766-25a3d02b186e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NDM0ODN8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODY1NjI3Njl8&ixlib=rb-4.1.0&q=80&w=1080",
+            "mode": "fill"
+          },
+          "layout": "none"
+        },
+        {
+          "type": "rectangle",
+          "id": "aYUoi",
+          "x": 0,
+          "y": 280,
+          "name": "Scrim",
+          "fill": {
+            "type": "gradient",
+            "gradientType": "linear",
+            "enabled": true,
+            "rotation": 0,
+            "size": {
+              "height": 1
+            },
+            "colors": [
+              {
+                "color": "#00000000",
+                "position": 0
+              },
+              {
+                "color": "#000000CC",
+                "position": 0.45
+              },
+              {
+                "color": "#000000",
+                "position": 1
+              }
+            ]
+          },
+          "width": 375,
+          "height": 440
+        },
+        {
+          "type": "frame",
+          "id": "PWfaH",
+          "x": 0,
+          "y": 360,
+          "name": "Hero content",
+          "width": 375,
+          "layout": "vertical",
+          "gap": 20,
+          "padding": [
+            0,
+            20,
+            32,
+            20
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "lKu6z",
+              "name": "Kicker",
+              "fill": "#D4D4D4",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Para comercios que ya saben lo que hacen",
+              "fontFamily": "Inter",
+              "fontSize": 14,
+              "fontWeight": "500",
+              "letterSpacing": 0.2
+            },
+            {
+              "type": "text",
+              "id": "xRsGG",
+              "name": "Headline",
+              "fill": "$ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "No venimos a enseñarte el negocio.\nVenimos a que la tecnología no te frene.",
+              "lineHeight": 1.12,
+              "fontFamily": "Geist",
+              "fontSize": 30,
+              "fontWeight": "800",
+              "letterSpacing": -1.1
+            },
+            {
+              "type": "frame",
+              "id": "N3V1R6",
+              "name": "CTAs",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 10,
+              "children": [
+                {
+                  "id": "aXpDl",
+                  "type": "ref",
+                  "ref": "pxxI3",
+                  "name": "WA",
+                  "width": "fill_container",
+                  "height": 52,
+                  "descendants": {
+                    "G7eUB": {
+                      "content": "Escribinos por WhatsApp"
+                    }
+                  }
+                },
+                {
+                  "id": "p8lnE",
+                  "type": "ref",
+                  "ref": "yibr6",
+                  "name": "Call",
+                  "width": "fill_container",
+                  "height": 48,
+                  "descendants": {
+                    "VnyJ8": {
+                      "content": "O dejanos tu teléfono"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "S4oBQI",
+      "x": 400,
+      "y": 784,
+      "name": "3 · Cómo laburamos",
+      "clip": true,
+      "width": 375,
+      "fill": "$surface",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "F4axL",
+          "name": "Doc photo",
+          "metadata": {
+            "type": "unsplash",
+            "username": "monazme",
+            "link": "https://unsplash.com/@monazme",
+            "author": "Monaz Nazary"
+          },
+          "clip": true,
+          "width": "fill_container",
+          "height": 280,
+          "fill": {
+            "type": "image",
+            "enabled": true,
+            "url": "https://images.unsplash.com/photo-1771681208411-37d088e04ff9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NDM0ODN8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODY1NjI3OTB8&ixlib=rb-4.1.0&q=80&w=1080",
+            "mode": "fill"
+          },
+          "layout": "none"
+        },
+        {
+          "type": "frame",
+          "id": "S39wJ",
+          "name": "Copy",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            28,
+            20,
+            40,
+            20
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "O5pxu",
+              "name": "Eyebrow",
+              "fill": "$brand",
+              "content": "CÓMO LABURAMOS",
+              "fontFamily": "Geist Mono",
+              "fontSize": 12,
+              "fontWeight": "500",
+              "letterSpacing": 1.5
+            },
+            {
+              "type": "text",
+              "id": "cHck5",
+              "name": "Title",
+              "fill": "$ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Nos contratás a nosotros.\nNo a un módulo.",
+              "lineHeight": 1.15,
+              "fontFamily": "Geist",
+              "fontSize": 28,
+              "fontWeight": "800",
+              "letterSpacing": -0.8
+            },
+            {
+              "type": "text",
+              "id": "sASGr",
+              "name": "Body",
+              "fill": "$muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Somos un taller que arma el sistema digital de tu comercio y te acompaña. Vos sabés del negocio. Nosotros ponemos orden en la tecnología — sin que tengas que volverte experto.",
+              "lineHeight": 1.5,
+              "fontFamily": "Inter",
+              "fontSize": 17
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "kotpx",
+      "x": 400,
+      "y": 1406,
+      "name": "4 · Casos reales",
+      "clip": true,
+      "width": 375,
+      "fill": "$surface",
+      "layout": "vertical",
+      "gap": 20,
+      "padding": [
+        40,
+        0,
+        48,
+        0
+      ],
+      "children": [
+        {
+          "type": "frame",
+          "id": "waAmC",
+          "name": "Head",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [
+            0,
+            20
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "vi2Di",
+              "name": "Eyebrow",
+              "fill": "$brand",
+              "content": "CASOS REALES",
+              "fontFamily": "Geist Mono",
+              "fontSize": 12,
+              "fontWeight": "500",
+              "letterSpacing": 1.5
+            },
+            {
+              "type": "text",
+              "id": "lnapU",
+              "name": "Title",
+              "fill": "$ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Comercios que ya laburan con nosotros",
+              "lineHeight": 1.2,
+              "fontFamily": "Geist",
+              "fontSize": 26,
+              "fontWeight": "800",
+              "letterSpacing": -0.6
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "b5aup",
+          "name": "Case Carri",
+          "clip": true,
+          "width": "fill_container",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "aamYu",
+              "name": "Photo",
+              "metadata": {
+                "type": "unsplash",
+                "username": "flvision_",
+                "link": "https://unsplash.com/@flvision_",
+                "author": "Flavio Mori"
+              },
+              "clip": true,
+              "width": "fill_container",
+              "height": 220,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "https://images.unsplash.com/photo-1765448856922-b97fce59d270?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NDM0ODN8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODY1NjI3OTF8&ixlib=rb-4.1.0&q=80&w=1080",
+                "mode": "fill"
+              },
+              "layout": "none"
+            },
+            {
+              "type": "frame",
+              "id": "JTeab",
+              "name": "Body",
+              "width": "fill_container",
+              "fill": "$surface-2",
+              "stroke": "$carri",
+              "strokeWidth": {
+                "top": 3
+              },
+              "layout": "vertical",
+              "gap": 10,
+              "padding": [
+                18,
+                20,
+                24,
+                20
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "MM2p6",
+                  "name": "Quote",
+                  "fill": "$ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "“Nos entendieron al toque. No vinieron a explicarme el negocio.”",
+                  "lineHeight": 1.35,
+                  "fontFamily": "Geist",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "BU521",
+                  "name": "Meta",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ugtYe",
+                      "name": "Name",
+                      "fill": "$carri",
+                      "content": "Carri",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "C53Byc",
+                      "name": "Dot",
+                      "fill": "$muted",
+                      "content": "·",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "A1VIYT",
+                      "name": "Rubro",
+                      "fill": "$muted",
+                      "content": "Gastronómico",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "p1DAzl",
+          "name": "Case Defe",
+          "clip": true,
+          "width": "fill_container",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "xvuJF",
+              "name": "Photo",
+              "metadata": {
+                "type": "unsplash",
+                "username": "jelezniac_bianca",
+                "link": "https://unsplash.com/@jelezniac_bianca",
+                "author": "Jelezniac Bianca"
+              },
+              "clip": true,
+              "width": "fill_container",
+              "height": 220,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "https://images.unsplash.com/photo-1636406261831-31e1792f3c55?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NDM0ODN8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODY1NjI3OTJ8&ixlib=rb-4.1.0&q=80&w=1080",
+                "mode": "fill"
+              },
+              "layout": "none"
+            },
+            {
+              "type": "frame",
+              "id": "kqFmq",
+              "name": "Body",
+              "width": "fill_container",
+              "fill": "$surface-2",
+              "stroke": "$defe",
+              "strokeWidth": {
+                "top": 3
+              },
+              "layout": "vertical",
+              "gap": 10,
+              "padding": [
+                18,
+                20,
+                24,
+                20
+              ],
+              "children": [
+                {
+                  "type": "text",
+                  "id": "kDRI1",
+                  "name": "Quote",
+                  "fill": "$ink",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "“Escribirles por WhatsApp es como hablar con alguien del rubro.”",
+                  "lineHeight": 1.35,
+                  "fontFamily": "Geist",
+                  "fontSize": 18,
+                  "fontWeight": "600"
+                },
+                {
+                  "type": "frame",
+                  "id": "uoGxu",
+                  "name": "Meta",
+                  "gap": 8,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "As6vr",
+                      "name": "Name",
+                      "fill": "$defe-2",
+                      "content": "Defe",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "text",
+                      "id": "PWoSO",
+                      "name": "Dot",
+                      "fill": "$muted",
+                      "content": "·",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "S7NIS",
+                      "name": "Rubro",
+                      "fill": "$muted",
+                      "content": "Gastronómico",
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "DI3H9",
+      "x": 400,
+      "y": 2298,
+      "name": "5 · Con qué laburamos",
+      "clip": true,
+      "width": 375,
+      "fill": "$surface",
+      "layout": "vertical",
+      "gap": 20,
+      "padding": [
+        40,
+        20,
+        48,
+        20
+      ],
+      "children": [
+        {
+          "type": "text",
+          "id": "L3LsLd",
+          "name": "Eyebrow",
+          "fill": "$brand",
+          "content": "HERRAMIENTAS",
+          "fontFamily": "Geist Mono",
+          "fontSize": 12,
+          "fontWeight": "500",
+          "letterSpacing": 1.5
+        },
+        {
+          "type": "text",
+          "id": "ooyp1",
+          "name": "Title",
+          "fill": "$ink",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Con qué laburamos",
+          "fontFamily": "Geist",
+          "fontSize": 26,
+          "fontWeight": "800",
+          "letterSpacing": -0.6
+        },
+        {
+          "type": "text",
+          "id": "i7f3mq",
+          "name": "Lead",
+          "fill": "$muted",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Piezas del taller. Activás las que necesitás.",
+          "lineHeight": 1.45,
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "frame",
+          "id": "ZqeM6",
+          "name": "Tools",
+          "width": "fill_container",
+          "layout": "vertical",
+          "children": [
+            {
+              "type": "frame",
+              "id": "fnwCf",
+              "name": "Fidelización",
+              "width": "fill_container",
+              "stroke": "$border",
+              "strokeWidth": {
+                "top": 1,
+                "bottom": 1
+              },
+              "layout": "vertical",
+              "gap": 8,
+              "padding": [
+                18,
+                0
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "F2Cvn0",
+                  "name": "Top",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "lhe4l",
+                      "name": "Name",
+                      "fill": "$ink",
+                      "content": "Fidelización",
+                      "fontFamily": "Geist",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "s9MBj",
+                      "name": "Status",
+                      "fill": "#7754E333",
+                      "cornerRadius": 8,
+                      "stroke": "$brand",
+                      "strokeWidth": 1,
+                      "padding": [
+                        6,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "gIHFT",
+                          "name": "S",
+                          "fill": "$brand",
+                          "content": "Disponible",
+                          "fontFamily": "Geist Mono",
+                          "fontSize": 12,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "g4QM1",
+                  "name": "Desc",
+                  "fill": "$muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Tarjeta de puntos digital y QR para tus clientes.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "Inter",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "x8TmB",
+              "name": "Pedidos",
+              "width": "fill_container",
+              "stroke": "$border",
+              "strokeWidth": {
+                "bottom": 1
+              },
+              "layout": "vertical",
+              "gap": 8,
+              "padding": [
+                18,
+                0
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "XIoIV",
+                  "name": "Top",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "sFtTl",
+                      "name": "Name",
+                      "fill": "$ink",
+                      "content": "Pedidos",
+                      "fontFamily": "Geist",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "smX1W",
+                      "name": "Status",
+                      "fill": "#00000000",
+                      "cornerRadius": 8,
+                      "stroke": "$muted",
+                      "strokeWidth": 1,
+                      "padding": [
+                        6,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "ZX1AK",
+                          "name": "S",
+                          "fill": "$muted",
+                          "content": "En desarrollo",
+                          "fontFamily": "Geist Mono",
+                          "fontSize": 12,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "zpKPp",
+                  "name": "Desc",
+                  "fill": "$muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Pedidos por WhatsApp, simples para vos y tus clientes.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "Inter",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "J7eQi",
+              "name": "A medida",
+              "width": "fill_container",
+              "stroke": "$border",
+              "strokeWidth": {
+                "bottom": 1
+              },
+              "layout": "vertical",
+              "gap": 8,
+              "padding": [
+                18,
+                0
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "Llfkq",
+                  "name": "Top",
+                  "width": "fill_container",
+                  "gap": 12,
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "TPrmM",
+                      "name": "Name",
+                      "fill": "$ink",
+                      "content": "A medida",
+                      "fontFamily": "Geist",
+                      "fontSize": 18,
+                      "fontWeight": "700"
+                    },
+                    {
+                      "type": "frame",
+                      "id": "Ti3n4",
+                      "name": "Status",
+                      "fill": "#7754E322",
+                      "cornerRadius": 8,
+                      "stroke": "$brand",
+                      "strokeWidth": 1,
+                      "padding": [
+                        6,
+                        10
+                      ],
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "wJAlR",
+                          "name": "S",
+                          "fill": "$ink",
+                          "content": "Lo hacemos",
+                          "fontFamily": "Geist Mono",
+                          "fontSize": 12,
+                          "fontWeight": "500"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "Ox3gH",
+                  "name": "Desc",
+                  "fill": "$muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Si te falta una pieza, la desarrollamos sin cargo de desarrollo.",
+                  "lineHeight": 1.4,
+                  "fontFamily": "Inter",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "DuZVa",
+      "x": 400,
+      "y": 2867,
+      "name": "6 · Inversión",
+      "clip": true,
+      "width": 375,
+      "fill": "$surface",
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "lbPxr",
+          "name": "Block",
+          "width": "fill_container",
+          "fill": {
+            "type": "gradient",
+            "gradientType": "radial",
+            "enabled": true,
+            "rotation": 0,
+            "size": {
+              "width": 1.2,
+              "height": 1
+            },
+            "colors": [
+              {
+                "color": "#7754E318",
+                "position": 0
+              },
+              {
+                "color": "#000000",
+                "position": 0.85
+              }
+            ],
+            "center": {
+              "y": 0.3
+            }
+          },
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            40,
+            20,
+            48,
+            20
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "G3oJp4",
+              "name": "Eyebrow",
+              "fill": "$brand",
+              "content": "INVERSIÓN",
+              "fontFamily": "Geist Mono",
+              "fontSize": 12,
+              "fontWeight": "500",
+              "letterSpacing": 1.5
+            },
+            {
+              "type": "text",
+              "id": "g3wlEa",
+              "name": "Title",
+              "fill": "$ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Setup único +\nmensualidad según lo que uses.",
+              "lineHeight": 1.2,
+              "fontFamily": "Geist",
+              "fontSize": 26,
+              "fontWeight": "800",
+              "letterSpacing": -0.6
+            },
+            {
+              "type": "text",
+              "id": "Y2Uktx",
+              "name": "Body",
+              "fill": "$muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Sin planes en góndola. Te armamos un presupuesto para tu comercio.",
+              "lineHeight": 1.45,
+              "fontFamily": "Inter",
+              "fontSize": 17,
+              "fontWeight": "normal"
+            },
+            {
+              "id": "VkJoB",
+              "type": "ref",
+              "ref": "pxxI3",
+              "name": "CTA",
+              "width": "fill_container",
+              "height": 52,
+              "descendants": {
+                "G7eUB": {
+                  "content": "Pedí tu presupuesto"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "WCvmt",
+      "x": 400,
+      "y": 3214,
+      "name": "7 · FAQ",
+      "clip": true,
+      "width": 375,
+      "fill": "$surface",
+      "layout": "vertical",
+      "gap": 16,
+      "padding": [
+        40,
+        20,
+        48,
+        20
+      ],
+      "children": [
+        {
+          "type": "text",
+          "id": "vWmNL",
+          "name": "Eyebrow",
+          "fill": "$brand",
+          "content": "PREGUNTAS",
+          "fontFamily": "Geist Mono",
+          "fontSize": 12,
+          "fontWeight": "500",
+          "letterSpacing": 1.5
+        },
+        {
+          "type": "text",
+          "id": "gSe00",
+          "name": "Title",
+          "fill": "$ink",
+          "textGrowth": "fixed-width",
+          "width": "fill_container",
+          "content": "Como si nos escribieras",
+          "fontFamily": "Geist",
+          "fontSize": 26,
+          "fontWeight": "800",
+          "letterSpacing": -0.6
+        },
+        {
+          "type": "frame",
+          "id": "j7ZGnM",
+          "name": "List",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 10,
+          "children": [
+            {
+              "type": "frame",
+              "id": "Uaf1K",
+              "name": "Q",
+              "width": "fill_container",
+              "fill": "#7754E314",
+              "cornerRadius": 16,
+              "stroke": "$brand",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "cQe8q",
+                  "name": "Row",
+                  "width": "fill_container",
+                  "gap": 10,
+                  "justifyContent": "space_between",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "gW85B",
+                      "name": "Q text",
+                      "fill": "$ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "¿Y si necesito algo que no tienen?",
+                      "lineHeight": 1.35,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "X1BtTe",
+                      "name": "Icon",
+                      "fill": "$brand",
+                      "content": "−",
+                      "fontFamily": "Geist",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "id": "GD50V",
+                  "name": "A",
+                  "fill": "$muted",
+                  "textGrowth": "fixed-width",
+                  "width": "fill_container",
+                  "content": "Lo desarrollamos sin cobrarte el desarrollo; lo pagás como un módulo más.",
+                  "lineHeight": 1.45,
+                  "fontFamily": "Inter",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "dQy4b",
+              "name": "Q",
+              "width": "fill_container",
+              "fill": "$surface-2",
+              "cornerRadius": 16,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "iHaze",
+                  "name": "Row",
+                  "width": "fill_container",
+                  "gap": 10,
+                  "justifyContent": "space_between",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "y04ONo",
+                      "name": "Q text",
+                      "fill": "$ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "¿Cuánto sale?",
+                      "lineHeight": 1.35,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "rtsrQ",
+                      "name": "Icon",
+                      "fill": "$muted",
+                      "content": "+",
+                      "fontFamily": "Geist",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "xHsVC",
+              "name": "Q",
+              "width": "fill_container",
+              "fill": "$surface-2",
+              "cornerRadius": 16,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "EMXyC",
+                  "name": "Row",
+                  "width": "fill_container",
+                  "gap": 10,
+                  "justifyContent": "space_between",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "Z3Klpf",
+                      "name": "Q text",
+                      "fill": "$ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "¿Sirve para mi rubro?",
+                      "lineHeight": 1.35,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "qLl2X",
+                      "name": "Icon",
+                      "fill": "$muted",
+                      "content": "+",
+                      "fontFamily": "Geist",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "jOZ30",
+              "name": "Q",
+              "width": "fill_container",
+              "fill": "$surface-2",
+              "cornerRadius": 16,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "APAS8",
+                  "name": "Row",
+                  "width": "fill_container",
+                  "gap": 10,
+                  "justifyContent": "space_between",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ZFFCY",
+                      "name": "Q text",
+                      "fill": "$ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "¿Es difícil?",
+                      "lineHeight": 1.35,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "F2BlwC",
+                      "name": "Icon",
+                      "fill": "$muted",
+                      "content": "+",
+                      "fontFamily": "Geist",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "HX7jX",
+              "name": "Q",
+              "width": "fill_container",
+              "fill": "$surface-2",
+              "cornerRadius": 16,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "layout": "vertical",
+              "gap": 10,
+              "padding": 16,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "JR0s6",
+                  "name": "Row",
+                  "width": "fill_container",
+                  "gap": 10,
+                  "justifyContent": "space_between",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "eLBYm",
+                      "name": "Q text",
+                      "fill": "$ink",
+                      "textGrowth": "fixed-width",
+                      "width": "fill_container",
+                      "content": "¿Y si no entiendo algo?",
+                      "lineHeight": 1.35,
+                      "fontFamily": "Inter",
+                      "fontSize": 16,
+                      "fontWeight": "600"
+                    },
+                    {
+                      "type": "text",
+                      "id": "p5uT3",
+                      "name": "Icon",
+                      "fill": "$muted",
+                      "content": "+",
+                      "fontFamily": "Geist",
+                      "fontSize": 20,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "OWOS1",
+      "x": 400,
+      "y": 3793,
+      "name": "8 · CTA final",
+      "clip": true,
+      "width": 375,
+      "layout": "vertical",
+      "children": [
+        {
+          "type": "frame",
+          "id": "wItaz",
+          "name": "Media",
+          "metadata": {
+            "type": "unsplash",
+            "username": "tanyabarrow",
+            "link": "https://unsplash.com/@tanyabarrow",
+            "author": "Tanya Barrow"
+          },
+          "clip": true,
+          "width": "fill_container",
+          "height": 200,
+          "fill": {
+            "type": "image",
+            "enabled": true,
+            "url": "https://images.unsplash.com/photo-1762417582521-af9243da2705?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w4NDM0ODN8MHwxfHJhbmRvbXx8fHx8fHx8fDE3ODY1NjI4Mjh8&ixlib=rb-4.1.0&q=80&w=1080",
+            "mode": "fill"
+          },
+          "layout": "none"
+        },
+        {
+          "type": "rectangle",
+          "id": "LOXop",
+          "name": "fade",
+          "fill": "$surface",
+          "width": "fill_container",
+          "height": 1
+        },
+        {
+          "type": "frame",
+          "id": "toX1L",
+          "name": "Body",
+          "width": "fill_container",
+          "fill": "$surface",
+          "layout": "vertical",
+          "gap": 18,
+          "padding": [
+            28,
+            20,
+            40,
+            20
+          ],
+          "children": [
+            {
+              "type": "text",
+              "id": "jiZbM",
+              "name": "Title",
+              "fill": "$ink",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "Si te cierra cómo hablamos,\nescribimos.",
+              "lineHeight": 1.15,
+              "fontFamily": "Geist",
+              "fontSize": 28,
+              "fontWeight": "800",
+              "letterSpacing": -0.8
+            },
+            {
+              "id": "TGvhE",
+              "type": "ref",
+              "ref": "pxxI3",
+              "name": "WA",
+              "width": "fill_container",
+              "height": 52,
+              "descendants": {
+                "G7eUB": {
+                  "content": "Escribinos por WhatsApp"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "MdF0p",
+              "name": "Or",
+              "fill": "$muted",
+              "textGrowth": "fixed-width",
+              "width": "fill_container",
+              "content": "O dejanos tu teléfono y te llamamos",
+              "fontFamily": "Inter",
+              "fontSize": 16,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "jR5Yk",
+              "name": "Tu nombre",
+              "width": "fill_container",
+              "height": 52,
+              "fill": "$surface-2",
+              "cornerRadius": 14,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "padding": [
+                0,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "kRUtk",
+                  "name": "ph",
+                  "fill": "#737373",
+                  "content": "Tu nombre",
+                  "fontFamily": "Inter",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "X1FAU",
+              "name": "Tu teléfono",
+              "width": "fill_container",
+              "height": 52,
+              "fill": "$surface-2",
+              "cornerRadius": 14,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "padding": [
+                0,
+                16
+              ],
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "DAXw4",
+                  "name": "ph",
+                  "fill": "#737373",
+                  "content": "Tu teléfono",
+                  "fontFamily": "Inter",
+                  "fontSize": 16,
+                  "fontWeight": "normal"
+                }
+              ]
+            },
+            {
+              "id": "i7KuP",
+              "type": "ref",
+              "ref": "pxxI3",
+              "name": "Call",
+              "width": "fill_container",
+              "height": 52,
+              "fill": "$surface-2",
+              "stroke": "$brand",
+              "strokeWidth": 1.5,
+              "descendants": {
+                "G7eUB": {
+                  "content": "Que me llamen"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "frame",
+      "id": "Ywub0",
+      "x": 400,
+      "y": 4475,
+      "name": "9 · Footer",
+      "clip": true,
+      "width": 375,
+      "fill": "$surface",
+      "stroke": "$border",
+      "strokeWidth": {
+        "top": 1
+      },
+      "layout": "vertical",
+      "gap": 10,
+      "padding": [
+        28,
+        20,
+        40,
+        20
+      ],
+      "alignItems": "center",
+      "children": [
+        {
+          "type": "text",
+          "id": "v1dQwG",
+          "name": "Brand",
+          "fill": "$ink",
+          "content": "Tumo · tumo.com.ar",
+          "fontFamily": "Geist",
+          "fontSize": 16,
+          "fontWeight": "600"
+        },
+        {
+          "type": "text",
+          "id": "IIhyc",
+          "name": "Contact",
+          "fill": "$muted",
+          "content": "hola@tumo.com.ar · WhatsApp",
+          "fontFamily": "Inter",
+          "fontSize": 16,
+          "fontWeight": "normal"
+        }
+      ]
+    }
+  ],
+  "variables": {
+    "surface": {
+      "type": "color",
+      "value": "#000000"
+    },
+    "surface-2": {
+      "type": "color",
+      "value": "#0A0A0A"
+    },
+    "ink": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "muted": {
+      "type": "color",
+      "value": "#A3A3A3"
+    },
+    "border": {
+      "type": "color",
+      "value": "#262626"
+    },
+    "brand": {
+      "type": "color",
+      "value": "#7754E3"
+    },
+    "brand-deep": {
+      "type": "color",
+      "value": "#7527E3"
+    },
+    "carri": {
+      "type": "color",
+      "value": "#F97316"
+    },
+    "carri-2": {
+      "type": "color",
+      "value": "#FACC15"
+    },
+    "defe": {
+      "type": "color",
+      "value": "#577e99"
+    },
+    "defe-2": {
+      "type": "color",
+      "value": "#84a7c2"
+    }
+  },
+  "fileToken": "c2a8c559-b1c2-4908-a776-4ea0b4ecc839"
+}

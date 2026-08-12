@@ -1,0 +1,300 @@
+/* Craft visual de la isla landing */
+
+@keyframes landing-glow-breathe {
+  0%,
+  100% {
+    box-shadow:
+      0 0 28px 2px #7754e340,
+      0 12px 32px 0 #00000066;
+  }
+  50% {
+    box-shadow:
+      0 0 52px 10px #7754e366,
+      0 12px 36px 0 #00000080;
+  }
+}
+
+.landing-glow-breathe {
+  animation: landing-glow-breathe 5.5s ease-in-out infinite;
+}
+
+/* Grain sutil sobre la página */
+.landing-grain {
+  position: relative;
+}
+
+.landing-grain::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 180px 180px;
+  mix-blend-mode: overlay;
+}
+
+/* Mesh blobs */
+.landing-mesh {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.landing-mesh__blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+}
+
+.landing-mesh__blob--a {
+  width: min(70vw, 480px);
+  height: min(70vw, 480px);
+  top: -12%;
+  right: -18%;
+  background: #7754e3;
+}
+
+.landing-mesh__blob--b {
+  width: min(55vw, 360px);
+  height: min(55vw, 360px);
+  bottom: 10%;
+  left: -20%;
+  background: #7527e3;
+  opacity: 0.22;
+}
+
+/* Hairline grid */
+.landing-grid-bg {
+  background-image:
+    linear-gradient(#26262640 1px, transparent 1px),
+    linear-gradient(90deg, #26262640 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: center top;
+  mask-image: linear-gradient(180deg, #000 0%, transparent 92%);
+}
+
+/* Accent bar on section titles */
+.landing-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7754e3;
+}
+
+.landing-kicker::before {
+  content: "";
+  width: 28px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #7754e3, #7527e3);
+}
+
+/* Giant watermark numbers */
+.landing-index {
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: clamp(4.5rem, 14vw, 7rem);
+  line-height: 0.85;
+  letter-spacing: -0.06em;
+  color: transparent;
+  -webkit-text-stroke: 1px #262626;
+  user-select: none;
+}
+
+/* Frame corners */
+.landing-frame {
+  position: relative;
+}
+
+.landing-frame::before,
+.landing-frame::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: #7754e366;
+  border-style: solid;
+  pointer-events: none;
+}
+
+.landing-frame::before {
+  top: 10px;
+  left: 10px;
+  border-width: 1.5px 0 0 1.5px;
+}
+
+.landing-frame::after {
+  right: 10px;
+  bottom: 10px;
+  border-width: 0 1.5px 1.5px 0;
+}
+
+/* Scroll reveal — más lento / elegante */
+[data-landing-reveal] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+[data-landing-reveal="in"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Separador entre secciones */
+.landing-section-rule {
+  position: relative;
+  height: 1px;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #262626 18%,
+    #7754e366 50%,
+    #262626 82%,
+    transparent 100%
+  );
+}
+
+.landing-section-rule::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #7754e3;
+  box-shadow: 0 0 12px #7754e3;
+  transform: translate(-50%, -50%);
+}
+
+/* Skeleton de imagen */
+.landing-img-skeleton {
+  background: linear-gradient(
+    110deg,
+    #0a0a0a 0%,
+    #141414 40%,
+    #1a1a1a 50%,
+    #141414 60%,
+    #0a0a0a 100%
+  );
+  background-size: 200% 100%;
+  animation: landing-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes landing-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+/* Shine en botón primary (desktop hover) */
+.landing-btn-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    #ffffff33 48%,
+    #ffffff55 50%,
+    #ffffff33 52%,
+    transparent 65%
+  );
+  transform: translateX(-120%);
+  transition: none;
+  pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .landing-btn-shine:hover::after {
+    transition: transform 0.65s ease;
+    transform: translateX(120%);
+  }
+}
+
+.landing-parallax {
+  height: 100%;
+  width: 100%;
+}
+
+[data-landing-nav] {
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
+  border-bottom: 1px solid transparent;
+}
+
+[data-landing-nav="scrolled"] {
+  background-color: #000000e6;
+  border-bottom-color: #26262699;
+  box-shadow: 0 8px 32px #00000080;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .landing-card-hover {
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease,
+      border-color 0.25s ease;
+  }
+
+  .landing-card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 40px #7754e333;
+  }
+
+  .landing-card-hover:hover.landing-card-border {
+    border-color: #7754e3aa;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-glow-breathe,
+  .landing-img-skeleton {
+    animation: none !important;
+  }
+
+  [data-landing-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .landing-card-hover,
+  .landing-card-hover:hover {
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .landing-btn-shine:hover::after {
+    transition: none !important;
+    transform: none !important;
+  }
+
+  .landing-parallax {
+    transform: none !important;
+  }
+}
