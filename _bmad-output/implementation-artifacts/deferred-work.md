@@ -94,3 +94,31 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-owner-dashboard-loyalty-ia.md`
   summary: readyCount del hub se estima con getTopCustomers(limit 20), puede subcontar si hay más listos
   evidence: home-section filtra canRedeem sobre top 20 por purchases; en comercios grandes el número de listos puede quedar corto
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-loyalty-qr-scan-points.md`
+  summary: GET /api/loyalty/customers por code/phone/id sin auth expone PII; códigos 4 dígitos enumerables
+  evidence: Preexistente al feature QR; staff cookie hijack se parcheó; auth en lookup público queda para endurecer
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-loyalty-qr-scan-points.md`
+  summary: customers.code es UNIQUE global pero generateCode solo chequea por business_id
+  evidence: Preexistente en 001_initial + generate-code; techo ~9k códigos cross-tenant
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-loyalty-qr-scan-points.md`
+  summary: Redeem resetea points a 0 (quema excedente sobre points_needed)
+  evidence: Comportamiento del spine/intent (canje = reset progreso); multi-premio con remainder es fase futura
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-loyalty-qr-scan-points.md`
+  summary: getBusinessById (rangos/umbral) fuera del FOR UPDATE del earn/redeem
+  evidence: Race con PATCH program concurrente; mitigado por expectedPoints en earn; tx de business queda para endurecer
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-loyalty-public-onboarding-composition.md`
+  summary: Wizard no mueve el foco al H1/primer campo al cambiar de paso
+  evidence: setStep desmonta controles; teclado/SR quedan sin ancla; gap preexistente del wizard
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-loyalty-public-onboarding-composition.md`
+  summary: Logo con alt vacío si business.name está vacío deja marca sin nombre
+  evidence: header usa alt="" + nombre en p; edge de datos de negocio
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-loyalty-public-onboarding-composition.md`
+  summary: flex-1 + mt-auto + fixed puede pelear con teclado móvil
+  evidence: CTA abajo del viewport al abrir teclado; requiere chequeo en device

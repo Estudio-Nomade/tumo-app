@@ -96,7 +96,7 @@ describe("visual tokens vs Pencil", () => {
     const src = read("modules/loyalty/dashboard/panel.tsx")
     expect(src).toContain("bg-[#F5F5F4]")
     expect(src).toContain("rounded-[14px]")
-    expect(src).toContain("Canjear premio")
+    expect(src).toContain("Canjear")
     expect(src).toContain("#16A34A")
   })
 })

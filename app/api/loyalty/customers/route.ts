@@ -66,7 +66,8 @@ export async function GET(req: NextRequest) {
     const limit = Number(searchParams.get("limit") ?? "100")
     const result = await listCustomers(customerDeps, {
       businessId: session.businessId,
-      purchasesNeeded: business.purchases_needed,
+      pointsNeeded: business.points_needed,
+      pointRanges: business.point_ranges,
       rewardName: business.reward_name,
       query: searchParams.get("q") ?? undefined,
       limit: Number.isFinite(limit) ? limit : 100,
@@ -82,7 +83,15 @@ export async function GET(req: NextRequest) {
   })
 
   const res = NextResponse.json(result.body, { status: result.status })
-  if (result.status === 200 && typeof result.body.id === "string") {
+  // Only set public client cookie when there is no employee session
+  // (staff lookups must not hijack the browser's customer card identity).
+  const staffToken = req.cookies.get("session_token")?.value
+  const staffSession = staffToken ? await validateSession(staffToken) : null
+  if (
+    result.status === 200 &&
+    typeof result.body.id === "string" &&
+    !staffSession
+  ) {
     res.cookies.set("client_id", result.body.id, {
       httpOnly: false,
       secure: process.env.NODE_ENV === "production",

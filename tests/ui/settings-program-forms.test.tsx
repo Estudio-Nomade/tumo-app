@@ -40,11 +40,12 @@ describe("owner settings + program forms", () => {
 
   test("program form: stepper + reward + API", () => {
     const src = read("modules/loyalty/dashboard/program-form.tsx")
-    expect(src).toContain("Compras para canjear")
+    expect(src).toContain("Puntos para canjear")
     expect(src).toContain("Nombre del premio")
     expect(src).toContain("/api/loyalty/program")
     expect(src).toContain("clampNeeded")
-    expect(src).toContain("compras →")
+    expect(src).toContain("point_ranges")
+    expect(src).toContain("Tramos monto")
     expect(src).toContain("Guardar cambios")
   })
 
@@ -54,7 +55,7 @@ describe("owner settings + program forms", () => {
     )
     expect(page).toContain('session.role !== "owner"')
     expect(page).toContain("ProgramForm")
-    expect(page).toContain("purchases_needed")
+    expect(page).toContain("points_needed")
     expect(page).toContain("reward_name")
   })
 

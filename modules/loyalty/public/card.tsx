@@ -1,14 +1,16 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
+import QRCode from "qrcode"
 import { useBusiness } from "@/shell/context/business"
+import { customerLoyaltyQrPath } from "@/modules/loyalty/lib/parse-loyalty-qr"
 
 export type LoyaltyCardData = {
   id: string
   name: string
   code: string
-  purchases: number
-  purchasesNeeded: number
+  points: number
+  pointsNeeded: number
   rewardName: string
   canRedeem?: boolean
 }
@@ -26,6 +28,27 @@ export default function LoyaltyCard({
   const [customer, setCustomer] = useState(initial)
   const [copied, setCopied] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    const path = customerLoyaltyQrPath(slug, customer.code)
+    const absolute =
+      typeof window !== "undefined"
+        ? `${window.location.origin}${path}`
+        : path
+    void QRCode.toDataURL(absolute, {
+      width: 200,
+      margin: 2,
+      color: { dark: "#1C1917", light: "#FFFFFF" },
+      errorCorrectionLevel: "M",
+    }).then((src) => {
+      if (!cancelled) setQrDataUrl(src)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [slug, customer.code])
 
   const refresh = useCallback(async () => {
     setRefreshing(true)
@@ -38,7 +61,7 @@ export default function LoyaltyCard({
         ...prev,
         ...data,
         canRedeem: Boolean(
-          data.canRedeem ?? data.purchases >= data.purchasesNeeded
+          data.canRedeem ?? data.points >= data.pointsNeeded
         ),
       }))
     } catch {
@@ -60,11 +83,11 @@ export default function LoyaltyCard({
     }
   }, [refresh])
 
-  const needed = customer.purchasesNeeded
-  const current = Math.min(customer.purchases, needed)
-  const remaining = Math.max(needed - customer.purchases, 0)
+  const needed = customer.pointsNeeded
+  const current = Math.min(customer.points, needed)
+  const remaining = Math.max(needed - customer.points, 0)
   const pct = needed > 0 ? Math.min((current / needed) * 100, 100) : 0
-  const canRedeem = customer.canRedeem ?? customer.purchases >= needed
+  const canRedeem = customer.canRedeem ?? customer.points >= needed
   const initials = customer.name
     .split(/\s+/)
     .filter(Boolean)
@@ -149,7 +172,7 @@ export default function LoyaltyCard({
           <p className="text-[15px] font-semibold leading-snug">
             {canRedeem
               ? `¡Ya podés canjear tu ${customer.rewardName}!`
-              : `¡Te faltan ${remaining} compras para tu ${customer.rewardName}!`}
+              : `¡Te faltan ${remaining} puntos para tu ${customer.rewardName}!`}
           </p>
           <span className="inline-flex w-fit rounded-full bg-black/15 px-3 py-2 text-xs font-semibold text-white">
             {customer.rewardName}
@@ -159,9 +182,17 @@ export default function LoyaltyCard({
         <div className="flex w-full flex-col gap-4 rounded-3xl border border-[#E7E5E4] bg-white p-5">
           <div className="flex items-center justify-between gap-2">
             <p className="text-[13px] font-medium text-[var(--color-muted-public,#78716C)]">
-              Mostrá este código al empleado
+              Mostrá este QR o código al empleado
             </p>
           </div>
+          {qrDataUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={qrDataUrl}
+              alt={`QR de ${customer.name}`}
+              className="mx-auto h-[200px] w-[200px] rounded-2xl"
+            />
+          ) : null}
           <div className="flex justify-center gap-2.5">
             {codeDigits.map((digit, i) => (
               <div
@@ -184,7 +215,7 @@ export default function LoyaltyCard({
         </div>
 
         <p className="text-center text-xs text-[var(--color-hint-public,#A8A29E)]">
-          Cada compra suma. ¡A las {needed}, tu recompensa!
+          Cada visita suma puntos. ¡A los {needed}, tu recompensa!
         </p>
 
         <button

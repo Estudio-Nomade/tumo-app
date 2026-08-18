@@ -36,35 +36,29 @@ describe("getMetrics", () => {
 })
 
 describe("getRecentActivity", () => {
-  test("mergea purchases y redemptions por timestamp y respeta limit", async () => {
-    let call = 0
-    const sql = mock(() => {
-      call++
-      if (call === 1) {
-        return Promise.resolve([
-          {
-            created_at: new Date("2026-08-04T12:00:00Z"),
-            customer_name: "Ana",
-            type: "purchase",
-            purchase_count: 8,
-          },
-          {
-            created_at: new Date("2026-08-04T10:00:00Z"),
-            customer_name: "Bob",
-            type: "purchase",
-            purchase_count: 3,
-          },
-        ])
-      }
-      return Promise.resolve([
+  test("mapea movimientos earn/redeem por timestamp", async () => {
+    const sql = mock(() =>
+      Promise.resolve([
+        {
+          created_at: new Date("2026-08-04T12:00:00Z"),
+          customer_name: "Ana",
+          type: "earn",
+          points: 50,
+        },
         {
           created_at: new Date("2026-08-04T11:00:00Z"),
           customer_name: "Ana",
-          type: "redemption",
-          purchase_count: 10,
+          type: "redeem",
+          points: 150,
+        },
+        {
+          created_at: new Date("2026-08-04T10:00:00Z"),
+          customer_name: "Bob",
+          type: "earn",
+          points: 100,
         },
       ])
-    })
+    )
 
     const deps: MetricsDeps = {
       sql: sql as unknown as MetricsDeps["sql"],
@@ -80,62 +74,39 @@ describe("getRecentActivity", () => {
     expect(events[0]).toMatchObject({
       icon: "purchase",
       title: "Ana",
-      description: "8° compra",
+      description: "+50 puntos",
     })
     expect(events.some((e) => e.icon === "redemption")).toBe(true)
     const redemption = events.find((e) => e.icon === "redemption")
     expect(redemption).toMatchObject({
       title: "Ana",
-      description: "10° compra · ¡Premio canjeado!",
+      description: "Canje · 150 puntos",
     })
   })
 
   test("respeta el límite", async () => {
-    const sql = mock(() =>
+    const sql2 = mock(() =>
       Promise.resolve([
         {
           created_at: new Date("2026-08-04T12:00:00Z"),
           customer_name: "A",
-          type: "purchase",
+          type: "earn",
+          points: 1,
         },
         {
           created_at: new Date("2026-08-04T11:00:00Z"),
           customer_name: "B",
-          type: "purchase",
+          type: "earn",
+          points: 1,
         },
         {
           created_at: new Date("2026-08-04T10:00:00Z"),
           customer_name: "C",
-          type: "purchase",
+          type: "earn",
+          points: 1,
         },
       ])
     )
-
-    // second call redemptions empty
-    let n = 0
-    const sql2 = mock(() => {
-      n++
-      if (n === 1) {
-        return Promise.resolve([
-          {
-            created_at: new Date("2026-08-04T12:00:00Z"),
-            customer_name: "A",
-            type: "purchase",
-          },
-          {
-            created_at: new Date("2026-08-04T11:00:00Z"),
-            customer_name: "B",
-            type: "purchase",
-          },
-          {
-            created_at: new Date("2026-08-04T10:00:00Z"),
-            customer_name: "C",
-            type: "purchase",
-          },
-        ])
-      }
-      return Promise.resolve([])
-    })
 
     const events = await getRecentActivity(
       { sql: sql2 as unknown as MetricsDeps["sql"] },
@@ -143,7 +114,6 @@ describe("getRecentActivity", () => {
     )
 
     expect(events).toHaveLength(2)
-    void sql
   })
 })
 
@@ -154,14 +124,12 @@ describe("getTopCustomers", () => {
         {
           id: "c1",
           name: "Ana",
-          purchases: 9,
-          purchases_needed: 10,
+          points: 9,
         },
         {
           id: "c2",
           name: "Bob",
-          purchases: 10,
-          purchases_needed: 10,
+          points: 10,
         },
       ])
     )
@@ -273,8 +241,8 @@ describe("getTopBuyers", () => {
   test("mapea clientes por total_purchases histórico", async () => {
     const sql = mock(() =>
       Promise.resolve([
-        { id: "c1", name: "Ana", total_purchases: 50 },
-        { id: "c2", name: "Bob", total_purchases: 12 },
+        { id: "c1", name: "Ana", total_points: 50 },
+        { id: "c2", name: "Bob", total_points: 12 },
       ])
     )
     const result = await getTopBuyers(

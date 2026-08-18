@@ -3,19 +3,37 @@
 import { FormEvent, useState } from "react"
 import { useParams } from "next/navigation"
 import Button from "@/shell/ui/Button"
-import DatePicker from "@/shell/ui/date-picker"
 import Input from "@/shell/ui/Input"
 import PhoneInput from "@/shell/ui/phone-input"
 import LoyaltyCard, {
   type LoyaltyCardData,
 } from "@/modules/loyalty/public/card"
+import { toBirthdayDate } from "@/modules/loyalty/lib/birthday"
 import { useBusiness } from "@/shell/context/business"
 import { isPhoneValid } from "@/lib/countries"
 
-type Mode = "register" | "login"
+type Step = "phone" | "name" | "birthday"
+
+const MONTHS_ES = [
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre",
+] as const
 
 const inputClassName =
   "h-[52px] !rounded-[14px] !border-0 !bg-[#F5F5F4] px-4 text-base text-stone-900 shadow-none placeholder:text-[#A8A29E] focus:!ring-2 focus:!ring-[var(--color-primary,#F97316)]/30"
+
+const selectClassName =
+  "h-[52px] w-full rounded-[14px] border-0 bg-[#F5F5F4] px-4 text-base text-stone-900 shadow-none focus:outline-none focus:ring-2 focus:ring-[var(--color-primary,#F97316)]/30 disabled:opacity-70"
 
 export default function LoyaltyRegistration({
   initialCustomer,
@@ -25,11 +43,11 @@ export default function LoyaltyRegistration({
   const params = useParams<{ slug: string }>()
   const business = useBusiness()
   const slug = params.slug
-  const [mode, setMode] = useState<Mode>("register")
+  const [step, setStep] = useState<Step>("phone")
   const [name, setName] = useState("")
   const [phone, setPhone] = useState("")
-  const [birthday, setBirthday] = useState("")
-  const [birthdayEnabled, setBirthdayEnabled] = useState(false)
+  const [birthMonth, setBirthMonth] = useState<number | null>(null)
+  const [birthDay, setBirthDay] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [customer, setCustomer] = useState<LoyaltyCardData | null>(
@@ -37,26 +55,73 @@ export default function LoyaltyRegistration({
   )
   const businessInitial = (business.name?.trim()?.[0] ?? "T").toUpperCase()
 
-  async function onRegister(e: FormEvent) {
+  function clearBirthday() {
+    setBirthMonth(null)
+    setBirthDay(null)
+  }
+
+  function goToPhone() {
+    setError("")
+    setName("")
+    clearBirthday()
+    setStep("phone")
+  }
+
+  function goToName() {
+    setError("")
+    clearBirthday()
+    setStep("name")
+  }
+
+  async function onPhoneContinue(e: FormEvent) {
     e.preventDefault()
     setError("")
-    if (birthdayEnabled && !birthday) {
-      setError("Elegí tu fecha de cumpleaños.")
-      return
-    }
     if (!isPhoneValid(phone)) {
       setError("Ingresá un WhatsApp válido con su prefijo.")
       return
     }
     setLoading(true)
     try {
+      const qs = new URLSearchParams({ phone, slug })
+      const res = await fetch(`/api/loyalty/customers?${qs.toString()}`)
+      if (res.status === 404) {
+        setStep("name")
+        return
+      }
+      const data = (await res.json()) as LoyaltyCardData & { error?: string }
+      if (!res.ok) {
+        setError(data.error ?? "No pudimos buscar tu cuenta.")
+        return
+      }
+      setCustomer(data)
+    } catch {
+      setError("No pudimos buscar tu cuenta. Probá de nuevo.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  function onNameContinue(e: FormEvent) {
+    e.preventDefault()
+    setError("")
+    if (!name.trim()) {
+      setError("Ingresá tu nombre.")
+      return
+    }
+    setStep("birthday")
+  }
+
+  async function register(birthdayIso?: string) {
+    setError("")
+    setLoading(true)
+    try {
       const res = await fetch("/api/loyalty/customers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name,
+          name: name.trim(),
           phone,
-          birthday: birthdayEnabled ? birthday || undefined : undefined,
+          birthday: birthdayIso,
           slug,
         }),
       })
@@ -73,28 +138,36 @@ export default function LoyaltyRegistration({
     }
   }
 
-  async function onLogin(e: FormEvent) {
+  async function onBirthdayContinue(e: FormEvent) {
     e.preventDefault()
     setError("")
-    if (!isPhoneValid(phone)) {
-      setError("Ingresá un WhatsApp válido con su prefijo.")
+    if (birthMonth == null && birthDay == null) {
+      await register(undefined)
       return
     }
-    setLoading(true)
-    try {
-      const qs = new URLSearchParams({ phone, slug })
-      const res = await fetch(`/api/loyalty/customers?${qs.toString()}`)
-      const data = (await res.json()) as LoyaltyCardData & { error?: string }
-      if (!res.ok) {
-        setError(data.error ?? "No encontramos tu cuenta.")
-        return
-      }
-      setCustomer(data)
-    } catch {
-      setError("No pudimos ingresar. Probá de nuevo.")
-    } finally {
-      setLoading(false)
+    if (birthMonth == null || birthDay == null) {
+      setError("Elegí día y mes válidos.")
+      return
     }
+    const iso = toBirthdayDate(birthMonth, birthDay)
+    if (!iso) {
+      setError("Elegí día y mes válidos.")
+      return
+    }
+    await register(iso)
+  }
+
+  function onSkipBirthday() {
+    void register(undefined)
+  }
+
+  function onSwitchAccount() {
+    setCustomer(null)
+    setStep("phone")
+    setName("")
+    setPhone("")
+    clearBirthday()
+    setError("")
   }
 
   if (customer) {
@@ -102,186 +175,206 @@ export default function LoyaltyRegistration({
       <LoyaltyCard
         customer={customer}
         slug={slug}
-        onSwitchAccount={() => setCustomer(null)}
+        onSwitchAccount={onSwitchAccount}
       />
     )
   }
 
-  const tagline =
-    business.tagline?.trim() || "Programa de fidelización"
+  const ctaClassName =
+    "h-14 w-full !rounded-2xl text-[16px] font-bold tracking-tight shadow-[0_8px_20px_-6px_color-mix(in_srgb,var(--color-primary,#F97316)_55%,transparent)] disabled:opacity-70 disabled:shadow-none"
 
   return (
-    <div className="fixed inset-0 z-10 flex min-h-[100dvh] w-full flex-col items-center overflow-y-auto bg-[var(--color-surface-public,#FFFFFF)] pt-[max(0.75rem,env(safe-area-inset-top))] pr-[max(1.5rem,env(safe-area-inset-right))] pb-[max(1.5rem,env(safe-area-inset-bottom))] pl-[max(1.5rem,env(safe-area-inset-left))]">
-      <div className="mx-auto flex w-full max-w-sm flex-col gap-[18px] py-3">
-        <header className="flex flex-col items-center gap-2.5 text-center">
+    <div className="fixed inset-0 z-10 overflow-y-auto bg-[var(--color-surface-public,#FFFFFF)] pt-[max(0.75rem,env(safe-area-inset-top))] pr-[max(1.25rem,env(safe-area-inset-right))] pb-[max(1.5rem,env(safe-area-inset-bottom))] pl-[max(1.25rem,env(safe-area-inset-left))]">
+      <div className="mx-auto w-full max-w-[360px] py-2">
+        <header className="mb-10 flex flex-col items-center gap-3 text-center">
           {business.logo ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={business.logo}
-              alt={business.name}
-              className="h-[72px] w-[72px] rounded-[20px] object-cover"
+              alt=""
+              className="h-16 w-16 shrink-0 rounded-[18px] object-cover ring-1 ring-black/5"
             />
           ) : (
             <div
               aria-hidden
-              className="flex h-[72px] w-[72px] items-center justify-center rounded-[20px] bg-[var(--color-primary,#F97316)] text-2xl font-extrabold text-white"
+              className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[18px] bg-[var(--color-primary,#F97316)] text-xl font-bold text-white"
             >
               {businessInitial}
             </div>
           )}
-          <h1 className="text-xl font-extrabold tracking-tight text-[var(--color-ink-public,#1C1917)]">
+          <p className="max-w-full truncate text-base font-semibold tracking-tight text-[var(--color-ink-public,#1C1917)]">
             {business.name}
-          </h1>
-          <p className="text-xs text-[var(--color-muted-public,#78716C)]">
-            {tagline}
           </p>
         </header>
 
-        <h2 className="text-center text-[22px] font-bold tracking-tight text-[var(--color-ink-public,#1C1917)]">
-          {mode === "register"
-            ? "Empezá a sumar puntos"
-            : "Ingresá tu WhatsApp"}
-        </h2>
-        <p className="text-center text-[13px] leading-relaxed text-[var(--color-muted-public,#78716C)]">
-          {mode === "register"
-            ? `Registrate en segundos y ganá tu ${business.reward_name || "premio"} en cada ${business.purchases_needed || 10} ${business.purchases_needed === 1 ? "compra" : "compras"}.`
-            : "Buscamos tu tarjeta con el número de WhatsApp."}
-        </p>
+        {step === "phone" ? (
+          <form onSubmit={onPhoneContinue} className="flex flex-col">
+            <h1 className="text-[28px] font-extrabold leading-[1.15] tracking-tight text-[var(--color-ink-public,#1C1917)]">
+              Ingresá tu WhatsApp
+            </h1>
+            <p className="mt-2 text-[15px] leading-snug text-[var(--color-muted-public,#78716C)]">
+              Con tu número te buscamos en el programa de puntos.
+            </p>
+            <div className="mt-7">
+              <PhoneInput
+                label=""
+                name="phone"
+                value={phone}
+                onChange={setPhone}
+                required
+                disabled={loading}
+                aria-label="WhatsApp"
+              />
+            </div>
+            {error ? (
+              <p
+                role="alert"
+                className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-700"
+              >
+                {error}
+              </p>
+            ) : null}
+            <Button
+              type="submit"
+              disabled={loading}
+              className={`mt-5 ${ctaClassName}`}
+            >
+              {loading ? "Buscando…" : "Continuar"}
+            </Button>
+          </form>
+        ) : null}
 
-        {mode === "register" ? (
-          <form onSubmit={onRegister} className="flex flex-col gap-3">
-            <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-[var(--color-ink-public,#1C1917)]">
+        {step === "name" ? (
+          <form onSubmit={onNameContinue} className="flex flex-col">
+            <h1 className="text-[28px] font-extrabold leading-[1.15] tracking-tight text-[var(--color-ink-public,#1C1917)]">
+              ¿Cómo te llamás?
+            </h1>
+            <div className="mt-4 flex items-center justify-between gap-2 rounded-2xl bg-[#F5F5F4] px-3.5 py-2">
+              <span className="truncate text-[13px] font-medium tabular-nums text-[var(--color-ink-public,#1C1917)]">
+                {phone}
+              </span>
+              <button
+                type="button"
+                disabled={loading}
+                aria-label={`Cambiar WhatsApp ${phone}`}
+                className="inline-flex min-h-[44px] shrink-0 items-center px-1 text-[13px] font-semibold text-[var(--color-primary,#F97316)] disabled:opacity-70"
+                onClick={goToPhone}
+              >
+                Cambiar
+              </button>
+            </div>
+            <div className="mt-5 [&_label>span]:sr-only">
               <Input
                 label="Tu nombre"
                 name="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
+                disabled={loading}
+                placeholder="Tu nombre"
                 className={inputClassName}
               />
             </div>
-            <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-[var(--color-ink-public,#1C1917)]">
-              <PhoneInput
-                label="WhatsApp"
-                name="phone"
-                value={phone}
-                onChange={setPhone}
-                required
-                disabled={loading}
-              />
-            </div>
-            <div className="flex w-full flex-col gap-2.5">
-              <div className="flex items-center justify-between">
-                <span
-                  id="birthday-label"
-                  className="text-[15px] text-[var(--color-ink-public,#1C1917)]"
-                >
-                  ¿Fecha de cumpleaños?
-                </span>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={birthdayEnabled}
-                  aria-labelledby="birthday-label"
-                  aria-controls="birthday-field"
-                  disabled={loading}
-                  onClick={() => {
-                    if (birthdayEnabled) {
-                      setBirthday("")
-                      setBirthdayEnabled(false)
-                    } else {
-                      setBirthdayEnabled(true)
-                    }
-                  }}
-                  className={`flex h-7 w-12 shrink-0 items-center rounded-full p-0.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary,#F97316)]/40 focus-visible:ring-offset-2 disabled:opacity-70 ${
-                    birthdayEnabled
-                      ? "justify-end bg-[var(--color-primary,#F97316)]"
-                      : "justify-start bg-stone-300"
-                  }`}
-                >
-                  <span
-                    aria-hidden
-                    className="h-[22px] w-[22px] rounded-full bg-white shadow-sm"
-                  />
-                </button>
-              </div>
-              {birthdayEnabled ? (
-                <div id="birthday-field" className="w-full">
-                  <DatePicker
-                    id="birthday"
-                    name="birthday"
-                    required
-                    disabled={loading}
-                    aria-labelledby="birthday-label"
-                    value={birthday}
-                    onChange={setBirthday}
-                    placeholder="Elegí tu fecha"
-                  />
-                </div>
-              ) : null}
-            </div>
+            {error ? (
+              <p
+                role="alert"
+                className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-700"
+              >
+                {error}
+              </p>
+            ) : null}
             <Button
               type="submit"
               disabled={loading}
-              className="mt-1 h-[54px] w-full !rounded-[14px] text-base font-bold disabled:opacity-70"
+              className={`mt-5 ${ctaClassName}`}
             >
-              {loading ? "Guardando…" : "Empezar a sumar puntos"}
+              Continuar
             </Button>
-            <button
-              type="button"
-              className="flex items-center justify-center gap-1 pt-1 text-center text-xs text-[var(--color-muted-public,#78716C)]"
-              onClick={() => {
-                setMode("login")
-                setError("")
-                setBirthday("")
-                setBirthdayEnabled(false)
-              }}
-            >
-              ¿Ya tenés cuenta?
-              <span className="font-semibold text-[var(--color-primary,#F97316)]">
-                Ingresá tu WhatsApp
-              </span>
-            </button>
           </form>
-        ) : (
-          <form onSubmit={onLogin} className="flex flex-col gap-3">
-            <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-[var(--color-ink-public,#1C1917)]">
-              <PhoneInput
-                label="WhatsApp"
-                name="phone"
-                value={phone}
-                onChange={setPhone}
-                required
-                disabled={loading}
-              />
-            </div>
-            <Button
-              type="submit"
-              disabled={loading}
-              className="mt-1 h-[54px] w-full !rounded-[14px] text-base font-bold disabled:opacity-70"
-            >
-              {loading ? "Buscando…" : "Ingresar"}
-            </Button>
-            <button
-              type="button"
-              className="pt-1 text-center text-xs font-semibold text-[var(--color-primary,#F97316)]"
-              onClick={() => {
-                setMode("register")
-                setError("")
-              }}
-            >
-              Volver al registro
-            </button>
-          </form>
-        )}
+        ) : null}
 
-        {error ? (
-          <p
-            role="alert"
-            className="rounded-xl bg-red-50 px-3 py-2 text-center text-sm font-medium text-red-700"
-          >
-            {error}
-          </p>
+        {step === "birthday" ? (
+          <form onSubmit={onBirthdayContinue} className="flex flex-col">
+            <button
+              type="button"
+              disabled={loading}
+              className="-ml-1 mb-3 inline-flex min-h-[44px] w-fit items-center gap-1 self-start text-[13px] font-semibold text-[var(--color-primary,#F97316)] disabled:opacity-70"
+              onClick={goToName}
+            >
+              ← Volver
+            </button>
+            <h1 className="text-[28px] font-extrabold leading-[1.15] tracking-tight text-[var(--color-ink-public,#1C1917)]">
+              ¿Cuándo es tu cumple?
+            </h1>
+            <p className="mt-2 text-[15px] leading-snug text-[var(--color-muted-public,#78716C)]">
+              Opcional · solo día y mes
+            </p>
+            <div className="mt-7 grid grid-cols-2 gap-3">
+              <label className="flex flex-col">
+                <span className="sr-only">Mes</span>
+                <select
+                  name="birthMonth"
+                  value={birthMonth ?? ""}
+                  disabled={loading}
+                  className={selectClassName}
+                  onChange={(e) => {
+                    const v = e.target.value
+                    setBirthMonth(v === "" ? null : Number(v))
+                  }}
+                >
+                  <option value="">Mes</option>
+                  {MONTHS_ES.map((label, i) => (
+                    <option key={label} value={i + 1}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex flex-col">
+                <span className="sr-only">Día</span>
+                <select
+                  name="birthDay"
+                  value={birthDay ?? ""}
+                  disabled={loading}
+                  className={selectClassName}
+                  onChange={(e) => {
+                    const v = e.target.value
+                    setBirthDay(v === "" ? null : Number(v))
+                  }}
+                >
+                  <option value="">Día</option>
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                    <option key={d} value={d}>
+                      {d}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            {error ? (
+              <p
+                role="alert"
+                className="mt-3 rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-700"
+              >
+                {error}
+              </p>
+            ) : null}
+            <Button
+              type="submit"
+              disabled={loading}
+              className={`mt-5 ${ctaClassName}`}
+            >
+              {loading ? "Guardando…" : "Continuar"}
+            </Button>
+            <button
+              type="button"
+              disabled={loading}
+              className="mt-1 min-h-[44px] w-full text-center text-[14px] font-medium text-[var(--color-muted-public,#78716C)] disabled:opacity-70"
+              onClick={onSkipBirthday}
+            >
+              Saltar
+            </button>
+          </form>
         ) : null}
       </div>
     </div>

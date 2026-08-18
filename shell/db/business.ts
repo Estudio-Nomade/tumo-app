@@ -3,6 +3,21 @@ import type { BusinessBrandPatch } from "@/shell/business/update"
 import type { ProgramPatch } from "@/modules/loyalty/api/program"
 import { sql } from "./pool"
 
+const BUSINESS_COLS = `
+  id,
+  name,
+  slug,
+  logo,
+  primary_color,
+  secondary_color,
+  surface_color,
+  tagline,
+  active_modules,
+  points_needed,
+  reward_name,
+  point_ranges
+`
+
 export async function getBusiness(slug: string): Promise<Business | null> {
   const [business] = await sql<Business[]>`
     SELECT
@@ -15,8 +30,9 @@ export async function getBusiness(slug: string): Promise<Business | null> {
       surface_color,
       tagline,
       active_modules,
-      purchases_needed,
-      reward_name
+      points_needed,
+      reward_name,
+      point_ranges
     FROM businesses
     WHERE slug = ${slug}
     LIMIT 1
@@ -37,8 +53,9 @@ export async function getBusinessById(id: string): Promise<Business | null> {
       surface_color,
       tagline,
       active_modules,
-      purchases_needed,
-      reward_name
+      points_needed,
+      reward_name,
+      point_ranges
     FROM businesses
     WHERE id = ${id}
     LIMIT 1
@@ -75,8 +92,9 @@ export async function updateBusinessBrand(
       surface_color,
       tagline,
       active_modules,
-      purchases_needed,
-      reward_name
+      points_needed,
+      reward_name,
+      point_ranges
   `
 
   return business ?? null
@@ -100,8 +118,9 @@ export async function updateBusinessLogo(
       surface_color,
       tagline,
       active_modules,
-      purchases_needed,
-      reward_name
+      points_needed,
+      reward_name,
+      point_ranges
   `
 
   return business ?? null
@@ -114,14 +133,16 @@ export async function updateBusinessProgram(
   const current = await getBusinessById(businessId)
   if (!current) return null
 
-  const purchases_needed = patch.purchases_needed ?? current.purchases_needed
+  const points_needed = patch.points_needed ?? current.points_needed
   const reward_name = patch.reward_name ?? current.reward_name
+  const point_ranges = patch.point_ranges ?? current.point_ranges
 
   const [business] = await sql<Business[]>`
     UPDATE businesses
     SET
-      purchases_needed = ${purchases_needed},
-      reward_name = ${reward_name}
+      points_needed = ${points_needed},
+      reward_name = ${reward_name},
+      point_ranges = ${sql.json(point_ranges as never)}
     WHERE id = ${businessId}
     RETURNING
       id,
@@ -133,8 +154,9 @@ export async function updateBusinessProgram(
       surface_color,
       tagline,
       active_modules,
-      purchases_needed,
-      reward_name
+      points_needed,
+      reward_name,
+      point_ranges
   `
 
   return business ?? null

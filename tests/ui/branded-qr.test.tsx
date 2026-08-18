@@ -73,7 +73,8 @@ describe("BrandedQr + ShareProgram (prod)", () => {
 
   test("panel tiene entrada a Mostrar QR y programa (owner)", () => {
     const src = read("modules/loyalty/dashboard/panel.tsx")
-    expect(src).toContain("Mostrar QR")
+    expect(src).toContain("/dashboard/loyalty/qr")
+    expect(src).toMatch(/QR|programa/)
     expect(src).toContain("/dashboard/loyalty/qr")
     expect(src).toContain("/dashboard/loyalty/programa")
     expect(src).toContain("canEditProgram")

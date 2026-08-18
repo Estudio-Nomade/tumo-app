@@ -8,37 +8,65 @@ const src = readFileSync(
   "utf8"
 )
 
-describe("LoyaltyRegistration birthday field (Pencil bd)", () => {
-  test("label es ¿Fecha de cumpleaños? (no Cumpleaños solo)", () => {
-    expect(src).toContain("¿Fecha de cumpleaños?")
-    expect(src).not.toMatch(/label=["']Cumpleaños/)
+describe("LoyaltyRegistration wizard (phone-first)", () => {
+  test("first step is phone-only (no name field on initial register path string)", () => {
+    expect(src).toMatch(/step\s*===\s*["']phone["']|step === "phone"|case "phone"/)
+    expect(src).toContain('step === "name"')
+    expect(src).toContain('step === "birthday"')
   })
 
-  test("tiene switch para habilitar la fecha", () => {
-    expect(src).toMatch(/role=["']switch["']/)
-    expect(src).toMatch(/birthdayEnabled|setBirthdayEnabled/)
+  test("looks up existing customer by phone before asking name", () => {
+    expect(src).toContain("/api/loyalty/customers?")
+    expect(src).toMatch(/phone/)
+    expect(src).toContain("slug")
   })
 
-  test("usa DatePicker shadcn (no input type=date nativo)", () => {
-    expect(src).toContain('import DatePicker from "@/shell/ui/date-picker"')
-    expect(src).toContain("<DatePicker")
+  test("registers via POST with name + locked phone", () => {
+    expect(src).toContain('method: "POST"')
+    expect(src).toContain("/api/loyalty/customers")
+    expect(src).toContain("toBirthdayDate")
+  })
+
+  test("birthday step has no year and allows skip", () => {
+    expect(src).toMatch(/Saltar|Omitir/)
     expect(src).not.toMatch(/type=["']date["']/)
-    expect(src).toMatch(/id=["']birthday-field["']/)
-    expect(src).not.toMatch(
-      /<Input[\s\S]*label=["']Cumpleaños[\s\S]*type=["']date["']/
-    )
+    expect(src).not.toContain('import DatePicker from "@/shell/ui/date-picker"')
+    expect(src).toMatch(/birthMonth|month/)
+    expect(src).toMatch(/birthDay|day/)
   })
 
-  test("solo envía birthday si el switch está activo", () => {
-    expect(src).toContain(
-      "birthday: birthdayEnabled ? birthday || undefined : undefined"
-    )
+  test("phone locked on name step with back control", () => {
+    expect(src).toMatch(/Cambiar|cambiar/)
+    expect(src).toMatch(/setStep\(\s*["']phone["']\s*\)/)
   })
 
-  test("switch y date tienen a11y básica (labelledby + controls)", () => {
-    expect(src).toContain('id="birthday-label"')
-    expect(src).toContain('aria-labelledby="birthday-label"')
-    expect(src).toContain('aria-controls="birthday-field"')
+  test("card path uses LoyaltyCard and switch account resets wizard", () => {
+    expect(src).toContain("LoyaltyCard")
+    expect(src).toContain("onSwitchAccount")
+    expect(src).toMatch(/setStep\(\s*["']phone["']\s*\)|setCustomer\(null\)/)
+  })
+
+  test("pre-customer composition is lean: compact brand bar, tight step stack", () => {
+    // Brand is centered logo + name (welcome), not a second title stack
+    expect(src).toMatch(/header className="[^"]*flex flex-col items-center/)
+    expect(src).toMatch(/h-16 w-16/)
+    expect(src).not.toMatch(/h-\[72px\] w-\[72px\]/)
+    expect(src).not.toMatch(/tagline/)
+    // One step title per screen (h1), not dual h1+h2 branding
+    expect(src).toContain("Ingresá tu WhatsApp")
+    expect(src).toContain("programa de puntos")
+    expect(src).toContain("¿Cómo te llamás?")
+    expect(src).toContain("¿Cuándo es tu cumple?")
+    expect(src).not.toContain("Empezá con tu WhatsApp")
+    expect(src).not.toContain("Teléfono fijo arriba")
+    expect(src).not.toContain("Si ya estás, entramos a tu tarjeta")
+    // Phone field has no visible label competing with the step h1
+    expect(src).toMatch(/<PhoneInput[\s\S]*?label=["']["']/)
+    expect(src).toMatch(/aria-label=["']WhatsApp["']/)
+    // Name field label is visually hidden; CTA sits in-flow (not docked to viewport)
+    expect(src).toContain("[&_label>span]:sr-only")
+    expect(src).not.toContain("mt-auto")
+    expect(src).toMatch(/font-extrabold/)
   })
 })
 
@@ -53,11 +81,6 @@ describe("shadcn date picker stack", () => {
     expect(picker).toContain("h-[52px]")
     expect(picker).toMatch(/border-border|border-\[#E7E5E4\]/)
     expect(picker).toMatch(/date-fns\/locale|react-day-picker\/locale/)
-  })
-
-  test("registration valida birthday vacío con switch ON", () => {
-    expect(src).toContain('Elegí tu fecha de cumpleaños.')
-    expect(src).toMatch(/birthdayEnabled && !birthday/)
   })
 
   test("calendar y popover de shadcn están instalados", () => {

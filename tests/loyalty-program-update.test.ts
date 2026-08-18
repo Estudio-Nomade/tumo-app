@@ -14,28 +14,39 @@ const baseBusiness: Business = {
   primary_color: "#F97316",
   secondary_color: "#FACC15",
   active_modules: ["loyalty"],
-  purchases_needed: 10,
+  points_needed: 10,
+  point_ranges: [{ min_cents: 0, max_cents: null, points: 1 }],
   reward_name: "hamburguesa gratis",
 }
 
 describe("parseProgramUpdate", () => {
   test("acepta N y premio válidos", () => {
     const r = parseProgramUpdate({
-      purchases_needed: 8,
+      points_needed: 8,
+  point_ranges: [{ min_cents: 0, max_cents: null, points: 1 }],
       reward_name: "  milanesa  ",
     })
     expect(r.ok).toBe(true)
     if (r.ok) {
       expect(r.value).toEqual({
-        purchases_needed: 8,
+        points_needed: 8,
+  point_ranges: [{ min_cents: 0, max_cents: null, points: 1 }],
         reward_name: "milanesa",
       })
     }
   })
 
   test("rechaza N fuera de rango", () => {
-    expect(parseProgramUpdate({ purchases_needed: 1 }).ok).toBe(false)
-    expect(parseProgramUpdate({ purchases_needed: 51 }).ok).toBe(false)
+    expect(
+      parseProgramUpdate({
+        points_needed: 1,
+      }).ok
+    ).toBe(false)
+    expect(
+      parseProgramUpdate({
+        points_needed: 10001,
+      }).ok
+    ).toBe(false)
   })
 
   test("rechaza premio corto", () => {
@@ -48,7 +59,7 @@ describe("updateProgram", () => {
   test("owner actualiza programa", async () => {
     const updated = {
       ...baseBusiness,
-      purchases_needed: 8,
+      points_needed: 8,
       reward_name: "milanesa",
     }
     const deps: ProgramUpdateDeps = {
@@ -57,11 +68,11 @@ describe("updateProgram", () => {
     const result = await updateProgram(deps, {
       businessId: "biz-1",
       role: "owner",
-      patch: { purchases_needed: 8, reward_name: "milanesa" },
+      patch: { points_needed: 8, reward_name: "milanesa" },
     })
     expect(result.status).toBe(200)
     expect(result.body).toMatchObject({
-      purchases_needed: 8,
+      points_needed: 8,
       reward_name: "milanesa",
     })
   })
@@ -73,7 +84,7 @@ describe("updateProgram", () => {
     const result = await updateProgram(deps, {
       businessId: "biz-1",
       role: "employee",
-      patch: { purchases_needed: 5 },
+      patch: { points_needed: 5 },
     })
     expect(result.status).toBe(403)
     expect(deps.updateProgramRow).not.toHaveBeenCalled()

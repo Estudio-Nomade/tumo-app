@@ -23,8 +23,8 @@ const sample: CustomerView[] = [
     name: "María González",
     phone: "3515550101",
     code: "4821",
-    purchases: 8,
-    purchasesNeeded: 10,
+    points: 8,
+    pointsNeeded: 10,
     rewardName: "premio",
     canRedeem: false,
   },
@@ -33,8 +33,8 @@ const sample: CustomerView[] = [
     name: "Juan Rodríguez",
     phone: "3515550102",
     code: "7392",
-    purchases: 10,
-    purchasesNeeded: 10,
+    points: 10,
+    pointsNeeded: 10,
     rewardName: "premio",
     canRedeem: true,
   },
@@ -48,7 +48,8 @@ const business: Business = {
   primary_color: "#F97316",
   secondary_color: "#FACC15",
   active_modules: ["loyalty"],
-  purchases_needed: 10,
+  points_needed: 10,
+  point_ranges: [{ min_cents: 0, max_cents: null, points: 1 }],
   reward_name: "hamburguesa gratis",
 }
 
@@ -83,96 +84,57 @@ describe("customerInitials", () => {
   })
 })
 
-describe("loyalty panel source (Pencil EDNqK + real data)", () => {
+describe("loyalty panel source (scanner + points)", () => {
   const src = read("modules/loyalty/dashboard/panel.tsx")
+  const sheet = read("modules/loyalty/dashboard/customer-action-sheet.tsx")
+  const scanner = read("modules/loyalty/dashboard/loyalty-scanner.tsx")
 
-  test("header Clientes + Cómo va + QR", () => {
-    expect(src).toContain("Clientes")
-    expect(src).toContain("· Hoy")
-    expect(src).toContain("useBusiness")
-    expect(src).toContain("Cómo va")
-    expect(src).toContain("/dashboard/loyalty/numeros")
-    expect(src).toContain("/dashboard/loyalty/qr")
+  test("scanner es vista principal + plan B QR", () => {
+    expect(src).toContain("LoyaltyScanner")
+    expect(src).toContain("Escanear")
+    expect(src).toContain("¿No funciona el QR?")
+    expect(src).toContain("Ingresar código")
+    expect(scanner).toContain("@yudiel/react-qr-scanner")
   })
 
-  test("bloque Listos para canjear aparece en el panel", () => {
-    expect(src).toContain("Listos para canjear")
-    expect(src).toContain("canRedeem")
+  test("sheet de acción + APIs points/redemptions", () => {
+    expect(src).toContain("CustomerActionSheet")
+    expect(sheet).toContain("/api/loyalty/points")
+    expect(sheet).toContain("/api/loyalty/redemptions")
+    expect(sheet).toContain("SUMAR PUNTOS")
+    expect(sheet).toContain('side="bottom"')
   })
 
   test("carga lista real por API, sin MOCK_CUSTOMERS", () => {
     expect(src).toContain("/api/loyalty/customers?list=1")
     expect(src).not.toContain("MOCK_CUSTOMERS")
-    expect(src).toContain("/api/loyalty/purchases")
-    expect(src).toContain("/api/loyalty/redemptions")
   })
 
-  test("ingresar código busca por API code+slug (tarjeta del cliente)", () => {
-    expect(src).toContain("Ingresar código")
-    expect(src).toContain("URLSearchParams")
+  test("código 4 dígitos busca por API", () => {
     expect(src).toContain("code: digits")
     expect(src).toContain("slug: business.slug")
     expect(src).toContain("/api/loyalty/customers?")
-    expect(src).toContain("Código del cliente")
   })
 
-  test("search live sin botón Buscar", () => {
-    expect(src).toContain("Buscar por nombre o teléfono")
-    expect(src).toContain("Search")
-    expect(src).not.toMatch(/>Buscar</)
+  test("deep link ?c= abre lookup", () => {
+    expect(src).toContain('searchParams.get("c")')
+    expect(src).toContain("codeFromUrl")
   })
 
-  test("botones acción verde y dorado", () => {
-    expect(src).toContain("+1 compra")
-    expect(src).toContain("Canjear premio")
-    expect(src).toContain("#16A34A")
-    expect(src).toContain("#EAB308")
-  })
-
-  test("canje usa Dialog de confirmación, no window.confirm", () => {
-    expect(src).not.toContain("window.confirm")
-    expect(src).toContain('from "@/components/ui/dialog"')
-    expect(src).toContain("DialogContent")
-    expect(src).toContain("Confirmar canje")
-    expect(src).toContain("Cancelar")
-    expect(src).toMatch(/Canjear\s+\{|Canjear premio/)
-  })
-
-  test("panel empleado ancho completo en mobile, tope centrado en md+", () => {
+  test("panel ancho full mobile", () => {
     const rootMatch = src.match(
       /<div className="(relative mx-auto flex w-full flex-col gap-4[^"]*)">/
     )
     expect(rootMatch).not.toBeNull()
-    expect(rootMatch![1]).toContain("w-full")
     expect(rootMatch![1]).toContain("md:max-w-2xl")
-    expect(rootMatch![1]).not.toContain("max-w-lg")
-  })
-
-  test("código es CTA primaria por encima de la lista", () => {
-    const codeIdx = src.indexOf("Ingresar código")
-    const listIdx = src.indexOf("max-h-[min(52vh,420px)]")
-    expect(codeIdx).toBeGreaterThan(-1)
-    expect(listIdx).toBeGreaterThan(-1)
-    expect(codeIdx).toBeLessThan(listIdx)
   })
 
   test("avatar colors cycle length 4", () => {
     expect(AVATAR_COLORS).toHaveLength(4)
   })
 
-  test("contador N/M va debajo del nombre (mobile-first), barra full-width abajo", () => {
-    const blockStart = src.indexOf("flex min-w-0 flex-1 flex-col gap-1")
-    expect(blockStart).toBeGreaterThan(-1)
-    const block = src.slice(blockStart, blockStart + 500)
-    const nameIdx = block.indexOf("{customer.name}")
-    const countIdx = block.indexOf(
-      "{customer.purchases}/{customer.purchasesNeeded}"
-    )
-    const barIdx = block.indexOf("w-full")
-    expect(nameIdx).toBeGreaterThan(-1)
-    expect(countIdx).toBeGreaterThan(nameIdx)
-    expect(barIdx).toBeGreaterThan(countIdx)
-    expect(block).not.toContain("w-[88px]")
+  test("contador puntos en fila", () => {
+    expect(src).toContain("{customer.points}/{customer.pointsNeeded}")
   })
 })
 

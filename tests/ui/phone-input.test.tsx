@@ -67,13 +67,14 @@ describe("PhoneInput UI", () => {
     expect(src).toContain("flagEmoji")
   })
 
-  test("registration usa PhoneInput en register y login", () => {
+  test("registration usa PhoneInput en el paso phone", () => {
     const src = readFileSync(
       join(root, "modules/loyalty/public/registration.tsx"),
       "utf8"
     )
     expect(src).toContain('import PhoneInput from "@/shell/ui/phone-input"')
-    expect(src.match(/<PhoneInput/g)?.length ?? 0).toBeGreaterThanOrEqual(2)
+    expect(src.match(/<PhoneInput/g)?.length ?? 0).toBeGreaterThanOrEqual(1)
+    expect(src).toMatch(/step\s*===\s*["']phone["']/)
     expect(src).not.toMatch(
       /label=["']WhatsApp["'][\s\S]{0,80}type=["']tel["']/
     )

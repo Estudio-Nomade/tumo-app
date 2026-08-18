@@ -18,11 +18,12 @@ function toCustomerBody(customer: CustomerRow, business: Business) {
     name: customer.name,
     phone: customer.phone,
     code: customer.code,
-    purchases: customer.purchases,
-    total_purchases: customer.total_purchases,
-    purchasesNeeded: business.purchases_needed,
+    points: customer.points,
+    total_points: customer.total_points,
+    pointsNeeded: business.points_needed,
     rewardName: business.reward_name,
-    canRedeem: customer.purchases >= business.purchases_needed,
+    canRedeem: customer.points >= business.points_needed,
+    pointRanges: business.point_ranges ?? [],
   }
 }
 
@@ -47,7 +48,7 @@ export async function registerCustomer(
   }
 
   const existing = (await deps.sql`
-    SELECT id, name, phone, code, purchases, total_purchases, business_id
+    SELECT id, name, phone, code, points, total_points, business_id
     FROM customers
     WHERE business_id = ${business.id}
       AND regexp_replace(phone, '[^0-9]', '', 'g') = ${phone}
@@ -76,7 +77,7 @@ export async function registerCustomer(
     const rows = (await deps.sql`
       INSERT INTO customers (name, phone, birthday, code, business_id)
       VALUES (${name}, ${phone}, ${birthday}, ${code}, ${business.id})
-      RETURNING id, name, phone, code, purchases, total_purchases, business_id
+      RETURNING id, name, phone, code, points, total_points, business_id
     `) as CustomerRow[]
     created = rows[0]
     break
@@ -119,21 +120,21 @@ export async function getCustomer(
   let rows: CustomerRow[] = []
   if (id) {
     rows = (await deps.sql`
-      SELECT id, name, phone, code, purchases, total_purchases, business_id
+      SELECT id, name, phone, code, points, total_points, business_id
       FROM customers
       WHERE id = ${id} AND business_id = ${business.id}
       LIMIT 1
     `) as CustomerRow[]
   } else if (code) {
     rows = (await deps.sql`
-      SELECT id, name, phone, code, purchases, total_purchases, business_id
+      SELECT id, name, phone, code, points, total_points, business_id
       FROM customers
       WHERE code = ${code} AND business_id = ${business.id}
       LIMIT 1
     `) as CustomerRow[]
   } else if (phone) {
     rows = (await deps.sql`
-      SELECT id, name, phone, code, purchases, total_purchases, business_id
+      SELECT id, name, phone, code, points, total_points, business_id
       FROM customers
       WHERE business_id = ${business.id}
         AND regexp_replace(phone, '[^0-9]', '', 'g') = ${phone}
@@ -152,8 +153,9 @@ export async function listCustomers(
   deps: Pick<CustomerDeps, "sql">,
   input: {
     businessId: string
-    purchasesNeeded: number
+    pointsNeeded: number
     rewardName: string
+    pointRanges?: Business["point_ranges"]
     query?: string
     limit?: number
   }
@@ -173,7 +175,7 @@ export async function listCustomers(
   if (q) {
     const pattern = `%${q}%`
     rows = (await deps.sql`
-      SELECT id, name, phone, code, purchases, total_purchases, business_id
+      SELECT id, name, phone, code, points, total_points, business_id
       FROM customers
       WHERE business_id = ${businessId}
         AND (
@@ -181,22 +183,23 @@ export async function listCustomers(
           OR phone ILIKE ${pattern}
           OR code ILIKE ${pattern}
         )
-      ORDER BY purchases DESC, name ASC
+      ORDER BY points DESC, name ASC
       LIMIT ${limit}
     `) as CustomerRow[]
   } else {
     rows = (await deps.sql`
-      SELECT id, name, phone, code, purchases, total_purchases, business_id
+      SELECT id, name, phone, code, points, total_points, business_id
       FROM customers
       WHERE business_id = ${businessId}
-      ORDER BY purchases DESC, name ASC
+      ORDER BY points DESC, name ASC
       LIMIT ${limit}
     `) as CustomerRow[]
   }
 
   const businessLike = {
-    purchases_needed: input.purchasesNeeded,
+    points_needed: input.pointsNeeded,
     reward_name: input.rewardName,
+    point_ranges: input.pointRanges ?? [],
   } as Business
 
   return {
