@@ -180,89 +180,98 @@ export default function LoyaltyRegistration({
     )
   }
 
-  const tagline =
-    business.tagline?.trim() || "Programa de fidelización"
-
   return (
-    <div className="fixed inset-0 z-10 flex min-h-[100dvh] w-full flex-col items-center overflow-y-auto bg-[var(--color-surface-public,#FFFFFF)] pt-[max(0.75rem,env(safe-area-inset-top))] pr-[max(1.5rem,env(safe-area-inset-right))] pb-[max(1.5rem,env(safe-area-inset-bottom))] pl-[max(1.5rem,env(safe-area-inset-left))]">
-      <div className="mx-auto flex w-full max-w-sm flex-col gap-[18px] py-3">
-        <header className="flex flex-col items-center gap-2.5 text-center">
+    <div className="fixed inset-0 z-10 flex min-h-[100dvh] w-full flex-col items-center overflow-y-auto bg-[var(--color-surface-public,#FFFFFF)] pt-[max(0.75rem,env(safe-area-inset-top))] pr-[max(1.25rem,env(safe-area-inset-right))] pb-[max(1.5rem,env(safe-area-inset-bottom))] pl-[max(1.25rem,env(safe-area-inset-left))]">
+      <div className="mx-auto flex w-full max-w-sm flex-1 flex-col py-3">
+        <header className="mb-8 flex items-center gap-2.5">
           {business.logo ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={business.logo}
-              alt={business.name}
-              className="h-[72px] w-[72px] rounded-[20px] object-cover"
+              alt=""
+              className="h-10 w-10 shrink-0 rounded-[12px] object-cover"
             />
           ) : (
             <div
               aria-hidden
-              className="flex h-[72px] w-[72px] items-center justify-center rounded-[20px] bg-[var(--color-primary,#F97316)] text-2xl font-extrabold text-white"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] bg-[var(--color-primary,#F97316)] text-sm font-bold text-white"
             >
               {businessInitial}
             </div>
           )}
-          <h1 className="text-xl font-extrabold tracking-tight text-[var(--color-ink-public,#1C1917)]">
+          <p className="min-w-0 truncate text-sm font-semibold text-[var(--color-ink-public,#1C1917)]">
             {business.name}
-          </h1>
-          <p className="text-xs text-[var(--color-muted-public,#78716C)]">
-            {tagline}
           </p>
         </header>
 
-        {step === "phone" ? (
-          <>
-            <h2 className="text-center text-[22px] font-bold tracking-tight text-[var(--color-ink-public,#1C1917)]">
-              Empezá con tu WhatsApp
-            </h2>
-            <p className="text-center text-[13px] leading-relaxed text-[var(--color-muted-public,#78716C)]">
-              Si ya estás en el programa, te llevamos a tu tarjeta.
-            </p>
-            <form onSubmit={onPhoneContinue} className="flex flex-col gap-3">
-              <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-[var(--color-ink-public,#1C1917)]">
-                <PhoneInput
-                  label="WhatsApp"
-                  name="phone"
-                  value={phone}
-                  onChange={setPhone}
-                  required
-                  disabled={loading}
-                />
+        <div className="flex flex-1 flex-col">
+          {step === "phone" ? (
+            <form
+              onSubmit={onPhoneContinue}
+              className="flex flex-1 flex-col gap-6"
+            >
+              <div className="flex flex-col gap-2">
+                <h1 className="text-[26px] font-bold leading-tight tracking-tight text-[var(--color-ink-public,#1C1917)]">
+                  Tu WhatsApp
+                </h1>
+                <p className="text-[14px] leading-snug text-[var(--color-muted-public,#78716C)]">
+                  Si ya estás, entramos a tu tarjeta.
+                </p>
               </div>
-              <Button
-                type="submit"
+              <PhoneInput
+                label=""
+                name="phone"
+                value={phone}
+                onChange={setPhone}
+                required
                 disabled={loading}
-                className="mt-1 h-[54px] w-full !rounded-[14px] text-base font-bold disabled:opacity-70"
-              >
-                {loading ? "Buscando…" : "Continuar"}
-              </Button>
+                aria-label="WhatsApp"
+              />
+              <div className="mt-auto flex flex-col gap-3 pt-4">
+                {error ? (
+                  <p
+                    role="alert"
+                    className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-700"
+                  >
+                    {error}
+                  </p>
+                ) : null}
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="h-[54px] w-full !rounded-[14px] text-base font-bold disabled:opacity-70"
+                >
+                  {loading ? "Buscando…" : "Continuar"}
+                </Button>
+              </div>
             </form>
-          </>
-        ) : null}
+          ) : null}
 
-        {step === "name" ? (
-          <>
-            <h2 className="text-center text-[22px] font-bold tracking-tight text-[var(--color-ink-public,#1C1917)]">
-              ¿Cómo te llamás?
-            </h2>
-            <p className="text-center text-[13px] leading-relaxed text-[var(--color-muted-public,#78716C)]">
-              Teléfono fijo arriba. Podés cambiarlo si te equivocaste.
-            </p>
-            <div className="flex items-center justify-between gap-2 rounded-[14px] bg-[#F5F5F4] px-4 py-3">
-              <span className="truncate text-sm font-medium text-[var(--color-ink-public,#1C1917)]">
-                {phone}
-              </span>
-              <button
-                type="button"
-                disabled={loading}
-                className="shrink-0 text-sm font-semibold text-[var(--color-primary,#F97316)] disabled:opacity-70"
-                onClick={goToPhone}
-              >
-                Cambiar
-              </button>
-            </div>
-            <form onSubmit={onNameContinue} className="flex flex-col gap-3">
-              <div className="[&_label>span]:text-[13px] [&_label>span]:font-medium [&_label>span]:text-[var(--color-ink-public,#1C1917)]">
+          {step === "name" ? (
+            <form
+              onSubmit={onNameContinue}
+              className="flex flex-1 flex-col gap-6"
+            >
+              <div className="flex flex-col gap-3">
+                <h1 className="text-[26px] font-bold leading-tight tracking-tight text-[var(--color-ink-public,#1C1917)]">
+                  ¿Cómo te llamás?
+                </h1>
+                <div className="flex items-center justify-between gap-2 rounded-[14px] bg-[#F5F5F4] px-3.5 py-2.5">
+                  <span className="truncate text-[13px] font-medium tabular-nums text-[var(--color-ink-public,#1C1917)]">
+                    {phone}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={loading}
+                    aria-label={`Cambiar WhatsApp ${phone}`}
+                    className="inline-flex min-h-[44px] shrink-0 items-center text-[13px] font-semibold text-[var(--color-primary,#F97316)] disabled:opacity-70"
+                    onClick={goToPhone}
+                  >
+                    Cambiar
+                  </button>
+                </div>
+              </div>
+              <div className="[&_label>span]:sr-only">
                 <Input
                   label="Tu nombre"
                   name="name"
@@ -270,42 +279,56 @@ export default function LoyaltyRegistration({
                   onChange={(e) => setName(e.target.value)}
                   required
                   disabled={loading}
+                  placeholder="Tu nombre"
                   className={inputClassName}
                 />
               </div>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="mt-1 h-[54px] w-full !rounded-[14px] text-base font-bold disabled:opacity-70"
-              >
-                Continuar
-              </Button>
+              <div className="mt-auto flex flex-col gap-3 pt-4">
+                {error ? (
+                  <p
+                    role="alert"
+                    className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-700"
+                  >
+                    {error}
+                  </p>
+                ) : null}
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="h-[54px] w-full !rounded-[14px] text-base font-bold disabled:opacity-70"
+                >
+                  Continuar
+                </Button>
+              </div>
             </form>
-          </>
-        ) : null}
+          ) : null}
 
-        {step === "birthday" ? (
-          <>
-            <h2 className="text-center text-[22px] font-bold tracking-tight text-[var(--color-ink-public,#1C1917)]">
-              ¿Cuándo es tu cumple?
-            </h2>
-            <p className="text-center text-[13px] leading-relaxed text-[var(--color-muted-public,#78716C)]">
-              Día y mes, opcional. Sin año.
-            </p>
-            <button
-              type="button"
-              disabled={loading}
-              className="self-start text-sm font-semibold text-[var(--color-primary,#F97316)] disabled:opacity-70"
-              onClick={goToName}
+          {step === "birthday" ? (
+            <form
+              onSubmit={onBirthdayContinue}
+              className="flex flex-1 flex-col gap-6"
             >
-              Volver
-            </button>
-            <form onSubmit={onBirthdayContinue} className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3">
+                <button
+                  type="button"
+                  disabled={loading}
+                  className="-ml-1 inline-flex min-h-[44px] w-fit items-center gap-1 self-start text-[13px] font-semibold text-[var(--color-primary,#F97316)] disabled:opacity-70"
+                  onClick={goToName}
+                >
+                  ← Volver
+                </button>
+                <div className="flex flex-col gap-2">
+                  <h1 className="text-[26px] font-bold leading-tight tracking-tight text-[var(--color-ink-public,#1C1917)]">
+                    ¿Cuándo es tu cumple?
+                  </h1>
+                  <p className="text-[14px] leading-snug text-[var(--color-muted-public,#78716C)]">
+                    Opcional · solo día y mes
+                  </p>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <label className="flex flex-col gap-1.5">
-                  <span className="text-[13px] font-medium text-[var(--color-ink-public,#1C1917)]">
-                    Mes
-                  </span>
+                  <span className="sr-only">Mes</span>
                   <select
                     name="birthMonth"
                     value={birthMonth ?? ""}
@@ -325,9 +348,7 @@ export default function LoyaltyRegistration({
                   </select>
                 </label>
                 <label className="flex flex-col gap-1.5">
-                  <span className="text-[13px] font-medium text-[var(--color-ink-public,#1C1917)]">
-                    Día
-                  </span>
+                  <span className="sr-only">Día</span>
                   <select
                     name="birthDay"
                     value={birthDay ?? ""}
@@ -347,33 +368,34 @@ export default function LoyaltyRegistration({
                   </select>
                 </label>
               </div>
-              <Button
-                type="submit"
-                disabled={loading}
-                className="mt-1 h-[54px] w-full !rounded-[14px] text-base font-bold disabled:opacity-70"
-              >
-                {loading ? "Guardando…" : "Continuar"}
-              </Button>
-              <button
-                type="button"
-                disabled={loading}
-                className="min-h-[44px] w-full text-center text-sm font-semibold text-[var(--color-muted-public,#78716C)] disabled:opacity-70"
-                onClick={onSkipBirthday}
-              >
-                Saltar
-              </button>
+              <div className="mt-auto flex flex-col gap-2 pt-4">
+                {error ? (
+                  <p
+                    role="alert"
+                    className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-700"
+                  >
+                    {error}
+                  </p>
+                ) : null}
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="h-[54px] w-full !rounded-[14px] text-base font-bold disabled:opacity-70"
+                >
+                  {loading ? "Guardando…" : "Continuar"}
+                </Button>
+                <button
+                  type="button"
+                  disabled={loading}
+                  className="min-h-[44px] w-full text-center text-[14px] font-medium text-[var(--color-muted-public,#78716C)] disabled:opacity-70"
+                  onClick={onSkipBirthday}
+                >
+                  Saltar
+                </button>
+              </div>
             </form>
-          </>
-        ) : null}
-
-        {error ? (
-          <p
-            role="alert"
-            className="rounded-xl bg-red-50 px-3 py-2 text-center text-sm font-medium text-red-700"
-          >
-            {error}
-          </p>
-        ) : null}
+          ) : null}
+        </div>
       </div>
     </div>
   )

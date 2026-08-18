@@ -110,3 +110,15 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-loyalty-qr-scan-points.md`
   summary: getBusinessById (rangos/umbral) fuera del FOR UPDATE del earn/redeem
   evidence: Race con PATCH program concurrente; mitigado por expectedPoints en earn; tx de business queda para endurecer
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-loyalty-public-onboarding-composition.md`
+  summary: Wizard no mueve el foco al H1/primer campo al cambiar de paso
+  evidence: setStep desmonta controles; teclado/SR quedan sin ancla; gap preexistente del wizard
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-loyalty-public-onboarding-composition.md`
+  summary: Logo con alt vacío si business.name está vacío deja marca sin nombre
+  evidence: header usa alt="" + nombre en p; edge de datos de negocio
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-loyalty-public-onboarding-composition.md`
+  summary: flex-1 + mt-auto + fixed puede pelear con teclado móvil
+  evidence: CTA abajo del viewport al abrir teclado; requiere chequeo en device

@@ -29,6 +29,7 @@ type PhoneInputProps = {
   id?: string
   name?: string
   label?: string
+  "aria-label"?: string
   value: string
   onChange: (e164: string) => void
   required?: boolean
@@ -42,6 +43,7 @@ export default function PhoneInput({
   id = "phone",
   name = "phone",
   label = "WhatsApp",
+  "aria-label": ariaLabel,
   value,
   onChange,
   required = false,
@@ -187,6 +189,7 @@ export default function PhoneInput({
           disabled={disabled}
           placeholder={placeholder}
           aria-labelledby={label ? `${id}-label` : undefined}
+          aria-label={!label ? ariaLabel ?? "WhatsApp" : undefined}
           value={displayNational}
           onChange={(e) => onNationalChange(e.target.value)}
           className="min-w-0 flex-1 border-0 bg-transparent px-3 text-base text-stone-900 outline-none placeholder:text-[#A8A29E] disabled:opacity-70"

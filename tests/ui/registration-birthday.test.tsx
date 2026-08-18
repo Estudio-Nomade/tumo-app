@@ -45,6 +45,26 @@ describe("LoyaltyRegistration wizard (phone-first)", () => {
     expect(src).toContain("onSwitchAccount")
     expect(src).toMatch(/setStep\(\s*["']phone["']\s*\)|setCustomer\(null\)/)
   })
+
+  test("pre-customer composition is lean: compact brand bar, single step hero", () => {
+    // Brand is a compact top bar, not a second hero
+    expect(src).toMatch(/header className="[^"]*flex items-center/)
+    expect(src).toMatch(/h-10 w-10/)
+    expect(src).not.toMatch(/h-\[72px\] w-\[72px\]/)
+    expect(src).not.toMatch(/tagline/)
+    // One step title per screen (h1), not dual h1+h2 branding
+    expect(src).toContain("Tu WhatsApp")
+    expect(src).toContain("¿Cómo te llamás?")
+    expect(src).toContain("¿Cuándo es tu cumple?")
+    expect(src).not.toContain("Empezá con tu WhatsApp")
+    expect(src).not.toContain("Teléfono fijo arriba")
+    // Phone field has no visible label competing with the step h1
+    expect(src).toMatch(/<PhoneInput[\s\S]*?label=["']["']/)
+    expect(src).toMatch(/aria-label=["']WhatsApp["']/)
+    // Name field label is visually hidden; CTA anchors bottom of step
+    expect(src).toContain("[&_label>span]:sr-only")
+    expect(src).toContain("mt-auto")
+  })
 })
 
 describe("shadcn date picker stack", () => {
