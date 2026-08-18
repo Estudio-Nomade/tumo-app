@@ -497,24 +497,21 @@ export default function SettingsForm({
         </div>
       </section>
 
-      <section className="flex flex-col gap-2 rounded-2xl border border-[#E7E5E4] bg-[#F5F5F4] p-4">
+      <section className="flex flex-col gap-3 rounded-2xl border border-[#E7E5E4] bg-white p-4">
         <div className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">
           Fidelización
         </div>
-        <p className="text-sm text-stone-600">
-          Compras para canjear y nombre del premio se editan en el programa.
-        </p>
         <Link
           href={`/${slug}/dashboard/loyalty/programa`}
-          className="text-sm font-semibold text-[var(--color-primary,#F97316)]"
+          className="flex min-h-[52px] w-full items-center justify-between gap-3 rounded-2xl border-2 border-[#E7E5E4] bg-[#FAFAF9] px-4 py-3 text-left transition active:bg-stone-100"
         >
-          Programa de fidelización →
-        </Link>
-        <Link
-          href={`/${slug}/dashboard/modules`}
-          className="text-sm font-semibold text-stone-600"
-        >
-          Ver módulos →
+          <span className="text-sm font-semibold text-stone-900">
+            Ajustes de fidelización
+          </span>
+          <ChevronRight
+            className="h-5 w-5 shrink-0 text-stone-400"
+            aria-hidden
+          />
         </Link>
       </section>
 

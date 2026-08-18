@@ -69,9 +69,13 @@ describe("dashboard owner nav (Pencil)", () => {
     expect(form).toContain("Nombre del comercio")
     expect(form).toContain("Guardar cambios")
     expect(form).toContain("/api/business")
-    expect(form).toContain("Programa de fidelización")
-    expect(form).toContain("Ver módulos")
+    expect(form).toContain("Ajustes de fidelización")
+    expect(form).toContain("/dashboard/loyalty/programa")
+    expect(form).not.toContain("Ver módulos")
     expect(form).not.toContain("contactá a soporte")
+    expect(form).not.toContain(
+      "Compras para canjear y nombre del premio se editan en el programa"
+    )
   })
 })
 

@@ -67,8 +67,9 @@ describe("BrandedQr + ShareProgram (prod)", () => {
     expect(settings).toContain("SettingsForm")
     expect(settings).not.toContain("ShareProgram")
     expect(form).toContain("Nombre del comercio")
-    expect(form).toContain("Programa de fidelización")
-    expect(form).toContain("Ver módulos")
+    expect(form).toContain("Ajustes de fidelización")
+    expect(form).toContain("/dashboard/loyalty/programa")
+    expect(form).not.toContain("Ver módulos")
   })
 
   test("panel tiene entrada a Mostrar QR y programa (owner)", () => {
