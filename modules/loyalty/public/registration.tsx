@@ -227,21 +227,6 @@ export default function LoyaltyRegistration({
             >
               {loading ? "Guardando…" : "Empezar a sumar puntos"}
             </Button>
-            <button
-              type="button"
-              className="flex items-center justify-center gap-1 pt-1 text-center text-xs text-[var(--color-muted-public,#78716C)]"
-              onClick={() => {
-                setMode("login")
-                setError("")
-                setBirthday("")
-                setBirthdayEnabled(false)
-              }}
-            >
-              ¿Ya tenés cuenta?
-              <span className="font-semibold text-[var(--color-primary,#F97316)]">
-                Ingresá tu WhatsApp
-              </span>
-            </button>
           </form>
         ) : (
           <form onSubmit={onLogin} className="flex flex-col gap-3">
@@ -262,17 +247,42 @@ export default function LoyaltyRegistration({
             >
               {loading ? "Buscando…" : "Ingresar"}
             </Button>
-            <button
-              type="button"
-              className="pt-1 text-center text-xs font-semibold text-[var(--color-primary,#F97316)]"
-              onClick={() => {
-                setMode("register")
-                setError("")
-              }}
-            >
-              Volver al registro
-            </button>
           </form>
+        )}
+
+        {mode === "register" ? (
+          <button
+            type="button"
+            disabled={loading}
+            className="flex min-h-[44px] w-full items-center justify-center gap-1 text-center text-xs text-[var(--color-muted-public,#78716C)] disabled:opacity-70"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setError("")
+              setBirthday("")
+              setBirthdayEnabled(false)
+              setMode("login")
+            }}
+          >
+            ¿Ya tenés cuenta?
+            <span className="font-semibold text-[var(--color-primary,#F97316)]">
+              Ingresá tu WhatsApp
+            </span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            disabled={loading}
+            className="min-h-[44px] w-full pt-1 text-center text-xs font-semibold text-[var(--color-primary,#F97316)] disabled:opacity-70"
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              setError("")
+              setMode("register")
+            }}
+          >
+            Volver al registro
+          </button>
         )}
 
         {error ? (
