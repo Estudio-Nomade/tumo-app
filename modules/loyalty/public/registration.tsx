@@ -144,7 +144,7 @@ export default function LoyaltyRegistration({
         </h2>
         <p className="text-center text-[13px] leading-relaxed text-[var(--color-muted-public,#78716C)]">
           {mode === "register"
-            ? `Registrate en segundos y ganá tu ${business.reward_name || "premio"} en cada ${business.purchases_needed || 10} ${business.purchases_needed === 1 ? "compra" : "compras"}.`
+            ? `Registrate en segundos y ganá tu ${business.reward_name || "premio"} en cada ${business.points_needed || 10} ${business.points_needed === 1 ? "punto" : "puntos"}.`
             : "Buscamos tu tarjeta con el número de WhatsApp."}
         </p>
 

@@ -9,13 +9,8 @@ type CountRow = { count: number | string }
 type ActivityRow = {
   created_at: Date | string
   customer_name: string
-  type: "purchase" | "redemption"
-  purchase_count: number | string
-}
-
-function ordinalPurchaseLabel(count: number): string {
-  const n = Number.isFinite(count) ? Math.max(1, Math.floor(count)) : 1
-  return `${n}° compra`
+  type: "earn" | "redeem"
+  points: number | string
 }
 
 export async function getMetrics(
@@ -32,21 +27,23 @@ export async function getMetrics(
     SELECT COUNT(*)::int AS count FROM customers WHERE business_id = ${businessId}
   `) as CountRow[]
 
-  const [purchases] = (await deps.sql`
-    SELECT COUNT(*)::int AS count FROM purchases
+  const [earns] = (await deps.sql`
+    SELECT COUNT(*)::int AS count FROM point_movements
     WHERE business_id = ${businessId}
+      AND kind = 'earn'
       AND created_at >= date_trunc('month', now())
   `) as CountRow[]
 
   const [redemptions] = (await deps.sql`
-    SELECT COUNT(*)::int AS count FROM redemptions
+    SELECT COUNT(*)::int AS count FROM point_movements
     WHERE business_id = ${businessId}
+      AND kind = 'redeem'
       AND created_at >= date_trunc('month', now())
   `) as CountRow[]
 
   return {
     customers: Number(customers?.count ?? 0),
-    purchasesThisMonth: Number(purchases?.count ?? 0),
+    purchasesThisMonth: Number(earns?.count ?? 0),
     redemptionsThisMonth: Number(redemptions?.count ?? 0),
   }
 }
@@ -57,70 +54,29 @@ export async function getRecentActivity(
 ): Promise<ActivityEvent[]> {
   const { businessId, limit } = input
 
-  const [purchases, redemptions] = await Promise.all([
-    deps.sql`
-      SELECT p.created_at, c.name AS customer_name, 'purchase' AS type,
-             (
-               SELECT COUNT(*)::int FROM purchases p2
-               WHERE p2.customer_id = p.customer_id
-                 AND p2.business_id = p.business_id
-                 AND p2.created_at <= p.created_at
-                 AND p2.created_at > COALESCE(
-                   (
-                     SELECT MAX(r2.created_at) FROM redemptions r2
-                     WHERE r2.customer_id = p.customer_id
-                       AND r2.business_id = p.business_id
-                       AND r2.created_at < p.created_at
-                   ),
-                   'epoch'::timestamptz
-                 )
-             ) AS purchase_count
-      FROM purchases p
-      JOIN customers c ON c.id = p.customer_id
-      WHERE p.business_id = ${businessId}
-      ORDER BY p.created_at DESC
-      LIMIT ${limit}
-    ` as Promise<ActivityRow[]>,
-    deps.sql`
-      SELECT r.created_at, c.name AS customer_name, 'redemption' AS type,
-             (
-               SELECT COUNT(*)::int FROM purchases p2
-               WHERE p2.customer_id = r.customer_id
-                 AND p2.business_id = r.business_id
-                 AND p2.created_at <= r.created_at
-                 AND p2.created_at > COALESCE(
-                   (
-                     SELECT MAX(r2.created_at) FROM redemptions r2
-                     WHERE r2.customer_id = r.customer_id
-                       AND r2.business_id = r.business_id
-                       AND r2.created_at < r.created_at
-                   ),
-                   'epoch'::timestamptz
-                 )
-             ) AS purchase_count
-      FROM redemptions r
-      JOIN customers c ON c.id = r.customer_id
-      WHERE r.business_id = ${businessId}
-      ORDER BY r.created_at DESC
-      LIMIT ${limit}
-    ` as Promise<ActivityRow[]>,
-  ])
+  const rows = (await deps.sql`
+    SELECT m.created_at, c.name AS customer_name, m.kind AS type, m.points
+    FROM point_movements m
+    JOIN customers c ON c.id = m.customer_id
+    WHERE m.business_id = ${businessId}
+    ORDER BY m.created_at DESC
+    LIMIT ${limit}
+  `) as ActivityRow[]
 
-  const events: ActivityEvent[] = [...purchases, ...redemptions].map((row) => {
+  const events: ActivityEvent[] = rows.map((row) => {
     const ts =
       row.created_at instanceof Date
         ? row.created_at.getTime()
         : new Date(row.created_at).getTime()
-    const isPurchase = row.type === "purchase"
-    const count = Number(row.purchase_count ?? 0)
-    const purchaseLabel = ordinalPurchaseLabel(count)
+    const isEarn = row.type === "earn"
+    const pts = Number(row.points ?? 0)
     return {
       timestamp: ts,
-      icon: isPurchase ? "purchase" : "redemption",
+      icon: isEarn ? "purchase" : "redemption",
       title: row.customer_name,
-      description: isPurchase
-        ? purchaseLabel
-        : `${purchaseLabel} · ¡Premio canjeado!`,
+      description: isEarn
+        ? `+${pts} puntos`
+        : `Canje · ${pts} puntos`,
     }
   })
 
@@ -158,17 +114,17 @@ export async function getTopBuyers(
   const limit = clampLimit(input.limit)
 
   const rows = (await deps.sql`
-    SELECT id, name, total_purchases
+    SELECT id, name, total_points
     FROM customers
     WHERE business_id = ${businessId}
-    ORDER BY total_purchases DESC, name ASC
+    ORDER BY total_points DESC, name ASC
     LIMIT ${limit}
-  `) as { id: string; name: string; total_purchases: number }[]
+  `) as { id: string; name: string; total_points: number }[]
 
   return rows.map((row) => ({
     id: row.id,
     name: row.name,
-    totalPurchases: Number(row.total_purchases ?? 0),
+    totalPurchases: Number(row.total_points ?? 0),
   }))
 }
 
@@ -190,15 +146,15 @@ export async function getTopCustomers(
       : 5
 
   const rows = (await deps.sql`
-    SELECT id, name, purchases
+    SELECT id, name, points
     FROM customers
     WHERE business_id = ${businessId}
-    ORDER BY purchases DESC, total_purchases DESC, name ASC
+    ORDER BY points DESC, total_points DESC, name ASC
     LIMIT ${limit}
-  `) as { id: string; name: string; purchases: number }[]
+  `) as { id: string; name: string; points: number }[]
 
   return rows.map((row) => {
-    const purchases = Number(row.purchases ?? 0)
+    const purchases = Number(row.points ?? 0)
     return {
       id: row.id,
       name: row.name,
@@ -217,14 +173,16 @@ export async function getWeeklyRedemptions(
   const { businessId } = input
 
   const [thisWeek] = (await deps.sql`
-    SELECT COUNT(*)::int AS count FROM redemptions
+    SELECT COUNT(*)::int AS count FROM point_movements
     WHERE business_id = ${businessId}
+      AND kind = 'redeem'
       AND created_at >= date_trunc('week', now())
   `) as CountRow[]
 
   const [lastWeek] = (await deps.sql`
-    SELECT COUNT(*)::int AS count FROM redemptions
+    SELECT COUNT(*)::int AS count FROM point_movements
     WHERE business_id = ${businessId}
+      AND kind = 'redeem'
       AND created_at >= date_trunc('week', now()) - interval '7 days'
       AND created_at < date_trunc('week', now())
   `) as CountRow[]
@@ -243,8 +201,9 @@ export async function countCustomersWithRedemptions(
 
   const [row] = (await deps.sql`
     SELECT COUNT(DISTINCT customer_id)::int AS count
-    FROM redemptions
+    FROM point_movements
     WHERE business_id = ${businessId}
+      AND kind = 'redeem'
   `) as CountRow[]
 
   return Number(row?.count ?? 0)
@@ -269,11 +228,12 @@ export async function getTopCustomersByPrizes(
 
   const rows = (await deps.sql`
     SELECT c.id, c.name,
-           COUNT(r.*)::int AS prizes,
-           MAX(r.created_at) AS last_redeemed_at
-    FROM redemptions r
-    JOIN customers c ON c.id = r.customer_id
-    WHERE r.business_id = ${businessId}
+           COUNT(m.*)::int AS prizes,
+           MAX(m.created_at) AS last_redeemed_at
+    FROM point_movements m
+    JOIN customers c ON c.id = m.customer_id
+    WHERE m.business_id = ${businessId}
+      AND m.kind = 'redeem'
     GROUP BY c.id, c.name
     ORDER BY prizes DESC, last_redeemed_at DESC, c.name ASC
     LIMIT ${limit}

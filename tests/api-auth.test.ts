@@ -23,7 +23,8 @@ const business = {
   primary_color: "#F97316",
   secondary_color: "#FACC15",
   active_modules: ["loyalty"],
-  purchases_needed: 10,
+  points_needed: 10,
+  point_ranges: [{ min_cents: 0, max_cents: null, points: 1 }],
   reward_name: "premio",
 }
 

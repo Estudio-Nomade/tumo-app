@@ -18,7 +18,7 @@ export async function LoyaltyHomeSection({
     getWeeklyRedemptions(metricsDeps, { businessId: business.id }),
     getTopCustomers(metricsDeps, {
       businessId: business.id,
-      purchasesNeeded: business.purchases_needed,
+      purchasesNeeded: business.points_needed,
       rewardName: business.reward_name,
       limit: 20,
     }),

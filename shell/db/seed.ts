@@ -8,7 +8,7 @@ async function seed() {
       primary_color,
       secondary_color,
       active_modules,
-      purchases_needed,
+      points_needed,
       reward_name
     )
     VALUES (
@@ -25,7 +25,7 @@ async function seed() {
       primary_color = EXCLUDED.primary_color,
       secondary_color = EXCLUDED.secondary_color,
       active_modules = EXCLUDED.active_modules,
-      purchases_needed = EXCLUDED.purchases_needed,
+      points_needed = EXCLUDED.points_needed,
       reward_name = EXCLUDED.reward_name
     RETURNING id, name, slug
   `

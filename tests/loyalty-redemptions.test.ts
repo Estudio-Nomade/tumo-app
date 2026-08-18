@@ -12,12 +12,13 @@ const business = {
   primary_color: "#F97316",
   secondary_color: "#FACC15",
   active_modules: ["loyalty"],
-  purchases_needed: 10,
+  points_needed: 150,
   reward_name: "hamburguesa gratis",
+  point_ranges: [],
 }
 
 describe("redeemReward", () => {
-  test("canjea cuando purchases >= purchasesNeeded y resetea a 0", async () => {
+  test("canjea cuando points >= points_needed y resetea a 0", async () => {
     let call = 0
     const sql = mock(() => {
       call++
@@ -28,8 +29,8 @@ describe("redeemReward", () => {
             name: "Juan",
             phone: "+54911",
             code: "1234",
-            purchases: 10,
-            total_purchases: 30,
+            points: 150,
+            total_points: 400,
             business_id: "biz-1",
           },
         ])
@@ -49,7 +50,7 @@ describe("redeemReward", () => {
     })
 
     expect(result.status).toBe(200)
-    expect(result.body).toEqual({ success: true, purchases: 0 })
+    expect(result.body).toEqual({ success: true, points: 0 })
     expect(sql).toHaveBeenCalled()
   })
 
@@ -61,8 +62,8 @@ describe("redeemReward", () => {
           name: "Juan",
           phone: "+54911",
           code: "1234",
-          purchases: 5,
-          total_purchases: 5,
+          points: 50,
+          total_points: 50,
           business_id: "biz-1",
         },
       ])

@@ -37,7 +37,7 @@ export default async function DashboardSettingsPage({ params }: PageProps) {
       initialPrimary={business.primary_color}
       initialSecondary={business.secondary_color}
       rewardName={business.reward_name}
-      purchasesNeeded={business.purchases_needed}
+      purchasesNeeded={business.points_needed}
       activeModuleIds={business.active_modules}
       ownerName={ownerName}
       ownerInitial={ownerInitial}

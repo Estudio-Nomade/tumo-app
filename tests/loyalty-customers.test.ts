@@ -14,7 +14,8 @@ const business = {
   primary_color: "#F97316",
   secondary_color: "#FACC15",
   active_modules: ["loyalty"],
-  purchases_needed: 10,
+  points_needed: 10,
+  point_ranges: [{ min_cents: 0, max_cents: null, points: 1 }],
   reward_name: "hamburguesa gratis",
 }
 
@@ -23,8 +24,8 @@ const customerRow = {
   name: "Juan",
   phone: "+5491111111111",
   code: "1234",
-  purchases: 3,
-  total_purchases: 5,
+  points: 3,
+  total_points: 5,
   business_id: "biz-1",
 }
 
@@ -52,8 +53,8 @@ describe("registerCustomer", () => {
             name: "Juan",
             phone: "+5491111111111",
             code: "5678",
-            purchases: 0,
-            total_purchases: 0,
+            points: 0,
+            total_points: 0,
             business_id: "biz-1",
           },
         ])
@@ -74,8 +75,8 @@ describe("registerCustomer", () => {
       name: "Juan",
       phone: "+5491111111111",
       code: "5678",
-      purchases: 0,
-      purchasesNeeded: 10,
+      points: 0,
+      pointsNeeded: 10,
       rewardName: "hamburguesa gratis",
     })
     expect(deps.generateCode).toHaveBeenCalled()
@@ -95,8 +96,8 @@ describe("registerCustomer", () => {
     expect(result.body).toMatchObject({
       id: "cust-1",
       code: "1234",
-      purchases: 3,
-      purchasesNeeded: 10,
+      points: 3,
+      pointsNeeded: 10,
     })
     expect(deps.generateCode).not.toHaveBeenCalled()
   })
@@ -141,7 +142,7 @@ describe("getCustomer", () => {
     expect(result.body).toMatchObject({
       id: "cust-1",
       code: "1234",
-      purchasesNeeded: 10,
+      pointsNeeded: 10,
       rewardName: "hamburguesa gratis",
     })
   })
@@ -172,14 +173,14 @@ describe("listCustomers", () => {
   test("lista clientes del negocio con canRedeem", async () => {
     const sql = mock(() =>
       Promise.resolve([
-        { ...customerRow, purchases: 10 },
+        { ...customerRow, points: 10 },
         {
           id: "cust-2",
           name: "Ana",
           phone: "+549222",
           code: "9999",
-          purchases: 2,
-          total_purchases: 2,
+          points: 2,
+          total_points: 2,
           business_id: "biz-1",
         },
       ])
@@ -188,7 +189,7 @@ describe("listCustomers", () => {
 
     const result = await listCustomers(deps, {
       businessId: "biz-1",
-      purchasesNeeded: 10,
+      pointsNeeded: 10,
       rewardName: "hamburguesa gratis",
     })
 
@@ -197,13 +198,13 @@ describe("listCustomers", () => {
     const customers = result.body.customers as {
       id: string
       canRedeem: boolean
-      purchasesNeeded: number
+      pointsNeeded: number
     }[]
     expect(customers).toHaveLength(2)
     expect(customers[0]).toMatchObject({
       id: "cust-1",
       canRedeem: true,
-      purchasesNeeded: 10,
+      pointsNeeded: 10,
       rewardName: "hamburguesa gratis",
     })
     expect(customers[1].canRedeem).toBe(false)
@@ -220,8 +221,8 @@ describe("listCustomers", () => {
           name: "Ana",
           phone: "+549222",
           code: "9999",
-          purchases: 2,
-          total_purchases: 2,
+          points: 2,
+          total_points: 2,
           business_id: "biz-1",
         },
       ])
@@ -230,7 +231,7 @@ describe("listCustomers", () => {
 
     const result = await listCustomers(deps, {
       businessId: "biz-1",
-      purchasesNeeded: 10,
+      pointsNeeded: 10,
       rewardName: "premio",
       query: "ana",
     })
@@ -243,7 +244,7 @@ describe("listCustomers", () => {
     const deps = makeDeps()
     const result = await listCustomers(deps, {
       businessId: "",
-      purchasesNeeded: 10,
+      pointsNeeded: 10,
       rewardName: "x",
     })
     expect(result.status).toBe(400)

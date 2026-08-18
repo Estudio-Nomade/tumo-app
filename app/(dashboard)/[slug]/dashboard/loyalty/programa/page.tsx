@@ -29,7 +29,8 @@ export default async function LoyaltyProgramPage({ params }: PageProps) {
   return (
     <ProgramForm
       slug={slug}
-      initialNeeded={business.purchases_needed}
+      initialNeeded={business.points_needed}
+      initialRanges={business.point_ranges ?? []}
       initialReward={business.reward_name}
     />
   )

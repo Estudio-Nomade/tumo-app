@@ -337,7 +337,7 @@ export function TopCustomers({
                 <div className="truncate text-xs text-stone-500">
                   {c.canRedeem
                     ? "Premio listo para canjear"
-                    : `${c.purchases}/${c.purchasesNeeded} compras`}
+                    : `${c.purchases}/${c.purchasesNeeded} pts`}
                 </div>
               </div>
               <span

@@ -18,8 +18,13 @@ export type Business = {
   surface_color?: string | null
   tagline?: string | null
   active_modules: string[]
-  purchases_needed: number
+  points_needed: number
   reward_name: string
+  point_ranges: {
+    min_cents: number
+    max_cents: number | null
+    points: number
+  }[]
   location?: string
 }
 

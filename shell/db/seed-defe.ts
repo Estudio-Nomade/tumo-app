@@ -10,7 +10,7 @@ async function seedDefe() {
       surface_color,
       tagline,
       active_modules,
-      purchases_needed,
+      points_needed,
       reward_name
     )
     VALUES (
@@ -31,7 +31,7 @@ async function seedDefe() {
       surface_color = EXCLUDED.surface_color,
       tagline = EXCLUDED.tagline,
       active_modules = EXCLUDED.active_modules,
-      purchases_needed = EXCLUDED.purchases_needed,
+      points_needed = EXCLUDED.points_needed,
       reward_name = EXCLUDED.reward_name
     RETURNING id, name, slug, primary_color, secondary_color, surface_color, tagline
   `
