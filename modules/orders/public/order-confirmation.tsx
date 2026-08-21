@@ -165,6 +165,28 @@ export default function OrderConfirmation({
     }
   }
 
+  async function retryMp() {
+    setChanging(true)
+    setError("")
+    try {
+      const res = await fetch(`/api/orders/${orderId}/mp-preference`, {
+        method: "POST",
+      })
+      const json = (await res.json()) as { initPoint?: string; error?: string }
+      if (!res.ok) {
+        setError(json.error ?? "No pudimos conectar con MercadoPago.")
+        return
+      }
+      if (json.initPoint) {
+        window.location.href = json.initPoint
+      }
+    } catch {
+      setError("No pudimos conectar con MercadoPago. Probá de nuevo o elegí otro método.")
+    } finally {
+      setChanging(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="mx-auto w-full max-w-md p-4">
@@ -322,8 +344,9 @@ export default function OrderConfirmation({
           </p>
           <button
             type="button"
-            disabled
-            className="min-h-[56px] w-full rounded-2xl bg-[#F5F5F4] px-4 text-base font-bold text-stone-500"
+            disabled={changing}
+            onClick={() => void retryMp()}
+            className="min-h-[56px] w-full rounded-2xl bg-[var(--color-primary,#F97316)] px-4 text-base font-bold text-white disabled:opacity-60"
           >
             Reintentar con MercadoPago
           </button>
