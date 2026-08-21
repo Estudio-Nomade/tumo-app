@@ -6,13 +6,15 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Agent rules (mandatory)
 
-## BMAD skills are required for all code work
+## BMAD skills are REQUIRED for ALL code work (OBLIGATORIO)
 
-Any agent that will **write, modify, refactor, or delete application code** MUST use the project's BMAD skills. Do not freestyle implementation outside the BMAD workflow.
+**Cualquier agente que escriba, modifique, refactorice o elimine código de aplicación DEBE usar obligatoriamente las skills de BMAD del proyecto.** No está permitido implementar nada freestyle ni saltarse el workflow de BMAD bajo ninguna circunstancia.
 
-- Prefer the matching BMAD skill for the task (e.g. story implementation, quick dev, code review, sprint status) before touching code.
-- For automated/unattended story loops, use the bmad-loop orchestrator and its skills (`bmad-loop-*`) together with BMM primitives — do not bypass them.
-- If the correct BMAD skill is available, invoke it first. Skipping BMAD for "small" or "obvious" code changes is not allowed.
+- **Obligatorio**: Siempre cargar e invocar primero la skill BMAD correspondiente (writing-plans, story-implementation, code-review, etc.) antes de tocar cualquier archivo.
+- Para loops automáticos de stories usar el orchestrator `bmad-loop` + skills `bmad-loop-*` junto con las primitives de BMM. No bypass.
+- Saltarse BMAD aunque parezca “cambio pequeño o obvio” está **prohibido**. Esta regla es mandatory y será verificada en code reviews.
+
+Esta es una regla de hierro del repositorio. Violaciones serán rechazadas inmediatamente.
 
 ## Test-Driven Development (TDD) is required
 

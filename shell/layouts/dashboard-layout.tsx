@@ -8,6 +8,7 @@ import {
   Gift,
   LayoutDashboard,
   LayoutGrid,
+  Receipt,
   Sandwich,
   Settings,
   Users,
@@ -34,6 +35,7 @@ const MODULE_ICONS: Record<string, LucideIcon> = {
   settings: Settings,
   users: Users,
   grid: LayoutGrid,
+  receipt: Receipt,
 }
 
 function resolveModuleIcon(name: string): LucideIcon {

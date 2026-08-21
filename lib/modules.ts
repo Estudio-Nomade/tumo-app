@@ -1,5 +1,6 @@
 import type { ComponentType } from "react"
 import { loyaltyModule } from "@/modules/loyalty"
+import { ordersModule } from "@/modules/orders"
 
 export type ActivityEvent = {
   timestamp: number
@@ -72,6 +73,7 @@ export interface Module {
 
 const registry: Record<string, Module> = {
   loyalty: loyaltyModule,
+  orders: ordersModule,
 }
 
 export function getActiveModules(business: Business): Module[] {
