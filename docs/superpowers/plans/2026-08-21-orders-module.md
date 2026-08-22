@@ -172,7 +172,9 @@
 
 ---
 
-## Story 7 — MercadoPago
+## Story 7 — MercadoPago ✅ Completada (2026-08-21)
+
+> Implementada con TDD (Red → Green). Test: `modules/orders/api/mercadopago.test.ts` (8). `createPreference` dep-inyectado (payload: items, `external_reference`, `back_urls`, `notification_url`, `auto_return=approved`) + inserta `order_payments` (intento). `handleWebhook` valida `x-signature` (HMAC-SHA256 `ts.body`), GET a MP (nunca confía en el body), dedupe `mp_payment_id`, y actualiza `paid`+`confirmed` (approved) o `rejected`. Cliente MP real (fetch + `createHmac`) cableado en `default-deps`. Botón "Reintentar con MercadoPago" habilitado (redirect a `init_point`). Env vars `MP_ACCESS_TOKEN` / `MP_WEBHOOK_SECRET` documentadas en `.env.example` (también arregla el test preexistente de supabase).
 
 - `api/mercadopago.ts`: `createPreference` (POST `/api/orders/[id]/mp-preference`) + webhook (`POST /api/orders/mercadopago/webhook`, valida `x-signature`, GET a MP, dedupe `mp_payment_id`). `MP_ACCESS_TOKEN` / `MP_WEBHOOK_SECRET` env vars (una sola cuenta MVP).
 
