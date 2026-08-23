@@ -25,4 +25,10 @@ describe("db pool", () => {
   test("desactiva prepared statements para transaction pooler (:6543)", () => {
     expect(src).toContain("prepare: false")
   })
+
+  test("usa TLS para el pooler de Supabase y plaintext en local", () => {
+    expect(src).toContain("isPooler")
+    expect(src).toContain(".pooler.supabase.com")
+    expect(src).toContain("'require'")
+  })
 })

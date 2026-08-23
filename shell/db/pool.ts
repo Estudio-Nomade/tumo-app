@@ -7,14 +7,16 @@ const globalForDb = globalThis as typeof globalThis & {
 }
 
 function createSql(): Sql {
-  return postgres(process.env.DATABASE_URL!, {
-    ssl: "require",
-    // Transaction pooler (Supabase :6543) does not support prepared statements.
+  const url = process.env.DATABASE_URL || ''
+  const isPooler = url.includes('.pooler.supabase.com')
+
+  return postgres(url, {
+    ssl: isPooler ? 'require' : false,
     prepare: false,
-    // Keep small; singleton via globalThis avoids HMR multiplying pools in dev.
     max: 3,
     idle_timeout: 20,
     max_lifetime: 60 * 30,
+    connect_timeout: 10,
   })
 }
 
