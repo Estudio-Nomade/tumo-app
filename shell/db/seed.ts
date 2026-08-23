@@ -1,4 +1,12 @@
 import { sql } from "./pool"
+import {
+  categories,
+  demoCustomers,
+  demoOrders,
+  products,
+  variantGroups,
+  variantOptions,
+} from "./seed-data"
 
 async function seed() {
   const [business] = await sql`
@@ -48,71 +56,38 @@ async function seed() {
     )
   `
 
-  // --- Módulo de pedidos: catálogo + settings de Carri ---
-
-  const categories = [
-    ["a1000000-0000-4000-8000-000000000001", "Hamburguesas", 0],
-    ["a1000000-0000-4000-8000-000000000002", "Lomitos", 1],
-    ["a1000000-0000-4000-8000-000000000003", "Papas", 2],
-    ["a1000000-0000-4000-8000-000000000004", "Bebidas", 3],
-  ] as const
-  for (const [id, name, sort] of categories) {
+  for (const c of categories) {
     await sql`
       INSERT INTO product_categories (id, business_id, name, sort_order)
-      VALUES (${id}, ${business.id}, ${name}, ${sort})
+      VALUES (${c.id}, ${business.id}, ${c.name}, ${c.sortOrder})
       ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, sort_order = EXCLUDED.sort_order
     `
   }
 
-  const products = [
-    ["b1000000-0000-4000-8000-000000000001", "a1000000-0000-4000-8000-000000000001", "Hamburguesa Clásica", "Pan, carne, lechuga y tomate", 4500, 0],
-    ["b1000000-0000-4000-8000-000000000002", "a1000000-0000-4000-8000-000000000001", "Hamburguesa Especial", "Doble carne, cheddar y panceta", 5200, 1],
-    ["b1000000-0000-4000-8000-000000000003", "a1000000-0000-4000-8000-000000000002", "Lomito Completo", "Lomo, jamón, queso y huevo", 5800, 0],
-    ["b1000000-0000-4000-8000-000000000004", "a1000000-0000-4000-8000-000000000003", "Papas Fritas", "Porción para compartir", 1800, 0],
-    ["b1000000-0000-4000-8000-000000000005", "a1000000-0000-4000-8000-000000000003", "Papas con Cheddar", "Con salsa cheddar y panceta", 2200, 1],
-    ["b1000000-0000-4000-8000-000000000006", "a1000000-0000-4000-8000-000000000004", "Coca-Cola 500ml", "Botella fría", 1200, 0],
-    ["b1000000-0000-4000-8000-000000000007", "a1000000-0000-4000-8000-000000000004", "Agua Mineral", "Sin gas, 500ml", 800, 1],
-  ] as const
-  for (const [id, catId, name, description, price, sort] of products) {
+  for (const p of products) {
     await sql`
       INSERT INTO products (id, business_id, category_id, name, description, price_cents, sort_order)
-      VALUES (${id}, ${business.id}, ${catId}, ${name}, ${description}, ${price}, ${sort})
+      VALUES (${p.id}, ${business.id}, ${p.categoryId}, ${p.name}, ${p.description}, ${p.priceCents}, ${p.sortOrder})
       ON CONFLICT (id) DO UPDATE SET
         name = EXCLUDED.name, description = EXCLUDED.description,
         price_cents = EXCLUDED.price_cents, sort_order = EXCLUDED.sort_order
     `
   }
 
-  const groups = [
-    ["c1000000-0000-4000-8000-000000000001", "b1000000-0000-4000-8000-000000000001", "Tamaño", "single", true, 0],
-    ["c1000000-0000-4000-8000-000000000002", "b1000000-0000-4000-8000-000000000002", "Tamaño", "single", true, 0],
-    ["c1000000-0000-4000-8000-000000000003", "b1000000-0000-4000-8000-000000000002", "Extras", "multiple", false, 1],
-    ["c1000000-0000-4000-8000-000000000004", "b1000000-0000-4000-8000-000000000003", "Tamaño", "single", true, 0],
-  ] as const
-  for (const [id, productId, name, selection, required, sort] of groups) {
+  for (const g of variantGroups) {
     await sql`
       INSERT INTO product_variant_groups (id, product_id, name, selection_type, is_required, sort_order)
-      VALUES (${id}, ${productId}, ${name}, ${selection}, ${required}, ${sort})
+      VALUES (${g.id}, ${g.productId}, ${g.name}, ${g.selectionType}, ${g.isRequired}, ${g.sortOrder})
       ON CONFLICT (id) DO UPDATE SET
         name = EXCLUDED.name, selection_type = EXCLUDED.selection_type,
         is_required = EXCLUDED.is_required, sort_order = EXCLUDED.sort_order
     `
   }
 
-  const options = [
-    ["d1000000-0000-4000-8000-000000000001", "c1000000-0000-4000-8000-000000000001", "Chico", 0, 0],
-    ["d1000000-0000-4000-8000-000000000002", "c1000000-0000-4000-8000-000000000001", "Grande", 800, 1],
-    ["d1000000-0000-4000-8000-000000000003", "c1000000-0000-4000-8000-000000000002", "Chico", 0, 0],
-    ["d1000000-0000-4000-8000-000000000004", "c1000000-0000-4000-8000-000000000002", "Grande", 800, 1],
-    ["d1000000-0000-4000-8000-000000000005", "c1000000-0000-4000-8000-000000000003", "Extra queso", 400, 0],
-    ["d1000000-0000-4000-8000-000000000006", "c1000000-0000-4000-8000-000000000003", "Huevo", 300, 1],
-    ["d1000000-0000-4000-8000-000000000007", "c1000000-0000-4000-8000-000000000004", "Chico", 0, 0],
-    ["d1000000-0000-4000-8000-000000000008", "c1000000-0000-4000-8000-000000000004", "Grande", 800, 1],
-  ] as const
-  for (const [id, groupId, name, delta, sort] of options) {
+  for (const o of variantOptions) {
     await sql`
       INSERT INTO product_variant_options (id, group_id, name, price_delta_cents, sort_order)
-      VALUES (${id}, ${groupId}, ${name}, ${delta}, ${sort})
+      VALUES (${o.id}, ${o.groupId}, ${o.name}, ${o.priceDeltaCents}, ${o.sortOrder})
       ON CONFLICT (id) DO UPDATE SET
         name = EXCLUDED.name, price_delta_cents = EXCLUDED.price_delta_cents, sort_order = EXCLUDED.sort_order
     `
@@ -135,15 +110,64 @@ async function seed() {
     )
     VALUES (
       ${business.id}, 500, ${"carri.mp"}, ${"0000003100000000000000"},
-      ${"Juan Pérez"}, false, false, ${sql.json(hours as never)}
+      ${"Juan Pérez"}, true, false, ${sql.json(hours as never)}
     )
     ON CONFLICT (business_id) DO UPDATE SET
       delivery_fee_cents = EXCLUDED.delivery_fee_cents,
       transfer_alias = EXCLUDED.transfer_alias,
       transfer_cbu = EXCLUDED.transfer_cbu,
       transfer_holder = EXCLUDED.transfer_holder,
+      mp_enabled = EXCLUDED.mp_enabled,
       hours = EXCLUDED.hours
   `
+
+  for (const c of demoCustomers) {
+    await sql`
+      INSERT INTO customers (id, name, phone, code, business_id)
+      VALUES (${c.id}, ${c.name}, ${c.phone}, ${c.code}, ${business.id})
+      ON CONFLICT (id) DO NOTHING
+    `
+  }
+
+  for (const order of demoOrders) {
+    const inserted = await sql`
+      INSERT INTO orders (
+        id, business_id, customer_id, order_number, status, payment_method,
+        payment_status, fulfillment, delivery_address, delivery_fee_cents,
+        subtotal_cents, total_cents, notes
+      )
+      VALUES (
+        ${order.id}, ${business.id}, ${order.customerId}, ${order.orderNumber}, ${order.status},
+        ${order.paymentMethod}, ${order.paymentStatus}, ${order.fulfillment},
+        ${order.deliveryAddress}, ${order.deliveryFeeCents}, ${order.subtotalCents},
+        ${order.totalCents}, ${order.notes}
+      )
+      ON CONFLICT (id) DO NOTHING
+      RETURNING id
+    `
+    if (inserted.length === 0) continue
+
+    for (const item of order.items) {
+      const [itemRow] = await sql`
+        INSERT INTO order_items (id, order_id, product_id, product_name, quantity, unit_price_cents, notes)
+        VALUES (${item.id}, ${order.id}, ${item.productId}, ${item.productName}, ${item.quantity}, ${item.unitPriceCents}, ${item.notes})
+        RETURNING id
+      `
+      for (const v of item.variants) {
+        await sql`
+          INSERT INTO order_item_variants (order_item_id, group_name, option_name, price_delta_cents)
+          VALUES (${itemRow.id}, ${v.groupName}, ${v.optionName}, ${v.priceDeltaCents})
+        `
+      }
+    }
+
+    for (const pay of order.payments) {
+      await sql`
+        INSERT INTO order_payments (id, order_id, method, status, mp_status)
+        VALUES (${pay.id}, ${order.id}, ${pay.method}, ${pay.status}, ${pay.mpStatus ?? null})
+      `
+    }
+  }
 
   console.log("Seed OK:", business)
 }
