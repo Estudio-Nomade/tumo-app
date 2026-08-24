@@ -180,9 +180,9 @@
 
 ---
 
-## Story 8 — Seed completo + pulido
+## Story 8 — Seed completo + pulido ✅ Completada (2026-08-22)
 
-- Catálogo/variantes/horarios/settings + órdenes demo; checklist "¿lo entiende mi abuelo?" end-to-end.
+> Implementada con TDD (Red → Green). Test: `tests/seed-data.test.ts` (12 asserts). Se extrajo el seed a un módulo tipado puro `shell/db/seed-data.ts` (catálogo 20 productos + 14 grupos / 31 opciones de variantes + 6 clientes y 6 órdenes demo con ítems/variantes/pagos snapshot). `seed.ts` consume el módulo, siembra `customers` + órdenes demo (upsert idempotente por id determinista) y activa `mp_enabled=true` (antes estaba en `false`, dejando MercadoPago apagado pese a S7). Invariantes testeadas: ≥20 productos, precios en centavos enteros, refs válidas, totales demo consistentes (`total = subtotal + fee`, `subtotal = Σ unit×qty`), cantidades 1–20 y estados dentro del dominio. Verificado: `bun test` 425 pass, `bun run build` ✓, seed idempotente sobre `supabase db reset`.
 
 ---
 

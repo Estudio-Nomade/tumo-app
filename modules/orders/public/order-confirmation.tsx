@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { formatCents } from "@/modules/orders/lib/types"
+import { formatCents, type PaymentStatus } from "@/modules/orders/lib/types"
+import { createOrdersChannel, shouldTrackPayment } from "@/modules/orders/lib/realtime"
 
 type OrderVariant = { groupName: string; optionName: string; priceDeltaCents: number }
 
@@ -11,7 +12,7 @@ type OrderDetail = {
   orderNumber: number
   status: string
   paymentMethod: "transfer" | "mercadopago" | "at_pickup"
-  paymentStatus: string
+  paymentStatus: PaymentStatus
   fulfillment: string
   deliveryFeeCents: number
   subtotalCents: number
@@ -67,6 +68,19 @@ export default function OrderConfirmation({
       cancelled = true
     }
   }, [orderId, reload])
+
+  useEffect(() => {
+    if (!order) return
+    if (!shouldTrackPayment(order.paymentMethod, order.paymentStatus)) return
+    const channel = createOrdersChannel({
+      name: `order-${order.id}`,
+      event: "UPDATE",
+      filter: `id=eq.${order.id}`,
+      onUpdate: () => setReload((n) => n + 1),
+    })
+    return () => channel.unsubscribe()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order?.id, order?.paymentMethod, order?.paymentStatus])
 
   async function copyField(value: string, key: string) {
     try {
@@ -233,6 +247,12 @@ export default function OrderConfirmation({
           Pedido #{order.orderNumber} · Total $ {formatCents(order.totalCents)}
         </p>
       </header>
+
+      {ps === "paid" ? (
+        <div className="rounded-2xl bg-green-50 px-4 py-3 text-center text-base font-bold text-green-700">
+          ✓ Pago confirmado
+        </div>
+      ) : null}
 
       <div className="rounded-2xl border border-[#E7E5E4] bg-white p-4">
         <ul className="flex flex-col gap-1.5">
