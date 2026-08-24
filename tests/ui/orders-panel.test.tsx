@@ -26,6 +26,10 @@ describe("OrdersPanel (source contracts)", () => {
     expect(panel).toMatch(/is_paused|isPaused/)
   })
 
+  test("switch Recibiendo pedidos con touch target ≥48px de alto (elderly-UX)", () => {
+    expect(panel).toContain("h-[48px] w-16")
+  })
+
   test("poll cada 20s + on focus", () => {
     expect(panel).toContain("20000")
     expect(panel).toContain("focus")

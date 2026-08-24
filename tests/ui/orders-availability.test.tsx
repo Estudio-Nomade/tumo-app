@@ -22,6 +22,10 @@ describe("ProductsAvailability (source contracts)", () => {
     expect(avail).toMatch(/min-h-\[48px\]|min-w-\[48px\]|h-\[48px\]|w-\[48px\]/)
   })
 
+  test("toggle con touch target ≥48px de alto (elderly-UX)", () => {
+    expect(avail).toContain("h-[48px] w-16")
+  })
+
   test("buscador", () => {
     expect(avail).toMatch(/Buscar|buscar/)
   })
