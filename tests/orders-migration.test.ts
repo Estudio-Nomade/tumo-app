@@ -7,6 +7,10 @@ const migration = readFileSync(
   join(root, "shell/db/migrations/004_orders.sql"),
   "utf8"
 )
+const mpCredentials = readFileSync(
+  join(root, "shell/db/migrations/005_orders_mp_credentials.sql"),
+  "utf8"
+)
 const migrateTs = readFileSync(join(root, "shell/db/migrate.ts"), "utf8")
 
 const TABLES = [
@@ -30,6 +34,12 @@ describe("migración 004_orders", () => {
 
   test("registrada en migrate.ts", () => {
     expect(migrateTs).toContain('"004_orders.sql"')
+  })
+
+  test("credenciales MP por negocio (005) registradas y con columnas", () => {
+    expect(migrateTs).toContain('"005_orders_mp_credentials.sql"')
+    expect(mpCredentials).toMatch(/mp_access_token TEXT/)
+    expect(mpCredentials).toMatch(/mp_webhook_secret TEXT/)
   })
 
   test("no altera la tabla customers", () => {

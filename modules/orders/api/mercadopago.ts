@@ -18,9 +18,12 @@ export type MpPaymentInfo = {
 
 export type MercadoPagoDeps = {
   sql: SqlTagged
-  createPreference: (payload: MpPreferencePayload) => Promise<MpPreferenceResult>
-  getPayment: (paymentId: string) => Promise<MpPaymentInfo | null>
-  validateSignature: (rawBody: string, header: string | null) => boolean
+  createPreference: (
+    payload: MpPreferencePayload,
+    accessToken: string
+  ) => Promise<MpPreferenceResult>
+  getPayment: (paymentId: string, accessToken: string) => Promise<MpPaymentInfo | null>
+  validateSignature: (rawBody: string, header: string | null, secret: string) => boolean
 }
 
 type OrderRow = {
@@ -30,6 +33,12 @@ type OrderRow = {
   business_id: string
   status: string
   payment_status: string
+}
+
+type MpSettingsRow = {
+  mp_enabled: boolean
+  mp_access_token: string | null
+  mp_webhook_secret: string | null
 }
 
 export async function createPreference(
@@ -50,6 +59,23 @@ export async function createPreference(
   const order = rows[0]
   if (!order) {
     return { status: 404, body: { error: "No encontramos ese pedido." } }
+  }
+
+  const [settings] = (await deps.sql`
+    SELECT mp_enabled, mp_access_token
+    FROM orders_settings
+    WHERE business_id = ${order.business_id}
+    LIMIT 1
+  `) as MpSettingsRow[]
+  const accessToken = settings?.mp_access_token?.trim()
+  if (!settings?.mp_enabled || !accessToken) {
+    return {
+      status: 409,
+      body: {
+        error: "MercadoPago no está disponible para este negocio.",
+        code: "MP_UNAVAILABLE",
+      },
+    }
   }
 
   const [biz] = (await deps.sql`
@@ -73,11 +99,11 @@ export async function createPreference(
       failure: `${base}/${slug}/orders/${order.id}?mp=failure`,
       pending: `${base}/${slug}/orders/${order.id}?mp=pending`,
     },
-    notification_url: `${base}/api/orders/mercadopago/webhook`,
+    notification_url: `${base}/api/orders/mercadopago/webhook/${order.business_id}`,
     auto_return: "approved",
   }
 
-  const pref = await deps.createPreference(payload)
+  const pref = await deps.createPreference(payload, accessToken)
 
   await deps.sql`
     INSERT INTO order_payments (order_id, method, status, mp_preference_id)
@@ -92,9 +118,26 @@ export async function createPreference(
 
 export async function handleWebhook(
   deps: MercadoPagoDeps,
-  input: { rawBody: string; signatureHeader: string | null }
+  input: { rawBody: string; signatureHeader: string | null; businessId: string }
 ): Promise<JsonResult> {
-  if (!deps.validateSignature(input.rawBody, input.signatureHeader)) {
+  const businessId = input.businessId?.trim() ?? ""
+  if (!businessId) {
+    return { status: 401, body: { error: "Negocio no identificado." } }
+  }
+
+  const [settings] = (await deps.sql`
+    SELECT mp_webhook_secret, mp_access_token
+    FROM orders_settings
+    WHERE business_id = ${businessId}
+    LIMIT 1
+  `) as MpSettingsRow[]
+  const secret = settings?.mp_webhook_secret?.trim()
+  const accessToken = settings?.mp_access_token?.trim() ?? ""
+  if (!secret) {
+    return { status: 401, body: { error: "Firma inválida." } }
+  }
+
+  if (!deps.validateSignature(input.rawBody, input.signatureHeader, secret)) {
     return { status: 401, body: { error: "Firma inválida." } }
   }
 
@@ -110,7 +153,7 @@ export async function handleWebhook(
     return { status: 400, body: { error: "Payment id faltante." } }
   }
 
-  const payment = await deps.getPayment(paymentId)
+  const payment = await deps.getPayment(paymentId, accessToken)
   if (!payment) {
     return { status: 400, body: { error: "Payment no encontrado." } }
   }
