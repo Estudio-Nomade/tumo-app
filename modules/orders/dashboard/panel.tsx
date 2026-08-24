@@ -180,10 +180,10 @@ export default function OrdersPanel({ slug }: { slug: string }) {
             role="switch"
             aria-checked={!paused}
             onClick={() => void togglePaused()}
-            className={`relative h-8 w-14 rounded-full ${paused ? "bg-stone-300" : "bg-[var(--color-primary,#F97316)]"}`}
+            className={`flex h-[48px] w-16 items-center rounded-full p-1.5 transition ${paused ? "bg-stone-300" : "bg-[var(--color-primary,#F97316)]"}`}
           >
             <span
-              className={`absolute top-1 h-6 w-6 rounded-full bg-white transition-all ${paused ? "left-1" : "left-7"}`}
+              className={`h-9 w-9 rounded-full bg-white shadow transition-transform ${paused ? "translate-x-0" : "translate-x-4"}`}
             />
           </button>
         </div>

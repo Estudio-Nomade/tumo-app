@@ -155,13 +155,13 @@ export default function ProductsAvailability({ slug }: { slug: string }) {
                     aria-checked={p.isAvailable}
                     aria-label={p.isAvailable ? `Marcar ${p.name} agotado` : `Marcar ${p.name} disponible`}
                     onClick={() => void toggle(p)}
-                    className={`flex h-8 w-14 min-w-[48px] items-center rounded-full p-1 transition ${
+                    className={`flex h-[48px] w-16 items-center rounded-full p-1.5 transition ${
                       p.isAvailable ? "bg-green-500" : "bg-stone-300"
                     }`}
                   >
                     <span
-                      className={`h-6 w-6 rounded-full bg-white shadow transition-transform ${
-                        p.isAvailable ? "translate-x-0" : "translate-x-6"
+                      className={`h-9 w-9 rounded-full bg-white shadow transition-transform ${
+                        p.isAvailable ? "translate-x-4" : "translate-x-0"
                       }`}
                     />
                   </button>
