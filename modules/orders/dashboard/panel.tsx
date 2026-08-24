@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useBusiness } from "@/shell/context/business"
 import { formatCents } from "@/modules/orders/lib/types"
+import { createOrdersChannel } from "@/modules/orders/lib/realtime"
 
 type OrderRow = {
   id: string
@@ -109,6 +110,17 @@ export default function OrdersPanel({ slug }: { slug: string }) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter])
+
+  useEffect(() => {
+    const channel = createOrdersChannel({
+      name: "orders-panel",
+      event: "*",
+      filter: `business_id=eq.${business.id}`,
+      onUpdate: () => void loadSilent(),
+    })
+    return () => channel.unsubscribe()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [business.id, filter])
 
   useEffect(() => {
     let cancelled = false
