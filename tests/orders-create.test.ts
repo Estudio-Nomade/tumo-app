@@ -231,6 +231,15 @@ describe("createOrder", () => {
     expect(calls.find((c) => c.q.includes("INSERT INTO orders"))).toBeUndefined()
   })
 
+  test("devuelve customerId para setear la cookie del cliente", async () => {
+    const { sql } = makeSql()
+    const deps = makeDeps({ sql: sql as unknown as OrdersDeps["sql"] })
+
+    const r = await createOrder(deps, baseInput)
+    expect(r.status).toBe(200)
+    expect(r.body).toMatchObject({ customerId: "cust-1" })
+  })
+
   test("cliente existente: reusa sin pisar nombre", async () => {
     const { sql, calls } = makeSql({
       customer: [

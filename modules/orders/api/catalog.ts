@@ -1,5 +1,5 @@
 import type { Business } from "@/lib/modules"
-import type { JsonResult, SqlTagged } from "@/modules/orders/lib/types"
+import type { JsonResult, PaymentMethod, PaymentStatus, SqlTagged } from "@/modules/orders/lib/types"
 import {
   isOpenNow,
   nextOpening,
@@ -79,6 +79,13 @@ export type CatalogSettings = {
   nextOpening: OpeningInfo | null
 }
 
+export type CatalogPendingOrder = {
+  id: string
+  orderNumber: number
+  paymentMethod: PaymentMethod
+  paymentStatus: PaymentStatus
+}
+
 async function loadSettings(
   deps: CatalogDeps,
   businessId: string
@@ -106,7 +113,7 @@ async function loadSettings(
 
 export async function getCatalog(
   deps: CatalogDeps,
-  input: { slug: string }
+  input: { slug: string; clientId?: string }
 ): Promise<JsonResult> {
   const slug = input.slug?.trim() ?? ""
   if (!slug) {
@@ -150,6 +157,37 @@ export async function getCatalog(
   `) as VariantOptionRow[]
 
   const settings = await loadSettings(deps, business.id)
+
+  const clientId = input.clientId?.trim() ?? ""
+  const pendingRows = clientId
+    ? ((await deps.sql`
+        SELECT id, order_number, payment_method, payment_status
+        FROM orders
+        WHERE business_id = ${business.id}
+          AND customer_id = ${clientId}
+          AND status <> 'cancelled'
+          AND (
+            payment_status = 'pending_verification'
+            OR (payment_method = 'mercadopago' AND payment_status = 'pending')
+          )
+        ORDER BY created_at DESC
+        LIMIT 1
+      `) as {
+        id: string
+        order_number: number
+        payment_method: string
+        payment_status: string
+      }[])
+    : []
+  const pending = pendingRows[0]
+  const pendingOrder: CatalogPendingOrder | null = pending
+    ? {
+        id: pending.id,
+        orderNumber: Number(pending.order_number),
+        paymentMethod: pending.payment_method as PaymentMethod,
+        paymentStatus: pending.payment_status as PaymentStatus,
+      }
+    : null
 
   const optionsByGroup = new Map<string, CatalogVariantOption[]>()
   for (const o of options) {
@@ -198,6 +236,7 @@ export async function getCatalog(
         variantGroups: groupsByProduct.get(p.id) ?? [],
       })),
       settings,
+      pendingOrder,
     },
   }
 }

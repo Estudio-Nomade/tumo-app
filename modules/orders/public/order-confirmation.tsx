@@ -82,6 +82,14 @@ export default function OrderConfirmation({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order?.id, order?.paymentMethod, order?.paymentStatus])
 
+  useEffect(() => {
+    if (!order) return
+    if (!shouldTrackPayment(order.paymentMethod, order.paymentStatus)) return
+    const id = window.setInterval(() => setReload((n) => n + 1), 10000)
+    return () => window.clearInterval(id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order?.paymentMethod, order?.paymentStatus])
+
   async function copyField(value: string, key: string) {
     try {
       await navigator.clipboard.writeText(value)
@@ -232,7 +240,8 @@ export default function OrderConfirmation({
   const paid = ps === "paid" || pm === "at_pickup"
   const reviewingReceipt = pm === "transfer" && ps === "pending_verification"
   const needsReceipt = pm === "transfer" && (ps === "pending_receipt" || ps === "rejected")
-  const mpPending = pm === "mercadopago" && (ps === "pending" || ps === "rejected")
+  const mpWaiting = pm === "mercadopago" && ps === "pending"
+  const mpRejected = pm === "mercadopago" && ps === "rejected"
 
   const codeDigits = (order.customer.code || "····").slice(0, 4).split("")
 
@@ -355,13 +364,27 @@ export default function OrderConfirmation({
         <p className="rounded-2xl bg-amber-50 px-4 py-3 text-base font-medium text-amber-800">
           Listo, Carri está revisando tu comprobante.
         </p>
-      ) : mpPending ? (
+      ) : mpWaiting || mpRejected ? (
         <div className="flex flex-col gap-3">
-          <p className="rounded-2xl bg-amber-50 px-4 py-3 text-base font-medium text-amber-800">
-            {ps === "rejected"
-              ? "El pago no se completó. Podés intentar de nuevo o elegir otra forma."
-              : "Estamos esperando la confirmación de MercadoPago."}
-          </p>
+          {mpWaiting ? (
+            <div className="flex flex-col items-center gap-3 rounded-2xl bg-amber-50 px-4 py-4 text-center">
+              <div
+                role="status"
+                aria-label="Esperando la confirmación de tu pago"
+                className="h-8 w-8 animate-spin rounded-full border-4 border-[#E7E5E4] border-t-[var(--color-primary,#F97316)]"
+              />
+              <p className="text-base font-semibold text-amber-900">
+                Estamos esperando la confirmación de tu pago en MercadoPago.
+              </p>
+              <p className="text-sm text-amber-800">
+                Suele tardar unos segundos. Esta página se actualiza sola.
+              </p>
+            </div>
+          ) : (
+            <p className="rounded-2xl bg-amber-50 px-4 py-3 text-base font-medium text-amber-800">
+              El pago no se completó. Podés intentar de nuevo o elegir otra forma.
+            </p>
+          )}
           <button
             type="button"
             disabled={changing}

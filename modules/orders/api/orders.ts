@@ -335,6 +335,7 @@ export async function createOrder(
       subtotalCents,
       totalCents,
       customerCode: customer.code,
+      customerId: customer.id,
     }
   })
 
