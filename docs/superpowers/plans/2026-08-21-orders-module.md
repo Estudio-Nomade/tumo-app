@@ -186,6 +186,37 @@
 
 ---
 
+## Story 13 — Pulido final y preparación para producción ✅ Completada (2026-08-24)
+
+> Implementada con TDD (Red → Green). Tests: `tests/orders-realtime.test.ts` (ampliado, 18), `tests/orders-mp-timeout.test.ts` (3, nuevo), `tests/ui/orders-panel.test.tsx` (ampliado), `tests/ui/orders-confirmation.test.tsx` (ampliado). También se arregló un test preexistente flaky de catálogo (ver nota).
+
+**1. Notificaciones en tiempo real (INSERT):**
+- `modules/orders/lib/realtime.ts`: `createOrdersChannel` ahora recibe `onChange(change)` (antes `onUpdate()` sin payload) y normaliza el payload de Supabase con `toOrdersChange` → `{ eventType, orderNumber }`. Nuevos helpers puros `isNewOrder(change)` y `newOrderToastMessage(orderNumber)` ("Nuevo pedido recibido #123").
+- `dashboard/panel.tsx`: al recibir un INSERT muestra un toast accesible (`role="status"` + `aria-live="polite"`, texto ≥16px, fijo abajo) y recarga la lista. La suscripción falla → no-op (el polling de 20s + focus sigue activo como respaldo).
+
+**2. UX y accesibilidad (elderly-UX):**
+- Toast del panel fijo y con `aria-live="polite"` (antes `<p role="status">` inline sin anuncio en vivo).
+- `order-confirmation.tsx`: estado de carga con texto claro "Cargando tu pedido…" + skeleton; mensajes de error en lenguaje llano ya presentes.
+
+**3. Edge cases y robustez:**
+- `createOrdersChannel` envuelve `subscribe()` en try/catch: si Supabase Realtime no responde, devuelve no-op y el panel sigue con polling.
+- **Timeout MP amigable:** nuevo `modules/orders/lib/mp-timeout.ts` (`mpTimeoutHint(elapsedMs)`). A los 45s de espera en MercadoPago, la confirmación muestra "Está tardando más de lo normal…" + botón "Revisar estado".
+- **Doble envío:** `order-confirmation.tsx` usa un `busyRef` (re-entrancy lock) en `sendReceipt` / `changeMethod` / `retryMp`, y cross-disabling (`uploading || changing`). Previene doble POST de comprobante o acciones por doble-tap.
+
+**4. Documentación y limpieza:** esta sección del plan + deuda técnica abajo.
+
+**Nota — test flaky preexistente:** `tests/orders-catalog.test.ts` ("cerrado por horario") dependía del reloj real y fallaba solo si se corría dentro de la ventana abierta del fixture (ej. lunes 19:00–01:00). Se inyectó `now` en `getCatalog` (`CatalogDeps.now`, mismo patrón que `createOrder`) y el test pasa un `now` fijo (domingo 15:00). Test determinístico.
+
+**Deuda técnica restante (comentario, post-MVP — no bloquea producción):**
+- Realtime: una sola cuenta MP por env vars (`MP_ACCESS_TOKEN`/`MP_WEBHOOK_SECRET`); credenciales por negocio = futuro (§8.2).
+- Notificaciones automáticas al cambiar estado (WhatsApp/email): siguen manuales vía `wa.me` (§8.7).
+- Editor de horarios en UI: hoy seed/SQL (§8.3). `orders_settings.hours` podría migrar a tabla shell `business_hours` compartida (§8.4).
+- ABM completo de productos (precios/fotos/variantes): hoy seed + toggle disponibilidad (§8.10).
+- Sonido/badge al llegar pedido nuevo: decisión abierta §8.15, default no (autoplay + elderly-UX). El toast de Story 13 cubre la visibilidad sin audio.
+- Cron de limpieza de pedidos MP abandonados y reembolsos integrados: manuales (§8.8, §8.9).
+
+---
+
 ## Spec coverage self-check
 
 | Sección spec | Story |

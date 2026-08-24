@@ -43,6 +43,13 @@ describe("OrdersPanel (source contracts)", () => {
   test("card tappeable al detalle", () => {
     expect(panel).toContain("dashboard/orders")
   })
+
+  test("realtime: toast de nuevo pedido (INSERT) accesible", () => {
+    expect(panel).toContain("newOrderToastMessage")
+    expect(panel).toContain("isNewOrder")
+    expect(panel).toContain("onChange")
+    expect(panel).toContain('aria-live="polite"')
+  })
 })
 
 describe("OrderDetail (source contracts)", () => {

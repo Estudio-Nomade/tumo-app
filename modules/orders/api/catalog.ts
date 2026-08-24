@@ -10,6 +10,7 @@ import {
 export type CatalogDeps = {
   sql: SqlTagged
   getBusiness: (slug: string) => Promise<Business | null>
+  now?: () => Date
 }
 
 type CategoryRow = { id: string; name: string; sort_order: number }
@@ -100,8 +101,9 @@ async function loadSettings(
   const row = rows[0]
   const hours = (row?.hours ?? {}) as OrdersHours
   const isPaused = Boolean(row?.is_paused)
-  const isOpen = !isPaused && isOpenNow(hours)
-  const next = !isPaused && !isOpen ? nextOpening(hours) : null
+  const now = deps.now?.() ?? new Date()
+  const isOpen = !isPaused && isOpenNow(hours, now)
+  const next = !isPaused && !isOpen ? nextOpening(hours, now) : null
 
   return {
     isOpen,
