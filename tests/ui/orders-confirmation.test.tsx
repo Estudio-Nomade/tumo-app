@@ -61,4 +61,19 @@ describe("OrderConfirmation (source contracts)", () => {
   test("pago confirmado → banner verde ✓", () => {
     expect(src).toMatch(/Pago confirmado/)
   })
+
+  test("MP: timeout amigable con Revisar estado", () => {
+    expect(src).toContain("mpTimeoutHint")
+    expect(src).toContain("Revisar estado")
+  })
+
+  test("previene doble envío (useRef + disabled cruzado)", () => {
+    expect(src).toContain("useRef")
+    expect(src).toMatch(/busyRef\.current/)
+    expect(src).toContain("uploading || changing")
+  })
+
+  test("estado de carga con texto claro", () => {
+    expect(src).toContain("Cargando tu pedido")
+  })
 })

@@ -1,7 +1,10 @@
 import { describe, expect, test } from "bun:test"
 import {
   createOrdersChannel,
+  isNewOrder,
+  newOrderToastMessage,
   shouldTrackPayment,
+  toOrdersChange,
 } from "@/modules/orders/lib/realtime"
 
 describe("shouldTrackPayment", () => {
@@ -29,12 +32,50 @@ describe("shouldTrackPayment", () => {
   })
 })
 
+describe("isNewOrder", () => {
+  test("INSERT con número de pedido es un pedido nuevo", () => {
+    expect(isNewOrder({ eventType: "INSERT", orderNumber: 123 })).toBe(true)
+  })
+  test("UPDATE no es un pedido nuevo", () => {
+    expect(isNewOrder({ eventType: "UPDATE", orderNumber: 123 })).toBe(false)
+  })
+  test("INSERT sin número no es un pedido nuevo", () => {
+    expect(isNewOrder({ eventType: "INSERT", orderNumber: null })).toBe(false)
+  })
+})
+
+describe("newOrderToastMessage", () => {
+  test("compone el mensaje de toast con el número", () => {
+    expect(newOrderToastMessage(123)).toBe("Nuevo pedido recibido #123")
+  })
+})
+
+describe("toOrdersChange", () => {
+  test("extrae eventType y order_number del payload de Supabase", () => {
+    expect(
+      toOrdersChange({ eventType: "INSERT", new: { order_number: 17 } })
+    ).toEqual({ eventType: "INSERT", orderNumber: 17 })
+  })
+  test("order_number ausente → null", () => {
+    expect(toOrdersChange({ eventType: "UPDATE", new: {} })).toEqual({
+      eventType: "UPDATE",
+      orderNumber: null,
+    })
+  })
+  test("payload sin new → null", () => {
+    expect(toOrdersChange({ eventType: "DELETE" })).toEqual({
+      eventType: "DELETE",
+      orderNumber: null,
+    })
+  })
+})
+
 describe("createOrdersChannel", () => {
   test("sin env configurado devuelve un no-op que no lanza", () => {
     const channel = createOrdersChannel({
       name: "test",
       event: "UPDATE",
-      onUpdate: () => {},
+      onChange: () => {},
     })
     expect(channel.unsubscribe).toBeTypeOf("function")
     expect(() => channel.unsubscribe()).not.toThrow()

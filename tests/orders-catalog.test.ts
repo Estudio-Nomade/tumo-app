@@ -114,12 +114,16 @@ describe("getCatalog", () => {
   })
 
   test("cerrado por horario → isOpen false con nextOpening", async () => {
+    const sunday = new Date("2026-08-23T15:00:00-03:00")
     const sql = makeSql({
       categories: [],
       products: [],
       settings: [{ delivery_fee_cents: 0, is_paused: false, hours: openHours() }],
     })
-    const deps = makeDeps({ sql: sql as unknown as CatalogDeps["sql"] })
+    const deps = makeDeps({
+      sql: sql as unknown as CatalogDeps["sql"],
+      now: () => sunday,
+    })
     const r = await getCatalog(deps, { slug: "carri" })
     const body = r.body as { settings: { isOpen: boolean; nextOpening: { dayLabel: string; time: string } | null } }
     expect(body.settings.isOpen).toBe(false)

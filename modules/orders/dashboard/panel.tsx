@@ -4,7 +4,11 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useBusiness } from "@/shell/context/business"
 import { formatCents } from "@/modules/orders/lib/types"
-import { createOrdersChannel } from "@/modules/orders/lib/realtime"
+import {
+  createOrdersChannel,
+  isNewOrder,
+  newOrderToastMessage,
+} from "@/modules/orders/lib/realtime"
 
 type OrderRow = {
   id: string
@@ -116,7 +120,12 @@ export default function OrdersPanel({ slug }: { slug: string }) {
       name: "orders-panel",
       event: "*",
       filter: `business_id=eq.${business.id}`,
-      onUpdate: () => void loadSilent(),
+      onChange: (change) => {
+        if (isNewOrder(change) && change.orderNumber != null) {
+          showToast(newOrderToastMessage(change.orderNumber))
+        }
+        void loadSilent()
+      },
     })
     return () => channel.unsubscribe()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -292,7 +301,8 @@ export default function OrdersPanel({ slug }: { slug: string }) {
       {toast ? (
         <p
           role="status"
-          className="rounded-xl bg-green-50 px-4 py-3 text-sm font-semibold text-green-800"
+          aria-live="polite"
+          className="fixed bottom-4 left-1/2 z-30 -translate-x-1/2 rounded-2xl bg-stone-900 px-5 py-3 text-base font-semibold text-white shadow-lg"
         >
           {toast}
         </p>

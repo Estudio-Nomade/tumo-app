@@ -1,9 +1,10 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { formatCents, type PaymentStatus } from "@/modules/orders/lib/types"
 import { createOrdersChannel, shouldTrackPayment } from "@/modules/orders/lib/realtime"
+import { mpTimeoutHint } from "@/modules/orders/lib/mp-timeout"
 
 type OrderVariant = { groupName: string; optionName: string; priceDeltaCents: number }
 
@@ -44,6 +45,9 @@ export default function OrderConfirmation({
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState("")
   const [changing, setChanging] = useState(false)
+  const [mpSince, setMpSince] = useState<number | null>(null)
+  const [now, setNow] = useState<number>(() => Date.now())
+  const busyRef = useRef(false)
 
   useEffect(() => {
     let cancelled = false
@@ -54,9 +58,17 @@ export default function OrderConfirmation({
         if (json.error) {
           setError(json.error)
           setOrder(null)
+          setMpSince(null)
           return
         }
         setOrder(json)
+        setMpSince((prev) => {
+          const pending =
+            json.paymentMethod === "mercadopago" &&
+            json.paymentStatus === "pending"
+          if (pending && prev != null) return prev
+          return pending ? Date.now() : null
+        })
       })
       .catch(() => {
         if (!cancelled) setError("No pudimos cargar tu pedido.")
@@ -76,7 +88,7 @@ export default function OrderConfirmation({
       name: `order-${order.id}`,
       event: "UPDATE",
       filter: `id=eq.${order.id}`,
-      onUpdate: () => setReload((n) => n + 1),
+      onChange: () => setReload((n) => n + 1),
     })
     return () => channel.unsubscribe()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -89,6 +101,12 @@ export default function OrderConfirmation({
     return () => window.clearInterval(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order?.paymentMethod, order?.paymentStatus])
+
+  useEffect(() => {
+    if (mpSince == null) return
+    const id = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(id)
+  }, [mpSince])
 
   async function copyField(value: string, key: string) {
     try {
@@ -141,7 +159,8 @@ export default function OrderConfirmation({
   }
 
   async function sendReceipt() {
-    if (!file) return
+    if (!file || busyRef.current) return
+    busyRef.current = true
     setUploading(true)
     setUploadError("")
     try {
@@ -161,11 +180,14 @@ export default function OrderConfirmation({
     } catch {
       setUploadError("No pudimos subir el comprobante.")
     } finally {
+      busyRef.current = false
       setUploading(false)
     }
   }
 
   async function changeMethod(method: "transfer" | "at_pickup") {
+    if (busyRef.current) return
+    busyRef.current = true
     setChanging(true)
     setError("")
     try {
@@ -183,11 +205,14 @@ export default function OrderConfirmation({
     } catch {
       setError("No pudimos actualizar el método de pago.")
     } finally {
+      busyRef.current = false
       setChanging(false)
     }
   }
 
   async function retryMp() {
+    if (busyRef.current) return
+    busyRef.current = true
     setChanging(true)
     setError("")
     try {
@@ -205,15 +230,22 @@ export default function OrderConfirmation({
     } catch {
       setError("No pudimos conectar con MercadoPago. Probá de nuevo o elegí otro método.")
     } finally {
+      busyRef.current = false
       setChanging(false)
     }
   }
 
   if (loading) {
     return (
-      <div className="mx-auto w-full max-w-md p-4">
+      <div className="mx-auto flex w-full max-w-md flex-col gap-4 p-4">
+        <p
+          role="status"
+          className="text-base text-[var(--color-muted-public,#78716C)]"
+        >
+          Cargando tu pedido…
+        </p>
         <div className="h-40 animate-pulse rounded-2xl bg-[#F5F5F4]" />
-        <div className="mt-4 h-8 w-1/2 animate-pulse rounded bg-[#F5F5F4]" />
+        <div className="h-8 w-1/2 animate-pulse rounded bg-[#F5F5F4]" />
       </div>
     )
   }
@@ -242,6 +274,7 @@ export default function OrderConfirmation({
   const needsReceipt = pm === "transfer" && (ps === "pending_receipt" || ps === "rejected")
   const mpWaiting = pm === "mercadopago" && ps === "pending"
   const mpRejected = pm === "mercadopago" && ps === "rejected"
+  const mpSlowHint = mpTimeoutHint(mpSince != null ? now - mpSince : 0)
 
   const codeDigits = (order.customer.code || "····").slice(0, 4).split("")
 
@@ -345,7 +378,7 @@ export default function OrderConfirmation({
 
           <button
             type="button"
-            disabled={!file || uploading}
+            disabled={!file || uploading || changing}
             onClick={() => void sendReceipt()}
             className="min-h-[56px] w-full rounded-2xl bg-[var(--color-primary,#F97316)] px-4 text-base font-bold text-white disabled:opacity-50"
           >
@@ -379,6 +412,20 @@ export default function OrderConfirmation({
               <p className="text-sm text-amber-800">
                 Suele tardar unos segundos. Esta página se actualiza sola.
               </p>
+              {mpSlowHint ? (
+                <div className="flex w-full flex-col gap-2">
+                  <p role="status" className="text-base font-semibold text-amber-900">
+                    {mpSlowHint}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setReload((n) => n + 1)}
+                    className="min-h-[48px] w-full rounded-xl bg-white px-4 text-base font-semibold text-[var(--color-primary,#F97316)]"
+                  >
+                    Revisar estado
+                  </button>
+                </div>
+              ) : null}
             </div>
           ) : (
             <p className="rounded-2xl bg-amber-50 px-4 py-3 text-base font-medium text-amber-800">
@@ -387,7 +434,7 @@ export default function OrderConfirmation({
           )}
           <button
             type="button"
-            disabled={changing}
+            disabled={changing || uploading}
             onClick={() => void retryMp()}
             className="min-h-[56px] w-full rounded-2xl bg-[var(--color-primary,#F97316)] px-4 text-base font-bold text-white disabled:opacity-60"
           >
@@ -395,7 +442,7 @@ export default function OrderConfirmation({
           </button>
           <button
             type="button"
-            disabled={changing}
+            disabled={changing || uploading}
             onClick={() => void changeMethod("transfer")}
             className="min-h-[56px] w-full rounded-2xl border-2 border-[var(--color-primary,#F97316)] bg-white px-4 text-base font-bold text-[var(--color-primary,#F97316)] disabled:opacity-60"
           >
@@ -403,7 +450,7 @@ export default function OrderConfirmation({
           </button>
           <button
             type="button"
-            disabled={changing}
+            disabled={changing || uploading}
             onClick={() => void changeMethod("at_pickup")}
             className="min-h-[56px] w-full rounded-2xl border border-[#E7E5E4] bg-white px-4 text-base font-bold text-[var(--color-ink-public,#1C1917)] disabled:opacity-60"
           >
