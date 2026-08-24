@@ -19,13 +19,14 @@ const taggedSql = sql as unknown as SqlTagged
 const MP_API = "https://api.mercadopago.com"
 
 async function mpCreatePreference(
-  payload: MpPreferencePayload
+  payload: MpPreferencePayload,
+  accessToken: string
 ): Promise<MpPreferenceResult> {
   const res = await fetch(`${MP_API}/checkout/preferences`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}`,
+      Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify(payload),
   })
@@ -34,9 +35,12 @@ async function mpCreatePreference(
   return { id: data.id, init_point: data.init_point }
 }
 
-async function mpGetPayment(paymentId: string): Promise<MpPaymentInfo | null> {
+async function mpGetPayment(
+  paymentId: string,
+  accessToken: string
+): Promise<MpPaymentInfo | null> {
   const res = await fetch(`${MP_API}/v1/payments/${paymentId}`, {
-    headers: { Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}` },
+    headers: { Authorization: `Bearer ${accessToken}` },
   })
   if (!res.ok) return null
   const data = (await res.json()) as {
@@ -51,8 +55,7 @@ async function mpGetPayment(paymentId: string): Promise<MpPaymentInfo | null> {
   }
 }
 
-function mpValidateSignature(rawBody: string, header: string | null): boolean {
-  const secret = process.env.MP_WEBHOOK_SECRET
+function mpValidateSignature(rawBody: string, header: string | null, secret: string): boolean {
   if (!secret || !header) return false
   const parts: Record<string, string> = {}
   for (const pair of header.split(",")) {

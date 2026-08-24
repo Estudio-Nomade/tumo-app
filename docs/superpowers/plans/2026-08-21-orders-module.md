@@ -207,13 +207,26 @@
 
 **Nota — test flaky preexistente:** `tests/orders-catalog.test.ts` ("cerrado por horario") dependía del reloj real y fallaba solo si se corría dentro de la ventana abierta del fixture (ej. lunes 19:00–01:00). Se inyectó `now` en `getCatalog` (`CatalogDeps.now`, mismo patrón que `createOrder`) y el test pasa un `now` fijo (domingo 15:00). Test determinístico.
 
-**Deuda técnica restante (comentario, post-MVP — no bloquea producción):**
-- Realtime: una sola cuenta MP por env vars (`MP_ACCESS_TOKEN`/`MP_WEBHOOK_SECRET`); credenciales por negocio = futuro (§8.2).
+**Deuda técnica restante (post-MVP):**
+- ~~Multi-cuenta MP (credenciales por negocio)~~ ✅ **Resuelta (2026-08-24)** — ver "Deuda 1" abajo.
 - Notificaciones automáticas al cambiar estado (WhatsApp/email): siguen manuales vía `wa.me` (§8.7).
 - Editor de horarios en UI: hoy seed/SQL (§8.3). `orders_settings.hours` podría migrar a tabla shell `business_hours` compartida (§8.4).
 - ABM completo de productos (precios/fotos/variantes): hoy seed + toggle disponibilidad (§8.10).
 - Sonido/badge al llegar pedido nuevo: decisión abierta §8.15, default no (autoplay + elderly-UX). El toast de Story 13 cubre la visibilidad sin audio.
 - Cron de limpieza de pedidos MP abandonados y reembolsos integrados: manuales (§8.8, §8.9).
+
+---
+
+## Deuda 1 — Multi-cuenta MercadoPago ✅ Completada (2026-08-24)
+
+> Implementada con TDD (Red → Green). Tests: `modules/orders/api/mercadopago.test.ts` (ampliado a 15, con token por negocio + notificación por path), `tests/orders-migration.test.ts` (005). Plan: `.hermes/plans/orders-module-debt-1-mp-multiaccount.md`.
+
+- Migración `005_orders_mp_credentials.sql`: `orders_settings` suma `mp_access_token` y `mp_webhook_secret` (credenciales por negocio, §8.2).
+- `createPreference`: lee `mp_enabled` + `mp_access_token` del negocio; sin token/deshabilitado → `409 MP_UNAVAILABLE`. El `notification_url` lleva el `business_id` en el path (`/webhook/<businessId>`, robusto vs query params que MP reescribe).
+- `handleWebhook`: recibe `businessId`, valida la firma con el `mp_webhook_secret` de ese negocio y hace GET del pago con su `mp_access_token`.
+- `MercadoPagoDeps`: `createPreference(payload, accessToken)`, `getPayment(paymentId, accessToken)`, `validateSignature(rawBody, header, secret)` — clientes reales en `default-deps.ts` usan el token/secret inyectado (sin env vars).
+- Ruta webhook dinámica `app/api/orders/mercadopago/webhook/[businessId]/route.ts`. `.env.example` ya no lista `MP_ACCESS_TOKEN`/`MP_WEBHOOK_SECRET`.
+- Nota ops: el seed deja `mp_enabled=true` sin token; en producción se setea `mp_access_token`/`mp_webhook_secret` por negocio vía SQL/panel futuro.
 
 ---
 
