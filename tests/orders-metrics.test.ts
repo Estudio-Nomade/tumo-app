@@ -72,6 +72,19 @@ describe("getMetrics", () => {
       receiptsToReview: 2,
     })
   })
+
+  test("receiptsToReview filtra por el día actual (consistente con el panel)", async () => {
+    const { sql, calls } = makeSql({ review: 2 })
+    const deps = makeDeps({ sql: sql as unknown as MetricsDeps["sql"] })
+
+    const r = await getMetrics(deps, { businessId: "biz-1" })
+
+    expect(r.status).toBe(200)
+    expect(r.body).toMatchObject({ receiptsToReview: 2 })
+    const reviewCall = calls.find((c) => c.q.includes("pending_verification"))
+    expect(reviewCall).toBeDefined()
+    expect(reviewCall!.q).toContain("date_trunc('day', now())")
+  })
 })
 
 describe("getRecentActivity", () => {

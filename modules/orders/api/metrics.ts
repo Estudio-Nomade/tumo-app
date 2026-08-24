@@ -41,7 +41,9 @@ export async function getMetrics(
   const [review] = (await deps.sql`
     SELECT COUNT(*)::int AS count
     FROM orders
-    WHERE business_id = ${businessId} AND payment_status = 'pending_verification'
+    WHERE business_id = ${businessId}
+      AND payment_status = 'pending_verification'
+      AND created_at >= date_trunc('day', now())
   `) as CountRow[]
 
   return {
