@@ -46,4 +46,19 @@ describe("OrderConfirmation (source contracts)", () => {
     expect(src).toContain("/receipt")
     expect(src).toContain("paymentMethod")
   })
+
+  test("MP pending: spinner de espera con texto y tiempo estimado", () => {
+    expect(src).toMatch(/animate-spin/)
+    expect(src).toMatch(/Estamos esperando la confirmación de tu pago en MercadoPago/)
+    expect(src).toMatch(/unos segundos/)
+  })
+
+  test("MP: polling de respaldo cada 10s mientras espera", () => {
+    expect(src).toMatch(/setInterval/)
+    expect(src).toContain("shouldTrackPayment")
+  })
+
+  test("pago confirmado → banner verde ✓", () => {
+    expect(src).toMatch(/Pago confirmado/)
+  })
 })

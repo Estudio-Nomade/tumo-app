@@ -39,7 +39,17 @@ export async function POST(req: NextRequest) {
       : [],
   })
 
-  return NextResponse.json(result.body, { status: result.status })
+  const res = NextResponse.json(result.body, { status: result.status })
+  if (result.status === 200 && typeof result.body.customerId === "string") {
+    res.cookies.set("client_id", result.body.customerId, {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 365 * 24 * 60 * 60,
+      path: "/",
+    })
+  }
+  return res
 }
 
 export async function GET(req: NextRequest) {

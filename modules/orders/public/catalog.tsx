@@ -13,8 +13,10 @@ import {
   type CartItem,
 } from "@/modules/orders/lib/cart"
 import { formatCents } from "@/modules/orders/lib/types"
+import { pendingOrderBanner } from "@/modules/orders/lib/pending-order"
 import type {
   CatalogCategory,
+  CatalogPendingOrder,
   CatalogProduct,
   CatalogSettings,
 } from "@/modules/orders/api/catalog"
@@ -23,6 +25,7 @@ type CatalogData = {
   categories: CatalogCategory[]
   products: CatalogProduct[]
   settings: CatalogSettings
+  pendingOrder: CatalogPendingOrder | null
 }
 
 export default function Catalog({ slug }: { slug: string }) {
@@ -74,6 +77,10 @@ export default function Catalog({ slug }: { slug: string }) {
   const open = data?.settings.isOpen ?? false
   const paused = data?.settings.isPaused ?? false
   const nextOpening = data?.settings.nextOpening ?? null
+  const pendingOrder = data?.pendingOrder ?? null
+  const pendingBannerMessage = pendingOrder
+    ? pendingOrderBanner(pendingOrder.paymentMethod, pendingOrder.paymentStatus)
+    : null
 
   function handleAdd(product: CatalogProduct) {
     if (!open || paused || !product.isAvailable) return
@@ -113,6 +120,17 @@ export default function Catalog({ slug }: { slug: string }) {
           Elegí lo que vas a pedir
         </p>
       </header>
+
+      {pendingOrder && pendingBannerMessage ? (
+        <Link
+          href={`/${slug}/orders/${pendingOrder.id}`}
+          role="status"
+          className="mx-4 my-2 flex min-h-[56px] items-center justify-between gap-3 rounded-2xl bg-[var(--color-primary,#F97316)] px-4 py-3 text-base font-semibold text-white"
+        >
+          <span>{pendingBannerMessage}</span>
+          <span aria-hidden="true">→</span>
+        </Link>
+      ) : null}
 
       {paused ? (
         <div

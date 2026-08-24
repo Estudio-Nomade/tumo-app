@@ -50,4 +50,10 @@ describe("Catalog (elderly-UX source contracts)", () => {
   test("navega a detalle cuando hay variantes", () => {
     expect(src).toContain("producto/")
   })
+
+  test("banner de pedido pendiente con link a la confirmación", () => {
+    expect(src).toContain("pendingOrder")
+    expect(src).toContain("pendingOrderBanner")
+    expect(src).toMatch(/orders\//)
+  })
 })

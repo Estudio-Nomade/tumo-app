@@ -29,6 +29,7 @@ function makeSql(overrides: {
   groups?: unknown[]
   options?: unknown[]
   settings?: unknown[]
+  pendingOrders?: unknown[]
 }) {
   return mock((strings: TemplateStringsArray) => {
     const q = strings.join(" ")
@@ -37,6 +38,7 @@ function makeSql(overrides: {
     if (q.includes("product_variant_groups")) return Promise.resolve(overrides.groups ?? [])
     if (q.includes("FROM products")) return Promise.resolve(overrides.products ?? [])
     if (q.includes("orders_settings")) return Promise.resolve(overrides.settings ?? [])
+    if (q.includes("FROM orders")) return Promise.resolve(overrides.pendingOrders ?? [])
     return Promise.resolve([])
   })
 }
@@ -168,5 +170,48 @@ describe("getCatalog", () => {
     const body = r.body as { products: { id: string; isAvailable: boolean }[] }
     expect(body.products).toHaveLength(1)
     expect(body.products[0].isAvailable).toBe(false)
+  })
+
+  test("sin clientId → pendingOrder null", async () => {
+    const sql = makeSql({ categories: [], products: [], settings: [] })
+    const deps = makeDeps({ sql: sql as unknown as CatalogDeps["sql"] })
+    const r = await getCatalog(deps, { slug: "carri" })
+    const body = r.body as { pendingOrder: unknown }
+    expect(body.pendingOrder).toBeNull()
+  })
+
+  test("clientId con pedido esperando comprobante → pendingOrder con id y método", async () => {
+    const sql = makeSql({
+      categories: [],
+      products: [],
+      settings: [],
+      pendingOrders: [
+        { id: "ord-1", order_number: 17, payment_method: "transfer", payment_status: "pending_verification" },
+      ],
+    })
+    const deps = makeDeps({ sql: sql as unknown as CatalogDeps["sql"] })
+    const r = await getCatalog(deps, { slug: "carri", clientId: "cust-1" })
+    const body = r.body as {
+      pendingOrder: {
+        id: string
+        orderNumber: number
+        paymentMethod: string
+        paymentStatus: string
+      } | null
+    }
+    expect(body.pendingOrder).toEqual({
+      id: "ord-1",
+      orderNumber: 17,
+      paymentMethod: "transfer",
+      paymentStatus: "pending_verification",
+    })
+  })
+
+  test("clientId sin pedido pendiente → pendingOrder null", async () => {
+    const sql = makeSql({ categories: [], products: [], settings: [], pendingOrders: [] })
+    const deps = makeDeps({ sql: sql as unknown as CatalogDeps["sql"] })
+    const r = await getCatalog(deps, { slug: "carri", clientId: "cust-1" })
+    const body = r.body as { pendingOrder: unknown }
+    expect(body.pendingOrder).toBeNull()
   })
 })
