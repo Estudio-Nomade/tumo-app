@@ -20,6 +20,7 @@ export type OrdersDeps = {
   getBusiness: (slug: string) => Promise<Business | null>
   generateCode: () => string
   now?: () => Date
+  notify?: (orderId: string, newStatus: string) => Promise<void>
 }
 
 export type OrderItemInput = {
@@ -679,6 +680,19 @@ const NEXT_STATUS: Record<string, string> = {
   ready: "completed",
 }
 
+/** Notifica de forma best-effort: un fallo no revierte el cambio de estado. */
+async function safeNotify(
+  deps: OrdersDeps,
+  orderId: string,
+  newStatus: string
+): Promise<void> {
+  try {
+    await deps.notify?.(orderId, newStatus)
+  } catch {
+    // ignorar: la notificación es accesoria al flujo del pedido.
+  }
+}
+
 export async function transitionStatus(
   deps: OrdersDeps,
   input: { orderId: string; newStatus: string }
@@ -710,6 +724,7 @@ export async function transitionStatus(
   await deps.sql`
     UPDATE orders SET status = ${newStatus}, updated_at = now() WHERE id = ${orderId}
   `
+  await safeNotify(deps, orderId, newStatus)
   return { status: 200, body: { status: newStatus } }
 }
 
@@ -740,6 +755,7 @@ export async function verifyPayment(
     await deps.sql`
       UPDATE orders SET payment_status = ${rejected}, updated_at = now() WHERE id = ${orderId}
     `
+    await safeNotify(deps, orderId, "rejected")
     return { status: 200, body: { paymentStatus: "rejected", status: order.status } }
   }
 
@@ -749,6 +765,9 @@ export async function verifyPayment(
     UPDATE orders SET payment_status = ${paid}, status = ${newStatus}, updated_at = now()
     WHERE id = ${orderId}
   `
+  if (order.status === "pending") {
+    await safeNotify(deps, orderId, "confirmed")
+  }
   return { status: 200, body: { paymentStatus: "paid", status: newStatus } }
 }
 

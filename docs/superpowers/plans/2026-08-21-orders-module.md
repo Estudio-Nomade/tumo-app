@@ -209,7 +209,7 @@
 
 **Deuda técnica restante (post-MVP):**
 - ~~Multi-cuenta MP (credenciales por negocio)~~ ✅ **Resuelta (2026-08-24)** — ver "Deuda 1" abajo.
-- Notificaciones automáticas al cambiar estado (WhatsApp/email): siguen manuales vía `wa.me` (§8.7).
+- ~~Notificaciones automáticas al cambiar estado (WhatsApp)~~ ✅ **Resuelta (2026-08-24)** — ver "Deuda 2" abajo. (Email sigue pendiente.)
 - Editor de horarios en UI: hoy seed/SQL (§8.3). `orders_settings.hours` podría migrar a tabla shell `business_hours` compartida (§8.4).
 - ABM completo de productos (precios/fotos/variantes): hoy seed + toggle disponibilidad (§8.10).
 - Sonido/badge al llegar pedido nuevo: decisión abierta §8.15, default no (autoplay + elderly-UX). El toast de Story 13 cubre la visibilidad sin audio.
@@ -227,6 +227,18 @@
 - `MercadoPagoDeps`: `createPreference(payload, accessToken)`, `getPayment(paymentId, accessToken)`, `validateSignature(rawBody, header, secret)` — clientes reales en `default-deps.ts` usan el token/secret inyectado (sin env vars).
 - Ruta webhook dinámica `app/api/orders/mercadopago/webhook/[businessId]/route.ts`. `.env.example` ya no lista `MP_ACCESS_TOKEN`/`MP_WEBHOOK_SECRET`.
 - Nota ops: el seed deja `mp_enabled=true` sin token; en producción se setea `mp_access_token`/`mp_webhook_secret` por negocio vía SQL/panel futuro.
+
+---
+
+## Deuda 2 — Notificaciones automáticas al cambiar estado ✅ Completada (2026-08-24)
+
+> Implementada con TDD (Red → Green). Tests: `tests/orders-notifications.test.ts` (12, nuevo) + `tests/orders-panel.test.ts` (ampliado, notify dep). Plan: `.hermes/plans/orders-module-debt-2-notifications.md`.
+
+- `modules/orders/api/notifications.ts` (nuevo): `OrderStatusEvent` (`confirmed|preparing|ready|completed|rejected`), `eventForStatus(status)`, `orderStatusMessage(event, orderNumber, businessName)` y `notifyOrderStatusChange(deps, { orderId, newStatus })` — best-effort, dep-inyectado (`{ sql, sendWhatsApp }`).
+- `OrdersDeps` gana `notify?: (orderId, newStatus) => Promise<void>`; `transitionStatus` notifica el nuevo estado, `verifyPayment` notifica `"rejected"` al rechazar y `"confirmed"` al aprobar desde `pending` (no notifica en `approve` sobre `ready`, que no cambia estado).
+- `default-deps.ts`: `notificationsDeps` con `sendWhatsApp` **no-op** (TODO de proveedor), cableado a `ordersDeps.notify`.
+- Mensajes en lenguaje llano con `#N` y nombre del negocio; teléfono en E.164 (`toE164`).
+- Deuda futura: cablear proveedor real de WhatsApp (Twilio/UltraMsg) y agregar email como segundo transport (mismo patrón `NotifyDeps`).
 
 ---
 
