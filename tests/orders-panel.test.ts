@@ -201,3 +201,71 @@ describe("cancelOrder", () => {
     expect(r.status).toBe(404)
   })
 })
+
+describe("notificaciones de estado (notify dep)", () => {
+  function makeNotifyDeps() {
+    const calls: { orderId: string; newStatus: string }[] = []
+    const notify = mock(async (orderId: string, newStatus: string) => {
+      calls.push({ orderId, newStatus })
+    })
+    return { notify, calls }
+  }
+
+  test("transitionStatus notifica el nuevo estado", async () => {
+    const { sql } = makeSql()
+    const { notify, calls } = makeNotifyDeps()
+    const deps = makeDeps({
+      sql: sql as unknown as OrdersDeps["sql"],
+      notify: notify as never,
+    })
+    const r = await transitionStatus(deps, { orderId: "ord-1", newStatus: "confirmed" })
+    expect(r.status).toBe(200)
+    expect(calls).toEqual([{ orderId: "ord-1", newStatus: "confirmed" }])
+  })
+
+  test("transitionStatus con salto inválido no notifica", async () => {
+    const { notify, calls } = makeNotifyDeps()
+    const deps = makeDeps({ notify: notify as never })
+    const r = await transitionStatus(deps, { orderId: "ord-1", newStatus: "preparing" })
+    expect(r.status).toBe(400)
+    expect(calls).toHaveLength(0)
+  })
+
+  test("verifyPayment approve desde pending notifica 'confirmed'", async () => {
+    const { sql } = makeSql()
+    const { notify, calls } = makeNotifyDeps()
+    const deps = makeDeps({ sql: sql as unknown as OrdersDeps["sql"], notify: notify as never })
+    await verifyPayment(deps, { orderId: "ord-1", action: "approve" })
+    expect(calls).toEqual([{ orderId: "ord-1", newStatus: "confirmed" }])
+  })
+
+  test("verifyPayment approve sobre ready no notifica (sin cambio de estado)", async () => {
+    const { sql } = makeSql({ order: [{ id: "ord-1", status: "ready", payment_status: "unpaid" }] })
+    const { notify, calls } = makeNotifyDeps()
+    const deps = makeDeps({ sql: sql as unknown as OrdersDeps["sql"], notify: notify as never })
+    await verifyPayment(deps, { orderId: "ord-1", action: "approve" })
+    expect(calls).toHaveLength(0)
+  })
+
+  test("verifyPayment reject notifica 'rejected'", async () => {
+    const { sql } = makeSql({
+      order: [{ id: "ord-1", status: "pending", payment_status: "pending_verification" }],
+    })
+    const { notify, calls } = makeNotifyDeps()
+    const deps = makeDeps({ sql: sql as unknown as OrdersDeps["sql"], notify: notify as never })
+    await verifyPayment(deps, { orderId: "ord-1", action: "reject" })
+    expect(calls).toEqual([{ orderId: "ord-1", newStatus: "rejected" }])
+  })
+
+  test("notify que lanza no rompe el cambio de estado", async () => {
+    const { sql } = makeSql()
+    const deps = makeDeps({
+      sql: sql as unknown as OrdersDeps["sql"],
+      notify: mock(async () => {
+        throw new Error("boom")
+      }) as never,
+    })
+    const r = await transitionStatus(deps, { orderId: "ord-1", newStatus: "confirmed" })
+    expect(r.status).toBe(200)
+  })
+})
