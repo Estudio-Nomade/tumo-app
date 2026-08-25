@@ -8,8 +8,11 @@ export function pendingOrderBanner(
   method: PaymentMethod,
   status: PaymentStatus
 ): string | null {
-  if (status === "pending_verification") {
+  if (method === "transfer" && (status === "pending_receipt" || status === "pending_verification")) {
     return "Tenés un pedido esperando la foto del comprobante."
+  }
+  if (method === "transfer" && status === "rejected") {
+    return "El comprobante no se pudo verificar. Tocá para subir otra foto."
   }
   if (method === "mercadopago" && status === "pending") {
     return "Estamos esperando la confirmación de tu pago en MercadoPago."

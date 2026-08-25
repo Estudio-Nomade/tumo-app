@@ -214,6 +214,20 @@
 - ~~ABM completo de productos~~ ✅ **Resuelta (2026-08-24)** — ver "Deuda 4" abajo.
 - Sonido/badge al llegar pedido nuevo: decisión abierta §8.15, default no (autoplay + elderly-UX). El toast de Story 13 cubre la visibilidad sin audio.
 - Cron de limpieza de pedidos MP abandonados y reembolsos integrados: manuales (§8.8, §8.9).
+- Login/registro de clientes en Pedidos: **fuera de spec** (identidad en el paso 3 + cookie `client_id`). Pulido 2026-08-24: prefill de nombre/WhatsApp del último pedido (`tumo_guest_<slug>`). Authyo queda para empleados/loyalty.
+
+---
+
+## Pulido UX (QA 2026-08-24)
+
+Problemas hallados e implementados:
+- Banner de pedido pendiente no cubría `pending_receipt` ni `rejected` → el cliente no volvía a su pedido.
+- El carrito no se vaciaba al confirmar → “Ver mi pedido” seguía con ítems viejos.
+- Wizard sin “Volver” (spec: Volver = paso anterior o menú).
+- Confirmación solo decía “Volver al menú” (poco claro).
+- Atajos Horarios/Productos del dueño eran links chicos.
+
+Pendiente (prioridad siguiente): fotos de producto en el ABM (hoy URL), cablear WhatsApp real, §8.4 horarios compartidos.
 
 ---
 

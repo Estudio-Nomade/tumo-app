@@ -169,7 +169,7 @@ export async function getCatalog(
           AND customer_id = ${clientId}
           AND status <> 'cancelled'
           AND (
-            payment_status = 'pending_verification'
+            payment_status IN ('pending_verification', 'pending_receipt', 'rejected')
             OR (payment_method = 'mercadopago' AND payment_status = 'pending')
           )
         ORDER BY created_at DESC

@@ -502,9 +502,9 @@ export default function OrderConfirmation({
       <button
         type="button"
         onClick={() => router.push(`/${slug}/orders`)}
-        className="min-h-[56px] w-full rounded-2xl border-2 border-[var(--color-primary,#F97316)] bg-white px-4 text-base font-bold text-[var(--color-primary,#F97316)]"
+        className="min-h-[56px] w-full rounded-2xl bg-[var(--color-primary,#F97316)] px-4 text-base font-bold text-white"
       >
-        Volver al menú
+        Hacer otro pedido
       </button>
     </div>
   )

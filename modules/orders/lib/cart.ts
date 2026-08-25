@@ -116,3 +116,37 @@ export function saveCart(
   if (!s) return
   s.setItem(cartStorageKey(slug), JSON.stringify(items))
 }
+
+export function clearCart(slug: string, storage?: CartStorage): void {
+  saveCart(slug, [], storage)
+}
+
+export type LastGuest = { name: string; phone: string }
+
+export function lastGuestKey(slug: string): string {
+  return `tumo_guest_${slug}`
+}
+
+export function loadLastGuest(slug: string, storage?: CartStorage): LastGuest | null {
+  const s = resolveStorage(storage)
+  if (!s) return null
+  const raw = s.getItem(lastGuestKey(slug))
+  if (!raw) return null
+  try {
+    const parsed = JSON.parse(raw) as Partial<LastGuest>
+    if (!parsed.name || !parsed.phone) return null
+    return { name: String(parsed.name), phone: String(parsed.phone) }
+  } catch {
+    return null
+  }
+}
+
+export function saveLastGuest(
+  slug: string,
+  guest: LastGuest,
+  storage?: CartStorage
+): void {
+  const s = resolveStorage(storage)
+  if (!s) return
+  s.setItem(lastGuestKey(slug), JSON.stringify(guest))
+}

@@ -5,9 +5,12 @@ import {
   cartSummary,
   clampQuantity,
   itemUnitPriceCents,
+  clearCart,
   loadCart,
+  loadLastGuest,
   removeItem,
   saveCart,
+  saveLastGuest,
   setQuantity,
   type CartItem,
 } from "@/modules/orders/lib/cart"
@@ -137,5 +140,34 @@ describe("loadCart / saveCart", () => {
 
   test("no-string storage → vacío sin explotar", () => {
     expect(loadCart("carri", store)).toEqual([])
+  })
+})
+
+describe("clearCart", () => {
+  test("deja el carrito vacío en storage", () => {
+    const mem = new Map<string, string>()
+    const storage = {
+      getItem: (k: string) => mem.get(k) ?? null,
+      setItem: (k: string, v: string) => void mem.set(k, v),
+    }
+    saveCart("carri", [item({ quantity: 2 })], storage)
+    clearCart("carri", storage)
+    expect(loadCart("carri", storage)).toEqual([])
+  })
+})
+
+describe("lastGuest", () => {
+  test("guarda y recupera nombre y WhatsApp", () => {
+    const mem = new Map<string, string>()
+    const storage = {
+      getItem: (k: string) => mem.get(k) ?? null,
+      setItem: (k: string, v: string) => void mem.set(k, v),
+    }
+    saveLastGuest("carri", { name: "María", phone: "5491111111111" }, storage)
+    expect(loadLastGuest("carri", storage)).toEqual({
+      name: "María",
+      phone: "5491111111111",
+    })
+    expect(loadLastGuest("otro", storage)).toBeNull()
   })
 })

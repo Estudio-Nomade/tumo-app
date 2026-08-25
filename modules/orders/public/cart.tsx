@@ -6,9 +6,12 @@ import { useBusiness } from "@/shell/context/business"
 import {
   cartSummary,
   itemUnitPriceCents,
+  clearCart,
   loadCart,
+  loadLastGuest,
   removeItem,
   saveCart,
+  saveLastGuest,
   setQuantity,
   type CartItem,
 } from "@/modules/orders/lib/cart"
@@ -31,8 +34,9 @@ export default function CartWizard({ slug }: { slug: string }) {
   const [cart, setCart] = useState<CartItem[]>(() => loadCart(slug))
   const [fulfillment, setFulfillment] = useState<Fulfillment>("pickup")
   const [deliveryAddress, setDeliveryAddress] = useState("")
-  const [name, setName] = useState("")
-  const [phone, setPhone] = useState("")
+  const [name, setName] = useState(() => loadLastGuest(slug)?.name ?? "")
+  const [phone, setPhone] = useState(() => loadLastGuest(slug)?.phone ?? "")
+  const guestPrefill = Boolean(loadLastGuest(slug))
   const [notes, setNotes] = useState("")
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("at_pickup")
   const [submitting, setSubmitting] = useState(false)
@@ -134,6 +138,9 @@ export default function CartWizard({ slug }: { slug: string }) {
         return
       }
       if (data.id) {
+        saveLastGuest(slug, { name: name.trim(), phone })
+        clearCart(slug)
+        setCart([])
         router.push(`/${slug}/orders/${data.id}`)
       }
     } catch {
@@ -202,6 +209,16 @@ export default function CartWizard({ slug }: { slug: string }) {
   return (
     <div className="mx-auto flex w-full max-w-md flex-col pb-28">
       <header className="px-4 pt-3 pb-2">
+        <button
+          type="button"
+          onClick={() => {
+            if (step === 1) router.push(`/${slug}/orders`)
+            else setStep((s) => (s === 3 ? 2 : 1))
+          }}
+          className="min-h-[48px] text-left text-base font-semibold text-[var(--color-primary,#F97316)]"
+        >
+          {step === 1 ? "← Menú" : "← Atrás"}
+        </button>
         <p className="text-sm font-semibold text-[var(--color-primary,#F97316)]">
           Paso {stepLabel.n} de 3
         </p>
@@ -305,6 +322,12 @@ export default function CartWizard({ slug }: { slug: string }) {
                 className="min-h-[52px] rounded-2xl border border-[#E7E5E4] px-4 text-base outline-none focus:border-[var(--color-primary,#F97316)]"
               />
             </label>
+
+            {guestPrefill ? (
+              <p className="text-sm text-[var(--color-muted-public,#78716C)]">
+                Completamos tu nombre y WhatsApp del pedido anterior. Cambialos si hace falta.
+              </p>
+            ) : null}
 
             <label className="flex flex-col gap-1.5">
               <span className="text-base font-semibold text-[var(--color-ink-public,#1C1917)]">

@@ -44,6 +44,12 @@ describe("OrdersPanel (source contracts)", () => {
     expect(panel).toContain("dashboard/orders")
   })
 
+  test("atajos grandes a Horarios y Productos", () => {
+    expect(panel).toContain("Horarios")
+    expect(panel).toContain("Productos")
+    expect(panel).toMatch(/Horarios de atención|Productos del menú/)
+  })
+
   test("realtime: toast de nuevo pedido (INSERT) accesible", () => {
     expect(panel).toContain("newOrderToastMessage")
     expect(panel).toContain("isNewOrder")
