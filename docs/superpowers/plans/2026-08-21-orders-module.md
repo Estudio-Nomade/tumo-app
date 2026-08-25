@@ -210,7 +210,7 @@
 **Deuda técnica restante (post-MVP):**
 - ~~Multi-cuenta MP (credenciales por negocio)~~ ✅ **Resuelta (2026-08-24)** — ver "Deuda 1" abajo.
 - ~~Notificaciones automáticas al cambiar estado (WhatsApp)~~ ✅ **Resuelta (2026-08-24)** — ver "Deuda 2" abajo. (Email sigue pendiente.)
-- Editor de horarios en UI: hoy seed/SQL (§8.3). `orders_settings.hours` podría migrar a tabla shell `business_hours` compartida (§8.4).
+- ~~Editor de horarios en UI~~ ✅ **Resuelta (2026-08-24)** — ver "Deuda 3" abajo. (Migrar a `business_hours` del shell sigue pendiente, §8.4.)
 - ABM completo de productos (precios/fotos/variantes): hoy seed + toggle disponibilidad (§8.10).
 - Sonido/badge al llegar pedido nuevo: decisión abierta §8.15, default no (autoplay + elderly-UX). El toast de Story 13 cubre la visibilidad sin audio.
 - Cron de limpieza de pedidos MP abandonados y reembolsos integrados: manuales (§8.8, §8.9).
@@ -239,6 +239,19 @@
 - `default-deps.ts`: `notificationsDeps` con `sendWhatsApp` **no-op** (TODO de proveedor), cableado a `ordersDeps.notify`.
 - Mensajes en lenguaje llano con `#N` y nombre del negocio; teléfono en E.164 (`toE164`).
 - Deuda futura: cablear proveedor real de WhatsApp (Twilio/UltraMsg) y agregar email como segundo transport (mismo patrón `NotifyDeps`).
+
+---
+
+## Deuda 3 — Editor de horarios en UI ✅ Completada (2026-08-24)
+
+> Implementada con TDD (Red → Green). Tests: `tests/orders-hours.test.ts` (ampliado: `DAY_NAMES`, `isValidTime`, `validateDayHours`, `sanitizeHours`), `tests/orders-settings.test.ts` (nuevo, 6), `tests/ui/orders-hours-editor.test.tsx` (nuevo, source-contract). Plan: `.hermes/plans/orders-module-debt-3-hours-editor.md`.
+
+- `hours.ts`: exporta `DAY_NAMES`; suma `isValidTime`, `validateDayHours` y `sanitizeHours` (closed ok; open≠close; cruce de medianoche permitido).
+- `modules/orders/api/settings.ts` (nuevo): `getSettings` + `updateHours` (valida con `sanitizeHours`, persiste JSONB).
+- Ruta `GET`/`PATCH /api/orders/settings/hours` (auth empleado).
+- `hours-editor.tsx`: 7 días, switch "Cerrado todo el día" (≥48px), `<input type="time">` (≥52px), botón "Guardar horarios" ≥56px; `updateHours` dep-inyectado (default = fetch).
+- Página `/dashboard/orders/horarios` + link "Horarios →" en el panel.
+- Deuda futura (§8.4): migrar `orders_settings.hours` a tabla shell `business_hours` compartida.
 
 ---
 

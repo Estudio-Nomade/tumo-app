@@ -14,7 +14,7 @@ export type OpeningInfo = {
   time: string
 }
 
-const DAY_NAMES = [
+export const DAY_NAMES = [
   "domingo",
   "lunes",
   "martes",
@@ -95,4 +95,61 @@ export function nextOpening(
   }
 
   return null
+}
+
+/** ¿Es una hora "HH:MM" válida (2 dígitos, 00–23 / 00–59)? */
+export function isValidTime(value: unknown): value is string {
+  if (typeof value !== "string") return false
+  return /^\d{2}:\d{2}$/.test(value) && parseHm(value) != null
+}
+
+/**
+ * Valida un día del horario. Devuelve null si es válido, o un mensaje llano.
+ * Un día cerrado es válido; abierto requiere open/close válidos y distintos.
+ */
+export function validateDayHours(day: DayHours | undefined): string | null {
+  if (!day || day.closed) return null
+  if (!isValidTime(day.open) || !isValidTime(day.close)) {
+    return "Elegí las horas de apertura y cierre."
+  }
+  if (parseHm(day.open) === parseHm(day.close)) {
+    return "La apertura y el cierre no pueden ser iguales."
+  }
+  return null
+}
+
+/**
+ * Normaliza y valida un `OrdersHours` completo (claves "0".."6").
+ * Días ausentes se omiten (se interpretan como cerrados en isOpenNow).
+ * Soporta cruce de medianoche (close < open).
+ */
+export function sanitizeHours(
+  input: unknown
+): { hours: OrdersHours } | { error: string } {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
+    return { error: "Horario inválido." }
+  }
+  const obj = input as Record<string, unknown>
+  const hours: OrdersHours = {}
+  for (let d = 0; d < 7; d++) {
+    const key = String(d)
+    const raw = obj[key]
+    if (raw === undefined || raw === null) continue
+    if (typeof raw !== "object" || Array.isArray(raw)) {
+      return { error: "Horario inválido." }
+    }
+    const day = raw as DayHours
+    if (day.closed) {
+      hours[key] = { closed: true }
+      continue
+    }
+    const err = validateDayHours(day)
+    if (err) return { error: err }
+    hours[key] = {
+      open: day.open as string,
+      close: day.close as string,
+      closed: false,
+    }
+  }
+  return { hours }
 }

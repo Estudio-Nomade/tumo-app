@@ -210,7 +210,13 @@ export default function OrdersPanel({ slug }: { slug: string }) {
         </Link>
       ) : null}
 
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-end gap-5">
+        <Link
+          href={`/${slug}/dashboard/orders/horarios`}
+          className="inline-flex min-h-[48px] items-center text-base font-semibold text-[var(--color-primary,#F97316)]"
+        >
+          Horarios →
+        </Link>
         <Link
           href={`/${slug}/dashboard/orders/productos`}
           className="inline-flex min-h-[48px] items-center text-base font-semibold text-[var(--color-primary,#F97316)]"
