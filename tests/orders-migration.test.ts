@@ -11,6 +11,10 @@ const mpCredentials = readFileSync(
   join(root, "shell/db/migrations/005_orders_mp_credentials.sql"),
   "utf8"
 )
+const productsAbm = readFileSync(
+  join(root, "shell/db/migrations/006_orders_products_abm.sql"),
+  "utf8"
+)
 const migrateTs = readFileSync(join(root, "shell/db/migrate.ts"), "utf8")
 
 const TABLES = [
@@ -40,6 +44,13 @@ describe("migración 004_orders", () => {
     expect(migrateTs).toContain('"005_orders_mp_credentials.sql"')
     expect(mpCredentials).toMatch(/mp_access_token TEXT/)
     expect(mpCredentials).toMatch(/mp_webhook_secret TEXT/)
+  })
+
+  test("ABM productos (006) registrada: nombre único, precio ≥0, ON DELETE SET NULL", () => {
+    expect(migrateTs).toContain('"006_orders_products_abm.sql"')
+    expect(productsAbm).toMatch(/lower\(name\)/)
+    expect(productsAbm).toMatch(/price_cents >= 0/)
+    expect(productsAbm).toMatch(/ON DELETE SET NULL/)
   })
 
   test("no altera la tabla customers", () => {

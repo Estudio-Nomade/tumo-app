@@ -1,7 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server"
-import { createProduct, listProducts } from "@/modules/orders/api/products"
+import { deleteProduct, updateProduct } from "@/modules/orders/api/products"
 import { productsDeps } from "@/modules/orders/lib/default-deps"
 import { validateSession } from "@/shell/auth/session"
+
+type Params = { params: Promise<{ id: string }> }
 
 async function sessionOf(req: NextRequest) {
   const token = req.cookies.get("session_token")?.value
@@ -9,19 +11,8 @@ async function sessionOf(req: NextRequest) {
   return validateSession(token)
 }
 
-export async function GET(req: NextRequest) {
-  const session = await sessionOf(req)
-  if (!session) {
-    return NextResponse.json({ error: "No autenticado." }, { status: 401 })
-  }
-
-  const result = await listProducts(productsDeps, {
-    businessId: session.businessId,
-  })
-  return NextResponse.json(result.body, { status: result.status })
-}
-
-export async function POST(req: NextRequest) {
+export async function PATCH(req: NextRequest, { params }: Params) {
+  const { id } = await params
   const session = await sessionOf(req)
   if (!session) {
     return NextResponse.json({ error: "No autenticado." }, { status: 401 })
@@ -40,13 +31,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "JSON inválido." }, { status: 400 })
   }
 
-  const result = await createProduct(productsDeps, {
+  const result = await updateProduct(productsDeps, {
+    productId: id,
     businessId: session.businessId,
     name: body.name ?? "",
     priceCents: Number(body.priceCents),
     description: body.description,
     categoryId: body.categoryId,
     photo: body.photo,
+  })
+  return NextResponse.json(result.body, { status: result.status })
+}
+
+export async function DELETE(req: NextRequest, { params }: Params) {
+  const { id } = await params
+  const session = await sessionOf(req)
+  if (!session) {
+    return NextResponse.json({ error: "No autenticado." }, { status: 401 })
+  }
+
+  const result = await deleteProduct(productsDeps, {
+    productId: id,
+    businessId: session.businessId,
   })
   return NextResponse.json(result.body, { status: result.status })
 }
