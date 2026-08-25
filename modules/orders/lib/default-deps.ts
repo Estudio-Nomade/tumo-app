@@ -5,6 +5,7 @@ import type { CatalogDeps } from "@/modules/orders/api/catalog"
 import type { OrdersDeps } from "@/modules/orders/api/orders"
 import type { ProductsDeps } from "@/modules/orders/api/products"
 import type { MetricsDeps } from "@/modules/orders/api/metrics"
+import type { SettingsDeps } from "@/modules/orders/api/settings"
 import {
   notifyOrderStatusChange,
   type NotifyDeps,
@@ -101,6 +102,10 @@ export const productsDeps: ProductsDeps = {
 }
 
 export const metricsDeps: MetricsDeps = {
+  sql: taggedSql,
+}
+
+export const settingsDeps: SettingsDeps = {
   sql: taggedSql,
 }
 

@@ -1,7 +1,12 @@
 import { describe, expect, test } from "bun:test"
 import {
+  DAY_NAMES,
+  isValidTime,
   isOpenNow,
   nextOpening,
+  sanitizeHours,
+  validateDayHours,
+  type DayHours,
   type OrdersHours,
 } from "@/modules/orders/lib/hours"
 
@@ -75,5 +80,73 @@ describe("nextOpening", () => {
       "1": { closed: true },
     }
     expect(nextOpening(allClosed, new Date(2026, 7, 16, 12, 0))).toBeNull()
+  })
+})
+
+describe("DAY_NAMES", () => {
+  test("índice 0=domingo, 6=sábado", () => {
+    expect(DAY_NAMES[0]).toBe("domingo")
+    expect(DAY_NAMES[6]).toBe("sábado")
+    expect(DAY_NAMES).toHaveLength(7)
+  })
+})
+
+describe("isValidTime", () => {
+  test("acepta HH:MM válidos", () => {
+    expect(isValidTime("00:00")).toBe(true)
+    expect(isValidTime("19:30")).toBe(true)
+    expect(isValidTime("23:59")).toBe(true)
+  })
+  test("rechaza inválidos", () => {
+    expect(isValidTime("25:00")).toBe(false)
+    expect(isValidTime("19:60")).toBe(false)
+    expect(isValidTime("9:00")).toBe(false)
+    expect(isValidTime("1900")).toBe(false)
+    expect(isValidTime("")).toBe(false)
+    expect(isValidTime(null)).toBe(false)
+  })
+})
+
+describe("validateDayHours", () => {
+  test("día cerrado es válido", () => {
+    expect(validateDayHours({ closed: true })).toBeNull()
+    expect(validateDayHours(undefined)).toBeNull()
+  })
+  test("horario completo y distinto es válido", () => {
+    expect(validateDayHours({ open: "19:00", close: "01:00", closed: false })).toBeNull()
+  })
+  test("falta hora → error", () => {
+    expect(validateDayHours({ open: "19:00", close: "", closed: false })).not.toBeNull()
+    expect(validateDayHours({ open: "", close: "01:00", closed: false })).not.toBeNull()
+  })
+  test("apertura igual a cierre → error", () => {
+    expect(validateDayHours({ open: "12:00", close: "12:00", closed: false })).not.toBeNull()
+  })
+})
+
+describe("sanitizeHours", () => {
+  test("normaliza días cerrados y abiertos", () => {
+    const input: OrdersHours = {
+      "0": { closed: true },
+      "1": { open: "19:00", close: "01:00", closed: false },
+    }
+    const r = sanitizeHours(input)
+    expect("hours" in r).toBe(true)
+    const h = (r as { hours: OrdersHours }).hours
+    expect(h["0"]).toEqual({ closed: true })
+    expect(h["1"]).toEqual({ open: "19:00", close: "01:00", closed: false })
+  })
+  test("permite cruce de medianoche (close < open)", () => {
+    const r = sanitizeHours({ "6": { open: "23:00", close: "02:00", closed: false } })
+    expect("hours" in r).toBe(true)
+  })
+  test("rechaza estructura no objeto", () => {
+    expect("error" in sanitizeHours(null)).toBe(true)
+    expect("error" in sanitizeHours("nope")).toBe(true)
+    expect("error" in sanitizeHours([])).toBe(true)
+  })
+  test("rechaza horario inválido", () => {
+    expect("error" in sanitizeHours({ "1": { open: "25:00", close: "01:00", closed: false } })).toBe(true)
+    expect("error" in sanitizeHours({ "1": { open: "12:00", close: "12:00", closed: false } })).toBe(true)
   })
 })
