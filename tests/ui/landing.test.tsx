@@ -16,7 +16,7 @@ describe("LandingPage", () => {
 
   test("un solo camino fuerte de WhatsApp en hero", () => {
     const html = renderToStaticMarkup(<LandingPage />)
-    expect(html).toContain("wa.me/")
+    expect(html).toContain("wa.me/542494512494")
     expect(html).toContain("Escribinos por WhatsApp")
     expect(html).not.toContain("Dejanos tu teléfono y te llamamos")
   })

@@ -1,5 +1,4 @@
-/** TODO: reemplazar por el número real de WhatsApp de Tumo */
-export const WHATSAPP_NUMBER = "+54 9 11 0000-0000"
+export const WHATSAPP_NUMBER = "+542494512494"
 
 export function whatsappDigits(number = WHATSAPP_NUMBER): string {
   return number.replace(/\D/g, "")
