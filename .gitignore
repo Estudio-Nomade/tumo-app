@@ -1,9 +1,9 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Enviroment variables
+# Environment variables
 .env
 .env.local
-
+.env.*.local
 
 # dependencies
 /node_modules
@@ -35,17 +35,33 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
-
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# BMAD / Hermes
 .bmad-loop/runs/
 .bmad-loop/cache/
 .bmad-loop/policy.toml
 _bmad/render/
 .codegraph
+.hermes/
+
+# Supabase local
+supabase/.branches/
+supabase/.temp/
+supabase/migrations/20260822*.sql
+supabase/migrations/20260823*.sql
+
+# Assets / docs temporales
+*.png
+*.jpg
+*.jpeg
+*.pdf
+*.typ
+
+# Package lock (usamos bun, no npm)
+package-lock.json
