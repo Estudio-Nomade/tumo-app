@@ -49,6 +49,12 @@ describe("CartWizard (elderly-UX source contracts)", () => {
     expect(cart).toMatch(/min-h-\[56px\]/)
     expect(cart).toMatch(/min-h-\[52px\]/)
   })
+
+  test("Volver al menú o al paso anterior", () => {
+    expect(cart).toMatch(/← Menú|← Atrás/)
+    expect(cart).toContain("clearCart")
+    expect(cart).toContain("loadLastGuest")
+  })
 })
 
 describe("ProductDetail (elderly-UX source contracts)", () => {

@@ -11,7 +11,7 @@ const src = readFileSync(
 describe("OrderConfirmation (source contracts)", () => {
   test("Variante A: pedido OK con código de fidelización y volver", () => {
     expect(src).toMatch(/¡Pedido recibido!/)
-    expect(src).toContain("Volver al menú")
+    expect(src).toContain("Hacer otro pedido")
     expect(src).toMatch(/código|Código/)
   })
 

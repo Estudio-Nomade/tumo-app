@@ -22,8 +22,12 @@ describe("pendingOrderBanner", () => {
     expect(pendingOrderBanner("mercadopago", "rejected")).toBeNull()
   })
 
-  test("transfer pending_receipt → null (la foto la sube el cliente)", () => {
-    expect(pendingOrderBanner("transfer", "pending_receipt")).toBeNull()
+  test("transfer pending_receipt → banner para volver a subir la foto", () => {
+    expect(pendingOrderBanner("transfer", "pending_receipt")).toMatch(/comprobante/)
+  })
+
+  test("transfer rejected → banner para re-subir", () => {
+    expect(pendingOrderBanner("transfer", "rejected")).toMatch(/otra foto|comprobante/)
   })
 
   test("transfer paid → null", () => {

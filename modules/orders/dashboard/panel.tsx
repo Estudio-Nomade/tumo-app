@@ -210,18 +210,20 @@ export default function OrdersPanel({ slug }: { slug: string }) {
         </Link>
       ) : null}
 
-      <div className="flex items-center justify-end gap-5">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         <Link
           href={`/${slug}/dashboard/orders/horarios`}
-          className="inline-flex min-h-[48px] items-center text-base font-semibold text-[var(--color-primary,#F97316)]"
+          className="flex min-h-[56px] items-center justify-between rounded-2xl border border-[#E7E5E4] bg-white px-4 text-base font-semibold text-stone-900"
         >
-          Horarios →
+          Horarios de atención
+          <span aria-hidden className="text-[var(--color-primary,#F97316)]">→</span>
         </Link>
         <Link
           href={`/${slug}/dashboard/orders/productos`}
-          className="inline-flex min-h-[48px] items-center text-base font-semibold text-[var(--color-primary,#F97316)]"
+          className="flex min-h-[56px] items-center justify-between rounded-2xl border border-[#E7E5E4] bg-white px-4 text-base font-semibold text-stone-900"
         >
-          Productos →
+          Productos del menú
+          <span aria-hidden className="text-[var(--color-primary,#F97316)]">→</span>
         </Link>
       </div>
 
