@@ -211,7 +211,7 @@
 - ~~Multi-cuenta MP (credenciales por negocio)~~ ✅ **Resuelta (2026-08-24)** — ver "Deuda 1" abajo.
 - ~~Notificaciones automáticas al cambiar estado (WhatsApp)~~ ✅ **Resuelta (2026-08-24)** — ver "Deuda 2" abajo. (Email sigue pendiente.)
 - ~~Editor de horarios en UI~~ ✅ **Resuelta (2026-08-24)** — ver "Deuda 3" abajo. (Migrar a `business_hours` del shell sigue pendiente, §8.4.)
-- ABM completo de productos (precios/fotos/variantes): hoy seed + toggle disponibilidad (§8.10).
+- ~~ABM completo de productos~~ ✅ **Resuelta (2026-08-24)** — ver "Deuda 4" abajo.
 - Sonido/badge al llegar pedido nuevo: decisión abierta §8.15, default no (autoplay + elderly-UX). El toast de Story 13 cubre la visibilidad sin audio.
 - Cron de limpieza de pedidos MP abandonados y reembolsos integrados: manuales (§8.8, §8.9).
 
@@ -252,6 +252,18 @@
 - `hours-editor.tsx`: 7 días, switch "Cerrado todo el día" (≥48px), `<input type="time">` (≥52px), botón "Guardar horarios" ≥56px; `updateHours` dep-inyectado (default = fetch).
 - Página `/dashboard/orders/horarios` + link "Horarios →" en el panel.
 - Deuda futura (§8.4): migrar `orders_settings.hours` a tabla shell `business_hours` compartida.
+
+---
+
+## Deuda 4 — ABM completo de productos ✅ Completada (2026-08-24)
+
+> Implementada con TDD (Red → Green). Tests: `tests/orders-products.test.ts` (ampliado: create/update/delete/categories/variants), `tests/orders-migration.test.ts` (006), `tests/ui/products-manager.test.tsx` (nuevo). Plan: `.hermes/plans/orders-module-debt-4-products-abm.md`.
+
+- Migración `006_orders_products_abm.sql`: índice único `(business_id, lower(name))`, `CHECK (price_cents >= 0)`, `order_items.product_id ON DELETE SET NULL`.
+- `products.ts`: `createProduct`, `updateProduct`, `deleteProduct`, `listCategories`, `saveVariants` (reemplazo de grupos/opciones en transacción). `listProducts` ahora incluye description/photo/variantGroups.
+- Rutas: `POST /api/orders/products`, `PATCH`/`DELETE /api/orders/products/[id]`, `PUT /api/orders/products/[id]/variants`, `GET /api/orders/products/categories`.
+- `products-manager.tsx`: lista + toggle Disponible/Agotado + Dialog crear/editar (variantes) + confirmación de eliminación. CTA ≥56px.
+- Página `/dashboard/orders/productos` renderiza el manager (el toggle de disponibilidad se conserva).
 
 ---
 

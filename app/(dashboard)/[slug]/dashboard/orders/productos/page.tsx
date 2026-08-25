@@ -1,7 +1,7 @@
 import { Suspense } from "react"
 import { cookies } from "next/headers"
 import { notFound, redirect } from "next/navigation"
-import ProductsAvailability from "@/modules/orders/dashboard/products-availability"
+import ProductsManager from "@/modules/orders/dashboard/products-manager"
 import { validateSession } from "@/shell/auth/session"
 import { getBusiness } from "@/shell/db/business"
 
@@ -32,7 +32,7 @@ export default async function DashboardOrdersProductsPage({ params }: PageProps)
           </div>
         }
       >
-        <ProductsAvailability slug={slug} />
+        <ProductsManager slug={slug} />
       </Suspense>
     </div>
   )
