@@ -1,7 +1,7 @@
 import { cookies } from "next/headers"
 import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
-import { Gift, LayoutGrid } from "lucide-react"
+import { Calendar, Gift, LayoutGrid, Receipt } from "lucide-react"
 import {
   getActiveModules,
   getModuleDashboardHref,
@@ -15,6 +15,8 @@ type PageProps = {
 
 const ICONS: Record<string, typeof Gift> = {
   gift: Gift,
+  receipt: Receipt,
+  calendar: Calendar,
 }
 
 export default async function ModulesHubPage({ params }: PageProps) {

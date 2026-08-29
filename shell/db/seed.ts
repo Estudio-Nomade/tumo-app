@@ -24,7 +24,7 @@ async function seed() {
       ${"carri"},
       ${"#F97316"},
       ${"#FACC15"},
-      ${"{loyalty,orders}"},
+      ${"{loyalty,orders,turnos}"},
       ${10},
       ${"hamburguesa gratis"}
     )
@@ -120,6 +120,52 @@ async function seed() {
       mp_enabled = EXCLUDED.mp_enabled,
       hours = EXCLUDED.hours
   `
+
+  const turnosHours = {
+    mon: [["09:00", "18:00"]],
+    tue: [["09:00", "18:00"]],
+    wed: [["09:00", "18:00"]],
+    thu: [["09:00", "18:00"]],
+    fri: [["09:00", "18:00"]],
+    sat: [["09:00", "13:00"]],
+  }
+
+  await sql`
+    INSERT INTO turnos_settings (
+      business_id, transfer_alias, transfer_cbu, transfer_holder, is_paused, hours
+    )
+    VALUES (
+      ${business.id},
+      ${"carri.turnos"},
+      ${"0000003100000000000001"},
+      ${"El Auténtico Carri"},
+      false,
+      ${sql.json(turnosHours as never)}
+    )
+    ON CONFLICT (business_id) DO UPDATE SET
+      transfer_alias = EXCLUDED.transfer_alias,
+      transfer_cbu = EXCLUDED.transfer_cbu,
+      transfer_holder = EXCLUDED.transfer_holder,
+      hours = EXCLUDED.hours
+  `
+
+  const turnosServices = [
+    { name: "Corte clásico", priceCents: 8000, durationMinutes: 30, sortOrder: 0 },
+    { name: "Corte + barba", priceCents: 12000, durationMinutes: 45, sortOrder: 1 },
+  ]
+  for (const s of turnosServices) {
+    await sql`
+      INSERT INTO turnos_services (
+        business_id, name, price_cents, duration_minutes, is_active, sort_order
+      )
+      SELECT
+        ${business.id}, ${s.name}, ${s.priceCents}, ${s.durationMinutes}, true, ${s.sortOrder}
+      WHERE NOT EXISTS (
+        SELECT 1 FROM turnos_services
+        WHERE business_id = ${business.id} AND name = ${s.name}
+      )
+    `
+  }
 
   for (const c of demoCustomers) {
     await sql`

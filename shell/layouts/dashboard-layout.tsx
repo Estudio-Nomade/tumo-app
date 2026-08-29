@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
   Activity,
+  Calendar,
   Gift,
   LayoutDashboard,
   LayoutGrid,
@@ -36,6 +37,8 @@ const MODULE_ICONS: Record<string, LucideIcon> = {
   users: Users,
   grid: LayoutGrid,
   receipt: Receipt,
+  calendar: Calendar,
+  Calendar: Calendar,
 }
 
 function resolveModuleIcon(name: string): LucideIcon {
