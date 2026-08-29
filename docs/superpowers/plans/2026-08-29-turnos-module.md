@@ -35,11 +35,11 @@
 
 **Produces:** `turnosModule` with id `turnos`, name `Turnos`, icon `calendar`, dashboardPath `turnos`
 
-- [ ] **Step 1: Failing test** — `tests/turnos-module.test.ts` expects id/name/path and `getActiveModules` with three modules
-- [ ] **Step 2: Run** `bun test tests/turnos-module.test.ts` → FAIL
-- [ ] **Step 3: Implement** manifest + registry + Calendar icon
-- [ ] **Step 4: Run** tests → PASS
-- [ ] **Step 5: Commit** `feat(turnos): register module in multi-module registry`
+- [x] **Step 1: Failing test** — `tests/turnos-module.test.ts` expects id/name/path and `getActiveModules` with three modules
+- [x] **Step 2: Run** `bun test tests/turnos-module.test.ts` → FAIL
+- [x] **Step 3: Implement** manifest + registry + Calendar icon
+- [x] **Step 4: Run** tests → PASS
+- [x] **Step 5: Commit** `feat(turnos): register module in multi-module registry`
 
 ---
 
@@ -50,10 +50,10 @@
 - Modify: `shell/db/migrate.ts` (append 008 if missing + 009)
 - Test: `tests/turnos-migration.test.ts` (SQL file contains required tables/constraints)
 
-- [ ] Failing test on migration contents
-- [ ] Write SQL (services, settings, bookings, payments + CHECKs + indexes)
-- [ ] Register in migrate.ts
-- [ ] Commit `feat(turnos): add 009_turnos migration`
+- [x] Failing test on migration contents
+- [x] Write SQL (services, settings, bookings, payments + CHECKs + indexes)
+- [x] Register in migrate.ts
+- [x] Commit `feat(turnos): add 009_turnos migration`
 
 ---
 
@@ -65,8 +65,8 @@
 - `tests/turnos-services.test.ts`
 - Thin: `app/api/turnos/services/route.ts` (after domain green)
 
-- [ ] TDD list/create/update service (price_cents, duration_minutes, is_active)
-- [ ] Commit `feat(turnos): services domain API`
+- [x] TDD list/create/update service (price_cents, duration_minutes, is_active)
+- [x] Commit `feat(turnos): services domain API`
 
 ---
 
@@ -74,8 +74,8 @@
 
 **Files:** `modules/turnos/api/settings.ts`, `tests/turnos-settings.test.ts`, `app/api/turnos/settings/route.ts`
 
-- [ ] get/upsert alias, cbu, holder, is_paused, hours
-- [ ] Commit `feat(turnos): settings domain API`
+- [x] get/upsert alias, cbu, holder, is_paused, hours
+- [x] Commit `feat(turnos): settings domain API`
 
 ---
 
@@ -83,9 +83,9 @@
 
 **Files:** `modules/turnos/lib/availability.ts`, `tests/turnos-availability.test.ts`
 
-- [ ] Generate slots for day given duration + existing bookings + hours
-- [ ] Paused / closed day → empty
-- [ ] Commit `feat(turnos): slot availability engine`
+- [x] Generate slots for day given duration + existing bookings + hours
+- [x] Paused / closed day → empty
+- [x] Commit `feat(turnos): slot availability engine`
 
 ---
 
@@ -93,10 +93,10 @@
 
 **Files:** `modules/turnos/api/bookings.ts`, `tests/turnos-bookings.test.ts`, routes under `app/api/turnos/bookings`
 
-- [ ] Create with idempotency, snapshots, customer upsert by phone
-- [ ] Conflict if slot overlap
-- [ ] List filters: today / upcoming / pending payment
-- [ ] Commit `feat(turnos): bookings domain API`
+- [x] Create with idempotency, snapshots, customer upsert by phone
+- [x] Conflict if slot overlap
+- [x] List filters: today / upcoming / pending payment
+- [x] Commit `feat(turnos): bookings domain API`
 
 ---
 
@@ -104,10 +104,10 @@
 
 **Files:** `modules/turnos/api/payments.ts`, `tests/turnos-payments.test.ts`, API routes
 
-- [ ] Submit receipt → pending_verification
-- [ ] Cash path → unpaid / at_location
-- [ ] Approve/reject
-- [ ] Commit `feat(turnos): payments and receipts`
+- [x] Submit receipt → pending_verification
+- [x] Cash path → unpaid / at_location
+- [x] Approve/reject
+- [x] Commit `feat(turnos): payments and receipts`
 
 ---
 
@@ -115,9 +115,9 @@
 
 **Files:** `modules/turnos/api/metrics.ts`, update `home-section.tsx`, `index.ts`, `tests/turnos-metrics.test.ts`
 
-- [ ] turnosToday, pendingPayment counts
-- [ ] Activity events from recent bookings
-- [ ] Commit `feat(turnos): home section and activity feed`
+- [x] turnosToday, pendingPayment counts
+- [x] Activity events from recent bookings
+- [x] Commit `feat(turnos): home section and activity feed`
 
 ---
 
@@ -125,10 +125,10 @@
 
 **Files:** `modules/turnos/public/*`, `app/(public)/[slug]/turnos/**`
 
-- [ ] Entry, wizard (service→day→time→data→pay), confirmation
-- [ ] Gate active_modules
-- [ ] UI tests smoke where project already tests UI with bun
-- [ ] Commit `feat(turnos): public booking flow`
+- [x] Entry, wizard (service→day→time→data→pay), confirmation
+- [x] Gate active_modules
+- [x] UI tests smoke where project already tests UI with bun
+- [x] Commit `feat(turnos): public booking flow`
 
 ---
 
@@ -136,8 +136,8 @@
 
 **Files:** `modules/turnos/dashboard/panel.tsx`, `detail.tsx`, `services-manager.tsx`, `settings-form.tsx`, pages under `app/(dashboard)/[slug]/dashboard/turnos/**`
 
-- [ ] Owner-only ajustes page
-- [ ] Commit `feat(turnos): dashboard panel and config`
+- [x] Owner-only ajustes page
+- [x] Commit `feat(turnos): dashboard panel and config`
 
 ---
 
@@ -145,9 +145,9 @@
 
 **Files:** `shell/db/seed.ts` (and seed-defe if needed), modules hub icons optional
 
-- [ ] `bun test` full suite relevant
-- [ ] `bun run lint` / `bun run build`
-- [ ] Commit `feat(turnos): seed active_modules and polish wiring`
+- [x] `bun test` full suite relevant
+- [x] `bun run lint` / `bun run build`
+- [x] Commit `feat(turnos): seed active_modules and polish wiring`
 
 ---
 
