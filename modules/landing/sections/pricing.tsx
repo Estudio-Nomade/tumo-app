@@ -1,4 +1,4 @@
-import { PRICE_FROM_ARS, whatsappHref } from "../config"
+import { PRICE_PER_MODULE_ARS, whatsappHref } from "../config"
 import { LandingButton } from "../ui/button"
 
 export function PricingSection() {
@@ -18,19 +18,19 @@ export function PricingSection() {
                 aria-hidden
               />
               <p className="landing-kicker mb-6">Inversión</p>
-              <p className="font-[family-name:var(--font-geist-sans)] text-[15px] font-medium text-[#A3A3A3]">
-                Desde
-              </p>
               <p className="mt-1 font-[family-name:var(--font-geist-sans)] text-[56px] font-extrabold leading-none tracking-[-0.05em] text-[#FFFFFF] md:text-[64px]">
-                ${PRICE_FROM_ARS}
+                ${PRICE_PER_MODULE_ARS}
               </p>
               <p className="mt-2 text-xl font-semibold text-[#7754E3]">
-                ARS <span className="font-normal text-[#A3A3A3]">/ mes</span>
+                ARS{" "}
+                <span className="font-normal text-[#A3A3A3]">
+                  / mes por módulo
+                </span>
               </p>
             </div>
             <div className="flex flex-col justify-center gap-6 p-8 md:col-span-3 md:p-10">
               <h2 className="font-[family-name:var(--font-geist-sans)] text-2xl font-extrabold tracking-tight text-[#FFFFFF] md:text-3xl">
-                Según lo que actives + un setup único.
+                Activás los que uses + un setup único.
               </h2>
               <ul className="flex flex-col gap-3 text-lg text-[#A3A3A3]">
                 <li className="flex gap-3">
@@ -54,7 +54,7 @@ export function PricingSection() {
               </ul>
               <LandingButton
                 href={whatsappHref(
-                  "Hola, quiero un presupuesto de Tumo (vi desde $19.900)."
+                  `Hola, quiero un presupuesto de Tumo ($${PRICE_PER_MODULE_ARS}/mes por módulo).`
                 )}
                 className="min-h-[56px] w-full text-lg sm:w-auto sm:min-w-[240px]"
                 target="_blank"

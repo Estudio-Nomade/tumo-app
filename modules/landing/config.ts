@@ -12,7 +12,7 @@ export function whatsappHref(message?: string): string {
 
 export const DEFAULT_WA_MESSAGE = "Hola, quiero saber más sobre Tumo."
 
-export const PRICE_FROM_ARS = "19.900"
+export const PRICE_PER_MODULE_ARS = "30.000"
 
 /**
  * Media servida desde /public (mismo origen en Vercel).
@@ -117,7 +117,7 @@ export type FaqItem = {
 export const FAQ_ITEMS: FaqItem[] = [
   {
     question: "¿Cuánto sale?",
-    answer: `Desde $${PRICE_FROM_ARS} ARS por mes, según lo que actives, más un setup único. Te armamos el número para tu comercio.`,
+    answer: `Cada módulo sale $${PRICE_PER_MODULE_ARS} ARS por mes. Activás los que uses, más un setup único. Te armamos el presupuesto por WhatsApp.`,
   },
   {
     question: "¿Es difícil de usar?",

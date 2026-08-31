@@ -30,10 +30,14 @@ describe("LandingPage", () => {
     expect(html).not.toContain("En desarrollo")
   })
 
-  test("precio desde 19900 ARS", () => {
+  test("precio $30.000 ARS por módulo / mes, sin desde 19.900", () => {
     const html = renderToStaticMarkup(<LandingPage />)
-    expect(html).toContain("19.900")
+    expect(html).toContain("30.000")
     expect(html).toContain("ARS")
+    expect(html).toMatch(/por m[oó]dulo|cada m[oó]dulo/i)
+    expect(html).not.toContain("19.900")
+    expect(html).not.toMatch(/\bDesde\b/)
+    expect(html).toContain("30.000%2Fmes%20por%20m%C3%B3dulo")
   })
 
   test("casos y FAQ esenciales", () => {
@@ -64,6 +68,13 @@ describe("LandingPage", () => {
     const html = renderToStaticMarkup(<LandingPage />)
     expect(html).toContain("/landing/tumo-logo-no-text.png")
     expect(html).toContain(">tumo<")
+  })
+
+  test("footer con mail de Estudio Nómade", () => {
+    const html = renderToStaticMarkup(<LandingPage />)
+    expect(html).toContain("tumo.estudionomade@gmail.com")
+    expect(html).not.toContain("hola@tumo.com.ar")
+    expect(html).not.toContain("estudionomade2025@gmail.com")
   })
 
   test("craft visual: grain, kickers y composición", () => {

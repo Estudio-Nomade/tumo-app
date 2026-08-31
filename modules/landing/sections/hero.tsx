@@ -1,4 +1,9 @@
-import { DEFAULT_WA_MESSAGE, MEDIA, whatsappHref } from "../config"
+import {
+  DEFAULT_WA_MESSAGE,
+  MEDIA,
+  PRICE_PER_MODULE_ARS,
+  whatsappHref,
+} from "../config"
 import { LandingButton } from "../ui/button"
 import { StockImage } from "../ui/stock-image"
 
@@ -67,7 +72,7 @@ export function Hero() {
               href="#precios"
               className="text-center text-base font-medium text-[#A3A3A3] underline-offset-4 transition-colors hover:text-[#FFFFFF] hover:underline sm:text-left"
             >
-              Ver desde $19.900 ARS
+              {`Ver $${PRICE_PER_MODULE_ARS} ARS/mes por módulo`}
             </a>
           </div>
         </div>
