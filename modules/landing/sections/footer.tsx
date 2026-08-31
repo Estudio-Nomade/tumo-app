@@ -6,7 +6,7 @@ export function FooterSection() {
           Tumo · tumo.com.ar
         </p>
         <p className="text-base text-[#A3A3A3]">
-          estudionomade2025@gmail.com · WhatsApp
+          tumo.estudionomade@gmail.com · WhatsApp
         </p>
       </div>
     </footer>
