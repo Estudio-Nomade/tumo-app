@@ -38,6 +38,24 @@ async function seedDefe() {
 
   console.log("INSERT OK:", business)
 
+  await sql`
+    INSERT INTO business_billing (
+      business_id,
+      monthly_amount_cents,
+      status,
+      updated_at
+    )
+    VALUES (
+      ${business.id},
+      ${1_990_000},
+      ${"vencido"},
+      ${new Date()}
+    )
+    ON CONFLICT (business_id) DO UPDATE SET
+      status = ${"vencido"},
+      updated_at = ${new Date()}
+  `
+
   const rows = await sql`
     SELECT id, name, slug, primary_color, secondary_color, surface_color, tagline, active_modules
     FROM businesses
