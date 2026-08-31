@@ -78,6 +78,11 @@ const registry: Record<string, Module> = {
   turnos: turnosModule,
 }
 
+/** Public allowlist of toggleable module ids (admin panel). Admin is never listed. */
+export function getRegisteredModuleIds(): string[] {
+  return Object.keys(registry).sort()
+}
+
 export function getActiveModules(business: Business): Module[] {
   return business.active_modules
     .map((id) => registry[id])

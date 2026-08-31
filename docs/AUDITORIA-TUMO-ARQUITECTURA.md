@@ -1,9 +1,9 @@
 # Auditoría Tumo — Arquitectura para agentes (módulo Turnos y siguientes)
 
-**Fecha:** 2026-08-29  
+**Fecha:** 2026-08-30 (admin panel v1)  
 **Repo:** `Estudio-Nomade` / Tumo (`tumo-app`)  
-**Branch de referencia al escribir:** `feat/orders-ux-polish` (orders MVP + post-MVP avanzado; `main` tiene orders ABM mergeado)  
-**Audiencia:** otro agente que deba entender el monorepo y sumar un módulo nuevo (p. ej. **Turnos**) sin freestyle.
+**Branch de referencia al escribir:** `feat/admin-panel` (panel interno staff; `main` tiene turnos mergeado)  
+**Audiencia:** otro agente que deba entender el monorepo y sumar un módulo nuevo o extender admin sin freestyle.
 
 ---
 
@@ -42,6 +42,7 @@ Tumo es una **plataforma multi-módulo multi-tenant para comercios** (food truck
 | Storage | Supabase Storage (logos) | `shell/storage/supabase.ts` + `SUPABASE_SECRET_KEY`. |
 | Realtime | Supabase Realtime (orders) | Client anon; graceful no-op si falta env. |
 | Auth empleados | OTP WhatsApp vía **Authyo** + cookie `session_token` | No Supabase Auth para empleados. |
+| Auth admin Tumo | OTP Authyo + cookie **`admin_session_token`** + allowlist `TUMO_ADMIN_PHONES` | Tablas `admin_users` / `admin_sessions`. No reusa sesión tenant. |
 | Pagos (orders) | MercadoPago API | Credenciales **por negocio** en `orders_settings`. |
 | Tests | **`bun test`** | TDD obligatorio. Domain en `tests/*.test.ts`; UI en `tests/ui/*.test.tsx`. |
 | Lint | ESLint 9 + `eslint-config-next` | |
@@ -78,12 +79,15 @@ Tumo/
 │   ├── layout.tsx                # Root: fonts Geist, globals.css
 │   ├── page.tsx                  # Landing marketing → modules/landing
 │   ├── globals.css
-│   ├── admin/page.tsx            # Stub
+│   ├── admin/                    # Panel INTERNO equipo Tumo (no tenant)
+│   │   ├── login/page.tsx
+│   │   └── (panel)/              # layout nav + home + businesses/[id]
 │   ├── (public)/[slug]/          # Superficie cliente del comercio
 │   │   ├── layout.tsx            # getBusiness + PublicLayout (brand tokens)
 │   │   ├── login/ + login/verify/
 │   │   ├── loyalty/ + loyalty/c/[code]/
-│   │   └── orders/ + cart + producto/[id] + [id]
+│   │   ├── orders/ + cart + producto/[id] + [id]
+│   │   └── turnos/...
 │   ├── (dashboard)/[slug]/
 │   │   ├── layout.tsx            # session_token + DashboardLayout
 │   │   └── dashboard/
@@ -92,21 +96,26 @@ Tumo/
 │   │       ├── modules/          # Hub de módulos activos
 │   │       ├── settings/
 │   │       ├── loyalty/...
-│   │       └── orders/...
+│   │       ├── orders/...
+│   │       └── turnos/...
 │   └── api/
-│       ├── auth/                 # send-code, verify-code, me, logout
+│       ├── auth/                 # send-code, verify-code, me, logout (tenant)
+│       ├── admin/                # auth + businesses + billing + metrics
 │       ├── business/             # brand + logo
 │       ├── loyalty/...
-│       └── orders/...
+│       ├── orders/...
+│       └── turnos/...
 ├── modules/
 │   ├── landing/                  # Marketing tumo.com.ar (aislado)
+│   ├── admin/                    # Pseudo-módulo staff (NO en lib/modules registry)
 │   ├── loyalty/                  # Fidelización
 │   │   ├── index.ts              # manifiesto Module
 │   │   ├── api/                  # pure handlers {status,body}
 │   │   ├── lib/                  # types, default-deps, helpers
 │   │   ├── dashboard/            # UI empleado/dueño
 │   │   └── public/               # UI cliente
-│   └── orders/                   # Pedidos (mismo shape)
+│   ├── orders/                   # Pedidos (mismo shape)
+│   └── turnos/                   # Reservas
 ├── shell/
 │   ├── auth/                     # Authyo, session, rate-limit, login UI
 │   ├── brand/                    # public CSS tokens
@@ -344,11 +353,26 @@ employees
 sessions
   id, employee_id, token UNIQUE, expires_at
 
-customers          ← COMPARTIDA loyalty + orders
+customers          ← COMPARTIDA loyalty + orders + turnos
   id, name, phone, birthday, code UNIQUE (4 dígitos),
   points, total_points, business_id,
   UNIQUE(phone, business_id)
+
+admin_users          ← staff Tumo (cross-tenant)
+  id, phone UNIQUE, name, created_at
+
+admin_sessions
+  id, admin_user_id, token UNIQUE, expires_at
+
+business_billing     ← 1:1 fee mensual negocio→Tumo (manual)
+  business_id PK, monthly_amount_cents, status (al_dia|pendiente|vencido),
+  last_payment_at, next_due_at, notes, updated_at
+
+business_billing_payments
+  id, business_id, amount_cents, paid_at, marked_by_admin_id, note
 ```
+
+Migración: `010_tumo_admin.sql`. Dinero siempre INT centavos.
 
 ### Loyalty
 
@@ -379,6 +403,8 @@ Fulfillment: `pickup|delivery`
 
 ## 7. Auth en detalle
 
+### Tenant (empleados del negocio)
+
 1. Empleado pre-cargado en seed (phone E.164 normalizado con `lib/phone`).
 2. `send-code`: rate limit in-memory → Authyo → `maskId`.
 3. `verify-code`: OTP OK → `createSession` → cookie `session_token`.
@@ -388,6 +414,17 @@ Fulfillment: `pickup|delivery`
 7. Orders puede crear/upsert customer por phone en checkout.
 
 **No hay** roles finos por módulo todavía: si el módulo está activo y hay sesión del business, el employee entra al panel del módulo.
+
+### Admin interno Tumo (staff plataforma)
+
+1. Allowlist env `TUMO_ADMIN_PHONES` (CSV) + alias `TUMO_ADMIN_PHONE`.
+2. `/admin/login` → `POST /api/admin/auth/send-code|verify-code`.
+3. Phone ∉ allowlist → **403**. Phone ∈ allowlist → upsert `admin_users` + cookie **`admin_session_token`** (no `session_token`).
+4. `proxy.ts` matcher `/admin` + `/admin/:path*` (excl. login): sin cookie admin → `/admin/login`.
+5. APIs `app/api/admin/**` validan sesión admin (401).
+6. Dev: `SKIP_AUTHYO=true` → mask `dev-admin-mask`, código `000000` (solo allowlist).
+7. **Prohibido** promover `employees.role=owner` a superadmin cross-tenant.
+8. Spec: `docs/superpowers/specs/2026-08-30-admin-panel-design.md`.
 
 ---
 
@@ -600,8 +637,12 @@ Archivos mínimos a tocar (además del módulo nuevo):
 | Module type + registry | `lib/modules.ts` |
 | Loyalty manifest | `modules/loyalty/index.ts` |
 | Orders manifest | `modules/orders/index.ts` |
-| Session | `shell/auth/session.ts` |
-| Auth handlers | `shell/auth/handlers.ts` |
+| Session tenant | `shell/auth/session.ts` |
+| Auth handlers tenant | `shell/auth/handlers.ts` |
+| Admin domain | `modules/admin/**` |
+| Admin session cookie | `admin_session_token` |
+| Admin proxy helpers | `modules/admin/lib/proxy-guard.ts` |
+| getRegisteredModuleIds | `lib/modules.ts` |
 | DB pool | `shell/db/pool.ts` |
 | getBusiness | `shell/db/business.ts` |
 | Dashboard layout nav | `shell/layouts/dashboard-layout.tsx` |
@@ -623,7 +664,8 @@ Archivos mínimos a tocar (además del módulo nuevo):
 | landing | Producción marketing | Independiente del tenant |
 | loyalty | Maduro | Points-native, QR scan, program ranges, owner IA |
 | orders | MVP+ post-MVP | Catálogo, carrito, MP, realtime, ABM productos, horarios, notif stub WA |
-| turnos | **No existe** | Objetivo de esta auditoría |
+| turnos | MVP v1 | Reserva pública + panel tenant; migración 009 |
+| **admin (interno)** | **v1 real** | `/admin` staff Tumo; auth allowlist; list/toggle módulos; billing manual. **No** está en `active_modules` ni registry tenant |
 
 ---
 

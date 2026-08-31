@@ -215,6 +215,52 @@ async function seed() {
     }
   }
 
+  await sql`
+    INSERT INTO business_billing (
+      business_id,
+      monthly_amount_cents,
+      status,
+      last_payment_at,
+      next_due_at,
+      updated_at
+    )
+    VALUES (
+      ${business.id},
+      ${1_990_000},
+      ${"al_dia"},
+      ${new Date()},
+      ${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)},
+      ${new Date()}
+    )
+    ON CONFLICT (business_id) DO UPDATE SET
+      status = EXCLUDED.status,
+      monthly_amount_cents = EXCLUDED.monthly_amount_cents,
+      updated_at = EXCLUDED.updated_at
+  `
+
+  const [defe] = await sql`
+    SELECT id FROM businesses WHERE slug = ${"defe"} LIMIT 1
+  `
+  if (defe) {
+    await sql`
+      INSERT INTO business_billing (
+        business_id,
+        monthly_amount_cents,
+        status,
+        updated_at
+      )
+      VALUES (
+        ${defe.id},
+        ${1_990_000},
+        ${"vencido"},
+        ${new Date()}
+      )
+      ON CONFLICT (business_id) DO UPDATE SET
+        status = ${"vencido"},
+        updated_at = ${new Date()}
+    `
+  }
+
   console.log("Seed OK:", business)
 }
 
