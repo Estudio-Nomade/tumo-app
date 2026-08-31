@@ -70,6 +70,12 @@ describe("LandingPage", () => {
     expect(html).toContain(">tumo<")
   })
 
+  test("footer con mail de Estudio Nómade", () => {
+    const html = renderToStaticMarkup(<LandingPage />)
+    expect(html).toContain("estudionomade2025@gmail.com")
+    expect(html).not.toContain("hola@tumo.com.ar")
+  })
+
   test("craft visual: grain, kickers y composición", () => {
     const html = renderToStaticMarkup(<LandingPage />)
     expect(html).toContain("landing-grain")
