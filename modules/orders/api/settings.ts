@@ -1,15 +1,12 @@
 import type { JsonResult, SqlTagged } from "@/modules/orders/lib/types"
-import {
-  sanitizeHours,
-  type OrdersHours,
-} from "@/modules/orders/lib/hours"
+import { coerceHours, sanitizeHours } from "@/modules/orders/lib/hours"
 
 export type SettingsDeps = {
   sql: SqlTagged
 }
 
 type SettingsRow = {
-  hours: OrdersHours | null
+  hours: unknown
 }
 
 export async function getSettings(
@@ -32,7 +29,7 @@ export async function getSettings(
     return { status: 404, body: { error: "No encontramos la configuración." } }
   }
 
-  return { status: 200, body: { hours: rows[0].hours ?? {} } }
+  return { status: 200, body: { hours: coerceHours(rows[0].hours) } }
 }
 
 export async function updateHours(
@@ -49,9 +46,13 @@ export async function updateHours(
     return { status: 400, body: { error: result.error } }
   }
 
+  if (typeof deps.sql.json !== "function") {
+    throw new Error("sql.json is required to persist hours as jsonb object")
+  }
+
   const rows = (await deps.sql`
     UPDATE orders_settings
-    SET hours = ${JSON.stringify(result.hours)}::jsonb
+    SET hours = ${deps.sql.json(result.hours)}
     WHERE business_id = ${businessId}
     RETURNING hours
   `) as SettingsRow[]
@@ -60,5 +61,5 @@ export async function updateHours(
     return { status: 404, body: { error: "No encontramos la configuración." } }
   }
 
-  return { status: 200, body: { hours: rows[0].hours ?? {} } }
+  return { status: 200, body: { hours: coerceHours(rows[0].hours) } }
 }

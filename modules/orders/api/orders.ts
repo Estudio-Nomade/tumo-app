@@ -13,7 +13,12 @@ import {
   initialPaymentStatus,
   withTransaction,
 } from "@/modules/orders/lib/types"
-import { isOpenNow, nextOpening, type OrdersHours } from "@/modules/orders/lib/hours"
+import {
+  coerceHours,
+  isOpenNow,
+  nextOpening,
+  type OrdersHours,
+} from "@/modules/orders/lib/hours"
 
 export type OrdersDeps = {
   sql: SqlTagged
@@ -170,7 +175,7 @@ export async function createOrder(
     WHERE business_id = ${business.id}
     LIMIT 1
   `) as SettingsRow[]
-  const hours = (settings[0]?.hours ?? {}) as OrdersHours
+  const hours = coerceHours(settings[0]?.hours)
   const isPaused = Boolean(settings[0]?.is_paused)
   const deliveryFeeCents = Number(settings[0]?.delivery_fee_cents ?? 0)
 

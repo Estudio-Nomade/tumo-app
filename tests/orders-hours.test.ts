@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import {
   DAY_NAMES,
+  coerceHours,
   isValidTime,
   isOpenNow,
   nextOpening,
@@ -121,6 +122,25 @@ describe("validateDayHours", () => {
   })
   test("apertura igual a cierre → error", () => {
     expect(validateDayHours({ open: "12:00", close: "12:00", closed: false })).not.toBeNull()
+  })
+})
+
+describe("coerceHours", () => {
+  test("objeto hours se devuelve tal cual", () => {
+    const raw = { "1": { open: "16:00", close: "23:00", closed: false } }
+    expect(coerceHours(raw)).toEqual(raw)
+  })
+
+  test("string JSON double-encoded se parsea a objeto", () => {
+    const obj = { "1": { open: "16:00", close: "23:00", closed: false } }
+    expect(coerceHours(JSON.stringify(obj))).toEqual(obj)
+  })
+
+  test("null / array / basura → {}", () => {
+    expect(coerceHours(null)).toEqual({})
+    expect(coerceHours([])).toEqual({})
+    expect(coerceHours("not-json")).toEqual({})
+    expect(coerceHours(undefined)).toEqual({})
   })
 })
 

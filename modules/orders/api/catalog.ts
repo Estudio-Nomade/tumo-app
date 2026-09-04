@@ -1,9 +1,9 @@
 import type { Business } from "@/lib/modules"
 import type { JsonResult, PaymentMethod, PaymentStatus, SqlTagged } from "@/modules/orders/lib/types"
 import {
+  coerceHours,
   isOpenNow,
   nextOpening,
-  type OpeningInfo,
   type OrdersHours,
 } from "@/modules/orders/lib/hours"
 
@@ -99,7 +99,7 @@ async function loadSettings(
   `) as SettingsRow[]
 
   const row = rows[0]
-  const hours = (row?.hours ?? {}) as OrdersHours
+  const hours = coerceHours(row?.hours)
   const isPaused = Boolean(row?.is_paused)
   const now = deps.now?.() ?? new Date()
   const isOpen = !isPaused && isOpenNow(hours, now)
