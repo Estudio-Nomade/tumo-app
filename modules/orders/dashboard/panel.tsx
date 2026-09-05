@@ -68,7 +68,8 @@ export default function OrdersPanel({
   const [retry, setRetry] = useState(0)
   const [paused, setPaused] = useState(false)
   const [toast, setToast] = useState("")
-  const [logo, setLogo] = useState<string | null>(business.logo)
+  const [logoOverride, setLogoOverride] = useState<string | null>(null)
+  const logo = logoOverride ?? business.logo
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [logoError, setLogoError] = useState("")
 
@@ -216,7 +217,7 @@ export default function OrdersPanel({
         setLogoError(data.error ?? "No se pudo subir el logo.")
         return
       }
-      if (data.logo) setLogo(data.logo)
+      if (data.logo) setLogoOverride(data.logo)
       showToast("Logo actualizado")
       router.refresh()
     } catch {
@@ -294,7 +295,9 @@ export default function OrdersPanel({
             }}
             disabled={!isOwner || uploadingLogo}
             className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#E7E5E4] bg-[#FAFAF9] disabled:opacity-60"
-            aria-label="Subir logo del menú"
+            aria-label={
+              isOwner ? "Subir logo del menú" : "Logo del menú (solo el dueño puede cambiarlo)"
+            }
           >
             {logo ? (
               // eslint-disable-next-line @next/next/no-img-element

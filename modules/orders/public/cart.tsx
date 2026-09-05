@@ -16,6 +16,9 @@ import {
   type CartItem,
 } from "@/modules/orders/lib/cart"
 import { formatCents } from "@/modules/orders/lib/types"
+import OrdersPublicNav, {
+  notifyOrdersCartChanged,
+} from "@/modules/orders/public/orders-public-nav"
 
 type Step = 1 | 2 | 3
 type Fulfillment = "pickup" | "delivery"
@@ -67,6 +70,7 @@ export default function CartWizard({ slug }: { slug: string }) {
   function updateCart(next: CartItem[]) {
     setCart(next)
     saveCart(slug, next)
+    notifyOrdersCartChanged()
   }
 
   function handleRemove(item: CartItem, index: number) {
@@ -141,6 +145,7 @@ export default function CartWizard({ slug }: { slug: string }) {
         saveLastGuest(slug, { name: name.trim(), phone })
         clearCart(slug)
         setCart([])
+        notifyOrdersCartChanged()
         router.push(`/${slug}/orders/${data.id}`)
       }
     } catch {
@@ -207,7 +212,7 @@ export default function CartWizard({ slug }: { slug: string }) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col pb-28">
+    <div className="mx-auto flex w-full max-w-md flex-col pb-36">
       <header className="px-4 pt-3 pb-2">
         <button
           type="button"
@@ -233,7 +238,7 @@ export default function CartWizard({ slug }: { slug: string }) {
             {cart.length === 0 ? (
               <div className="flex flex-col items-center gap-4 py-10 text-center">
                 <p className="text-base text-[var(--color-muted-public,#78716C)]">
-                  Tu pedido está vacío
+                  Todavía no agregaste nada. Volvé al menú.
                 </p>
                 <button
                   type="button"
@@ -416,7 +421,7 @@ export default function CartWizard({ slug }: { slug: string }) {
       </div>
 
       {undoItem ? (
-        <div className="fixed bottom-24 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-full bg-stone-900 px-5 py-3 text-sm font-semibold text-white">
+        <div className="fixed bottom-36 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-full bg-stone-900 px-5 py-3 text-sm font-semibold text-white">
           <span>Quitado</span>
           <button type="button" onClick={undoRemove} className="text-[var(--color-secondary,#FACC15)]">
             Deshacer
@@ -424,28 +429,30 @@ export default function CartWizard({ slug }: { slug: string }) {
         </div>
       ) : null}
 
-      {step < 3 ? (
-        <div className="fixed inset-x-0 bottom-0 z-20 px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+      {step === 1 && cart.length === 0 ? null : step < 3 ? (
+        <div className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-20 px-4 pb-2">
           <button
             type="button"
             onClick={goNext}
-            className="min-h-[56px] w-full max-w-md mx-auto rounded-2xl bg-[var(--color-primary,#F97316)] px-4 text-base font-bold text-white"
+            className="min-h-[56px] w-full max-w-md mx-auto block rounded-2xl bg-[var(--color-primary,#F97316)] px-4 text-base font-bold text-white"
           >
             Continuar →
           </button>
         </div>
       ) : (
-        <div className="fixed inset-x-0 bottom-0 z-20 px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <div className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-20 px-4 pb-2">
           <button
             type="button"
             disabled={submitting}
             onClick={() => void confirm()}
-            className="min-h-[56px] w-full max-w-md mx-auto rounded-2xl bg-[var(--color-primary,#F97316)] px-4 text-base font-bold text-white disabled:opacity-60"
+            className="min-h-[56px] w-full max-w-md mx-auto block rounded-2xl bg-[var(--color-primary,#F97316)] px-4 text-base font-bold text-white disabled:opacity-60"
           >
             {submitting ? "Confirmando…" : `Confirmar pedido · $ ${formatCents(totalCents)}`}
           </button>
         </div>
       )}
+
+      <OrdersPublicNav slug={slug} count={summary.count} />
     </div>
   )
 }

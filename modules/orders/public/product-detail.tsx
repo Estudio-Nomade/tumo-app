@@ -6,12 +6,16 @@ import type { CatalogProduct } from "@/modules/orders/api/catalog"
 import {
   addItem,
   cartItemKey,
+  cartSummary,
   loadCart,
   saveCart,
   type CartItem,
   type CartVariant,
 } from "@/modules/orders/lib/cart"
 import { formatCents } from "@/modules/orders/lib/types"
+import OrdersPublicNav, {
+  notifyOrdersCartChanged,
+} from "@/modules/orders/public/orders-public-nav"
 
 export default function ProductDetail({
   slug,
@@ -122,21 +126,23 @@ export default function ProductDetail({
     }
     const next = addItem(loadCart(slug), item)
     saveCart(slug, next)
+    notifyOrdersCartChanged()
     router.push(`/${slug}/orders`)
   }
 
   if (loading) {
     return (
-      <div className="mx-auto w-full max-w-md p-4">
+      <div className="mx-auto w-full max-w-md p-4 pb-24">
         <div className="h-64 animate-pulse rounded-2xl bg-[#F5F5F4]" />
         <div className="mt-4 h-8 w-2/3 animate-pulse rounded bg-[#F5F5F4]" />
+        <OrdersPublicNav slug={slug} />
       </div>
     )
   }
 
   if (error || !product) {
     return (
-      <div className="mx-auto flex w-full max-w-md flex-col items-center gap-4 p-4 py-12 text-center">
+      <div className="mx-auto flex w-full max-w-md flex-col items-center gap-4 p-4 py-12 pb-24 text-center">
         <p className="text-base text-[var(--color-muted-public,#78716C)]">
           {error || "No encontramos este producto"}
         </p>
@@ -147,12 +153,13 @@ export default function ProductDetail({
         >
           Volver al menú
         </button>
+        <OrdersPublicNav slug={slug} />
       </div>
     )
   }
 
   return (
-    <div className="mx-auto w-full max-w-md pb-28">
+    <div className="mx-auto w-full max-w-md pb-36">
       <button
         type="button"
         onClick={() => router.push(`/${slug}/orders`)}
@@ -272,7 +279,7 @@ export default function ProductDetail({
         ) : null}
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-20 px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+      <div className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-20 px-4 pb-2">
         <button
           type="button"
           disabled={!product.isAvailable}
@@ -282,6 +289,8 @@ export default function ProductDetail({
           {product.isAvailable ? `Agregar · $ ${formatCents(totalCents)}` : "Agotado hoy"}
         </button>
       </div>
+
+      <OrdersPublicNav slug={slug} count={cartSummary(loadCart(slug)).count} />
     </div>
   )
 }
