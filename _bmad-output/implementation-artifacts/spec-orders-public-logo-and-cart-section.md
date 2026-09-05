@@ -2,7 +2,7 @@
 title: 'Orders: logo público + sección Carrito'
 type: 'feature'
 created: '2026-09-05'
-status: 'in-progress'
+status: 'done'
 baseline_commit: '05930dd'
 review_loop_iteration: 0
 context:
@@ -62,12 +62,12 @@ context:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] Tests RED logo catálogo + panel upload + nav Menú|Carrito + badge + empty cart
-- [ ] `catalog.tsx` -- logo header + nav; quitar Ver mi pedido
-- [ ] `panel.tsx` -- Logo del menú owner-only POST /api/business/logo
-- [ ] `orders-public-nav.tsx` -- tabs Menú|Carrito + badge client
-- [ ] `cart.tsx` + `product-detail.tsx` -- montar nav; padding safe-area
-- [ ] Actualizar tests que exigían Ver mi pedido; eslint + bun test
+- [x] Tests RED logo catálogo + panel upload + nav Menú|Carrito + badge + empty cart
+- [x] `catalog.tsx` -- logo header + nav; quitar Ver mi pedido
+- [x] `panel.tsx` -- Logo del menú owner-only POST /api/business/logo
+- [x] `orders-public-nav.tsx` -- tabs Menú|Carrito + badge client
+- [x] `cart.tsx` + `product-detail.tsx` -- montar nav; padding safe-area
+- [x] Actualizar tests que exigían Ver mi pedido; eslint + bun test
 
 **Acceptance Criteria:**
 - Given business con logo, when abro `/{slug}/orders`, then veo img del logo + nombre
@@ -93,3 +93,36 @@ context:
 
 **Manual checks:**
 - `/carri/orders` logo; panel upload; tabs + badge; cart persist hard refresh
+
+## Suggested Review Order
+
+**Logo público + upload panel**
+
+- Header catálogo: img redonda o inicial si `business.logo` es null
+  [`catalog.tsx:123`](../../modules/orders/public/catalog.tsx#L123)
+
+- Card “Logo del menú” + FormData a `/api/business/logo`, owner-only
+  [`panel.tsx:180`](../../modules/orders/dashboard/panel.tsx#L180)
+
+- Role llega desde la page del dashboard (session)
+  [`page.tsx:35`](../../app/(dashboard)/[slug]/dashboard/orders/page.tsx#L35)
+
+**Nav Menú | Carrito**
+
+- Bottom nav + badge (`useSyncExternalStore` + `notifyOrdersCartChanged`)
+  [`orders-public-nav.tsx:1`](../../modules/orders/public/orders-public-nav.tsx#L1)
+
+- Catálogo monta nav y quita “Ver mi pedido”
+  [`catalog.tsx:285`](../../modules/orders/public/catalog.tsx#L285)
+
+- Cart: empty CTA, sin Continuar si vacío; CTAs sobre la nav
+  [`cart.tsx:233`](../../modules/orders/public/cart.tsx#L233)
+
+- Detalle producto monta nav; Agregar notifica badge
+  [`product-detail.tsx:123`](../../modules/orders/public/product-detail.tsx#L123)
+
+**Tests**
+
+- Contracts logo/nav/panel/cart
+  [`orders-catalog.test.tsx`](../../tests/ui/orders-catalog.test.tsx)
+  [`orders-public-nav.test.tsx`](../../tests/ui/orders-public-nav.test.tsx)
