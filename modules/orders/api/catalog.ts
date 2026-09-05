@@ -248,6 +248,23 @@ export async function getCatalog(
     photosByProduct.set(ph.product_id, list)
   }
 
+  // Misma secuencia que los chips de categoría: category.sort_order → product.sort_order → name.
+  // Sin esto, "Todas" ordena solo por product.sort_order y Bebidas (Coca) puede ir primero.
+  const categorySort = new Map(
+    categories.map((c) => [c.id, Number(c.sort_order)])
+  )
+  const sortedProducts = [...products].sort((a, b) => {
+    const ca =
+      a.category_id != null ? (categorySort.get(a.category_id) ?? Number.MAX_SAFE_INTEGER) : Number.MAX_SAFE_INTEGER
+    const cb =
+      b.category_id != null ? (categorySort.get(b.category_id) ?? Number.MAX_SAFE_INTEGER) : Number.MAX_SAFE_INTEGER
+    if (ca !== cb) return ca - cb
+    const sa = Number(a.sort_order)
+    const sb = Number(b.sort_order)
+    if (sa !== sb) return sa - sb
+    return a.name.localeCompare(b.name, "es")
+  })
+
   return {
     status: 200,
     body: {
@@ -256,7 +273,7 @@ export async function getCatalog(
         name: c.name,
         sortOrder: Number(c.sort_order),
       })),
-      products: products.map((p) => {
+      products: sortedProducts.map((p) => {
         const photos = photosByProduct.get(p.id) ?? []
         return {
           id: p.id,

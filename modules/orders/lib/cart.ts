@@ -25,12 +25,19 @@ export function clampQuantity(q: number): number {
   return Math.min(MAX_QUANTITY, n)
 }
 
-export function cartItemKey(productId: string, variants: CartVariant[]): string {
+export function cartItemKey(
+  productId: string,
+  variants: CartVariant[],
+  notes?: string
+): string {
   const sig = variants
     .map((v) => `${v.groupName}:${v.optionName}`)
     .sort()
     .join("|")
-  return `${productId}::${sig}`
+  const noteSig = (notes ?? "").trim().toLowerCase()
+  return noteSig
+    ? `${productId}::${sig}::n:${noteSig}`
+    : `${productId}::${sig}`
 }
 
 export function itemUnitPriceCents(item: CartItem): number {

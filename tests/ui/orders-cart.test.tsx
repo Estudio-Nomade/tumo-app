@@ -95,9 +95,17 @@ describe("ProductDetail (elderly-UX source contracts)", () => {
     expect(detail).toContain("Math.min(20")
   })
 
+  test("con variantes y qty>1: pregunta config de cada unidad (N de M)", () => {
+    expect(detail).toMatch(/de \$\{|de \{|unitIndex|unidad/i)
+    expect(detail).toMatch(/\d de |de \$\{quantity\}|de \{quantity\}/i)
+    expect(detail).toMatch(/Siguiente/)
+    expect(detail).toMatch(/cartItemKey\([^)]*note/i)
+    expect(detail).toMatch(/variantGroups\.length/)
+  })
+
   test("precio live con formatCents", () => {
     expect(detail).toContain("formatCents")
-    expect(detail).toContain("Agregar · $")
+    expect(detail).toMatch(/Agregar · \$|Siguiente · \$/)
   })
 
   test("agotado deshabilitado y required validado", () => {

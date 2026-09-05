@@ -44,6 +44,15 @@ describe("cartItemKey", () => {
     expect(a).toBe(b)
     expect(a).not.toBe(c)
   })
+
+  test("misma variante + notas distintas → claves distintas (una con extra, otra sin)", () => {
+    const plain = cartItemKey("p1", grande)
+    const withNote = cartItemKey("p1", grande, "sin cebolla")
+    const otherNote = cartItemKey("p1", grande, "extra cheddar")
+    expect(plain).not.toBe(withNote)
+    expect(withNote).not.toBe(otherNote)
+    expect(cartItemKey("p1", grande, "  sin cebolla  ")).toBe(withNote)
+  })
 })
 
 describe("addItem", () => {
@@ -56,6 +65,41 @@ describe("addItem", () => {
     const next = addItem([item({ quantity: 1 })], item({ quantity: 1 }))
     expect(next).toHaveLength(1)
     expect(next[0].quantity).toBe(2)
+  })
+
+  test("grande y chico quedan en líneas separadas", () => {
+    const big = item({
+      key: cartItemKey("p1", grande),
+      variants: grande,
+      quantity: 1,
+    })
+    const small = item({
+      key: cartItemKey("p1", chico),
+      variants: chico,
+      quantity: 1,
+      name: "Hamburguesa",
+    })
+    const next = addItem(addItem([], big), small)
+    expect(next).toHaveLength(2)
+    expect(next.map((i) => i.variants[0]?.optionName).sort()).toEqual([
+      "Chico",
+      "Grande",
+    ])
+  })
+
+  test("misma variante con notas distintas no se mergea", () => {
+    const a = item({
+      key: cartItemKey("p1", grande, "extra bacon"),
+      notes: "extra bacon",
+      quantity: 1,
+    })
+    const b = item({
+      key: cartItemKey("p1", grande, "sin cebolla"),
+      notes: "sin cebolla",
+      quantity: 1,
+    })
+    const next = addItem(addItem([], a), b)
+    expect(next).toHaveLength(2)
   })
 
   test("no supera tope 20", () => {
