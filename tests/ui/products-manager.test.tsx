@@ -43,6 +43,13 @@ describe("ProductsManager (source contracts)", () => {
     expect(src).not.toMatch(/Foto \(URL, opcional\)/)
   })
 
+  test("admin puede crear categoría nueva", () => {
+    expect(src).toMatch(/Nueva categoría|Crear categoría/)
+    expect(src).toMatch(/\/api\/orders\/products\/categories/)
+    expect(src).toMatch(/method:\s*["']POST["']/)
+    expect(src).toMatch(/categoryName|newCategory|catName/)
+  })
+
   test("editor Nuevo/Editar: Sheet bottom full-height, no Dialog angosto", () => {
     expect(src).toMatch(/from ["']@\/components\/ui\/sheet["']/)
     expect(src).toMatch(/Sheet open=\{formOpen\}/)

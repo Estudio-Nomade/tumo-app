@@ -97,6 +97,9 @@ export default function ProductsManager({ slug }: { slug: string }) {
   const [editPhotos, setEditPhotos] = useState<ProductPhoto[]>([])
   const [uploadingPhotos, setUploadingPhotos] = useState(false)
   const [photoError, setPhotoError] = useState("")
+  const [newCategoryName, setNewCategoryName] = useState("")
+  const [creatingCategory, setCreatingCategory] = useState(false)
+  const [categoryError, setCategoryError] = useState("")
   const formOpenRef = useRef(formOpen)
   const editingIdRef = useRef(editing?.id)
   useEffect(() => {
@@ -183,6 +186,8 @@ export default function ProductsManager({ slug }: { slug: string }) {
     setEditPhotos([])
     setPhotoError("")
     setFormError("")
+    setNewCategoryName("")
+    setCategoryError("")
     setFormOpen(true)
   }
 
@@ -198,7 +203,45 @@ export default function ProductsManager({ slug }: { slug: string }) {
     )
     setPhotoError("")
     setFormError("")
+    setNewCategoryName("")
+    setCategoryError("")
     setFormOpen(true)
+  }
+
+  async function createNewCategory() {
+    setCategoryError("")
+    const name = newCategoryName.trim()
+    if (!name) {
+      setCategoryError("Escribí el nombre de la categoría.")
+      return
+    }
+    setCreatingCategory(true)
+    try {
+      const res = await fetch("/api/orders/products/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      })
+      const json = (await res.json()) as {
+        id?: string
+        name?: string
+        error?: string
+      }
+      if (!res.ok) {
+        setCategoryError(json.error ?? "No se pudo crear la categoría.")
+        return
+      }
+      if (json.id && json.name) {
+        setCategories((prev) => [...prev, { id: json.id!, name: json.name! }])
+        setDraft((d) => ({ ...d, categoryId: json.id! }))
+        setNewCategoryName("")
+        showToast(`Categoría “${json.name}” creada.`)
+      }
+    } catch {
+      setCategoryError("No se pudo crear la categoría.")
+    } finally {
+      setCreatingCategory(false)
+    }
   }
 
   async function uploadPhotos(files: FileList | null) {
@@ -602,6 +645,33 @@ export default function ProductsManager({ slug }: { slug: string }) {
                   ))}
                 </select>
               </label>
+              <div className="flex flex-col gap-2 rounded-2xl border border-dashed border-[#E7E5E4] p-3">
+                <p className="text-base font-semibold">Nueva categoría</p>
+                <p className="text-sm text-stone-600">
+                  Si no está en la lista, creala acá (ej. Postres).
+                </p>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <input
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="Nombre de la categoría"
+                    className="min-h-[52px] w-full min-w-0 flex-1 rounded-2xl border border-[#E7E5E4] px-4 text-base"
+                  />
+                  <button
+                    type="button"
+                    disabled={creatingCategory}
+                    onClick={() => void createNewCategory()}
+                    className="min-h-[56px] shrink-0 rounded-2xl border border-[var(--color-primary,#F97316)] px-4 text-base font-bold text-[var(--color-primary,#F97316)] disabled:opacity-60 sm:min-w-[10rem]"
+                  >
+                    {creatingCategory ? "Creando…" : "Crear categoría"}
+                  </button>
+                </div>
+                {categoryError ? (
+                  <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                    {categoryError}
+                  </p>
+                ) : null}
+              </div>
               <div className="flex flex-col gap-2">
                 <p className="text-base font-semibold">Fotos</p>
                 {!editing?.id ? (
