@@ -213,15 +213,15 @@ export default function CartWizard({ slug }: { slug: string }) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col pb-36">
-      <header className="px-4 pt-3 pb-2">
+    <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col bg-[var(--color-surface-public,#FFFFFF)] pb-36">
+      <header className="sticky top-0 z-10 border-b border-[#E7E5E4] bg-[var(--color-surface-public,#FFFFFF)] px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
         <button
           type="button"
           onClick={() => {
             if (step === 1) router.push(`/${slug}/orders`)
             else setStep((s) => (s === 3 ? 2 : 1))
           }}
-          className="min-h-[48px] text-left text-base font-semibold text-[var(--color-primary,#F97316)]"
+          className="mb-1 flex min-h-[48px] w-full items-center rounded-xl px-1 text-left text-base font-semibold text-[var(--color-primary,#F97316)]"
         >
           {step === 1 ? "← Menú" : "← Atrás"}
         </button>
@@ -233,7 +233,7 @@ export default function CartWizard({ slug }: { slug: string }) {
         </h1>
       </header>
 
-      <div className="flex flex-col gap-4 px-4">
+      <div className="flex flex-col gap-4 px-4 pt-4">
         {step === 1 ? (
           <>
             {cart.length === 0 ? (
