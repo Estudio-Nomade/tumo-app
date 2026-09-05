@@ -122,3 +122,11 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-loyalty-public-onboarding-composition.md`
   summary: flex-1 + mt-auto + fixed puede pelear con teclado móvil
   evidence: CTA abajo del viewport al abrir teclado; requiere chequeo en device
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-orders-photon-delivery-remove-mp.md`
+  summary: Rate-limit / max length en GET /api/orders/geocode (proxy público Photon)
+  evidence: Spec marcó rate-limit como opcional/TODO si trivial; abuso de cuota outbound vía origin sigue posible
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-orders-photon-delivery-remove-mp.md`
+  summary: changePaymentMethod no invalida filas order_payments previas al cambiar método
+  evidence: Preexistente; review lo re-surfació al quitar MP; transfer↔efectivo puede dejar comprobante huérfano en auditoría

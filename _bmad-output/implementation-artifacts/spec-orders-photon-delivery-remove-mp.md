@@ -2,7 +2,7 @@
 title: 'Orders: Photon dirección envío + quitar MercadoPago'
 type: 'feature'
 created: '2026-09-05'
-status: 'in-review'
+status: 'done'
 review_loop_iteration: 0
 baseline_commit: '50bb69f8073ad08eee8cbe868d0c110f0589a636'
 context:
@@ -82,19 +82,19 @@ context:
 **Execution (TDD por story):**
 
 ### Story 1 — Photon
-- [ ] `modules/orders/lib/photon.ts` + test — parse fixture; URL `lang=default` + bias
-- [ ] `modules/orders/api/geocode.ts` + test — q corta []; mock fetch OK/fail
-- [ ] `app/api/orders/geocode/route.ts` — GET público
-- [ ] `address-autocomplete.tsx` + wire `cart.tsx` paso 2 — listbox ≥48px; free-text fallback
-- [ ] `tests/ui/orders-cart.test.tsx` — contract geocode/listbox
+- [x] `modules/orders/lib/photon.ts` + test — parse fixture; URL `lang=default` + bias
+- [x] `modules/orders/api/geocode.ts` + test — q corta []; mock fetch OK/fail
+- [x] `app/api/orders/geocode/route.ts` — GET público
+- [x] `address-autocomplete.tsx` + wire `cart.tsx` paso 2 — listbox ≥48px; free-text fallback
+- [x] `tests/ui/orders-cart.test.tsx` — contract geocode/listbox
 
 ### Story 2 — Quitar MP
-- [ ] RED tests: types/cart/confirmation sin mercadopago; createOrder 400
-- [ ] types + orders API + catalog + pending + realtime + default-deps
-- [ ] UI cart/confirmation/panel/detail
-- [ ] borrar archivos/rutas MP
-- [ ] migration 011 + seed + tests migration/seed
-- [ ] verify paths inexistentes + bun test lista handoff
+- [x] RED tests: types/cart/confirmation sin mercadopago; createOrder 400
+- [x] types + orders API + catalog + pending + realtime + default-deps
+- [x] UI cart/confirmation/panel/detail
+- [x] borrar archivos/rutas MP
+- [x] migration 011 + seed + tests migration/seed
+- [x] verify paths inexistentes + bun test lista handoff
 
 **Acceptance Criteria:**
 - Given delivery en paso 2, when tipeo ≥3 chars, then sugerencias vía `/api/orders/geocode` (no komoot directo)
@@ -117,7 +117,7 @@ context:
 
 **GPS:** omitir en v1 salvo que reverse quede trivial tras autocomplete.
 
-**Migration regla:** `UPDATE orders SET payment_method='transfer' WHERE payment_method='mercadopago'`; same para `order_payments.method`. Preferir dejar cols `mp_*` huérfanas.
+**Migration regla:** `mercadopago` → `transfer`; si `payment_status='pending'` → `pending_receipt`. Same method en `order_payments`. Cols `mp_*` huérfanas.
 
 ## Verification
 
@@ -141,3 +141,38 @@ bunx eslint modules/orders/public/cart.tsx modules/orders/public/order-confirmat
 ```
 
 **Manual:** `/carri/orders` → item → carrito → Me lo envían → “San Martin” → suggest → Efectivo o Transferencia. Sin MP. Empleado ve dirección.
+
+## Suggested Review Order
+
+**Photon autocomplete**
+
+- Combobox client: debounce + proxy only, list opens upward
+  [`address-autocomplete.tsx:1`](../../modules/orders/public/address-autocomplete.tsx#L1)
+
+- Cart paso 2 wire delivery
+  [`cart.tsx:301`](../../modules/orders/public/cart.tsx#L301)
+
+- Server proxy GET
+  [`geocode/route.ts:5`](../../app/api/orders/geocode/route.ts#L5)
+
+- Photon URL `lang=default` + parse labels
+  [`photon.ts:34`](../../modules/orders/lib/photon.ts#L34)
+
+**Quitar MercadoPago**
+
+- Dominio PaymentMethod
+  [`types.ts:9`](../../modules/orders/lib/types.ts#L9)
+
+- Wizard solo Transferencia + Efectivo
+  [`cart.tsx:367`](../../modules/orders/public/cart.tsx#L367)
+
+- Confirmación sin MP/retry
+  [`order-confirmation.tsx:1`](../../modules/orders/public/order-confirmation.tsx#L1)
+
+- Migration backfill + CHECK
+  [`011_orders_drop_mercadopago.sql:1`](../../shell/db/migrations/011_orders_drop_mercadopago.sql#L1)
+
+**Periféricos**
+
+- Tests photon/geocode/UI
+  [`orders-photon.test.ts:1`](../../tests/orders-photon.test.ts#L1)
