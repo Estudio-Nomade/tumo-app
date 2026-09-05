@@ -32,7 +32,10 @@ export default async function DashboardOrdersPage({ params }: PageProps) {
           </div>
         }
       >
-        <OrdersPanel slug={slug} />
+        <OrdersPanel
+          slug={slug}
+          role={session.role === "owner" ? "owner" : "employee"}
+        />
       </Suspense>
     </div>
   )

@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { useBusiness } from "@/shell/context/business"
 import { formatCents } from "@/modules/orders/lib/types"
 import {
@@ -49,8 +50,17 @@ function relativeTime(ts: number): string {
   return `hace ${Math.floor(min / 60)} h`
 }
 
-export default function OrdersPanel({ slug }: { slug: string }) {
+export default function OrdersPanel({
+  slug,
+  role,
+}: {
+  slug: string
+  role: "owner" | "employee"
+}) {
   const business = useBusiness()
+  const router = useRouter()
+  const isOwner = role === "owner"
+  const logoInputRef = useRef<HTMLInputElement>(null)
   const [orders, setOrders] = useState<OrderRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
@@ -58,6 +68,10 @@ export default function OrdersPanel({ slug }: { slug: string }) {
   const [retry, setRetry] = useState(0)
   const [paused, setPaused] = useState(false)
   const [toast, setToast] = useState("")
+  const [logoOverride, setLogoOverride] = useState<string | null>(null)
+  const logo = logoOverride ?? business.logo
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const [logoError, setLogoError] = useState("")
 
   function showToast(msg: string) {
     setToast(msg)
@@ -175,6 +189,47 @@ export default function OrdersPanel({ slug }: { slug: string }) {
     }
   }
 
+  async function onLogoSelected(file: File | null) {
+    if (!file || uploadingLogo || !isOwner) return
+    const okType =
+      file.type === "image/jpeg" ||
+      file.type === "image/png" ||
+      file.type === "image/webp"
+    if (!okType) {
+      setLogoError("Usá JPEG, PNG o WebP.")
+      return
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      setLogoError("El logo no puede pesar más de 2 MB.")
+      return
+    }
+    setUploadingLogo(true)
+    setLogoError("")
+    try {
+      const body = new FormData()
+      body.append("file", file)
+      const res = await fetch("/api/business/logo", {
+        method: "POST",
+        body,
+      })
+      const data = (await res.json()) as { error?: string; logo?: string }
+      if (!res.ok) {
+        setLogoError(data.error ?? "No se pudo subir el logo.")
+        return
+      }
+      if (data.logo) setLogoOverride(data.logo)
+      showToast("Logo actualizado")
+      router.refresh()
+    } catch {
+      setLogoError("No se pudo subir el logo. Probá de nuevo.")
+    } finally {
+      setUploadingLogo(false)
+      if (logoInputRef.current) logoInputRef.current.value = ""
+    }
+  }
+
+  const logoInitial = (business.name.trim()?.[0] ?? "?").toUpperCase()
+
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
       <header className="flex items-start justify-between gap-3">
@@ -226,6 +281,60 @@ export default function OrdersPanel({ slug }: { slug: string }) {
           <span aria-hidden className="text-[var(--color-primary,#F97316)]">→</span>
         </Link>
       </div>
+
+      <section className="flex flex-col gap-3 rounded-2xl border border-[#E7E5E4] bg-white p-4">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-base font-semibold text-stone-900">Logo del menú</h2>
+        </div>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => {
+              if (!isOwner) return
+              logoInputRef.current?.click()
+            }}
+            disabled={!isOwner || uploadingLogo}
+            className="relative flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-dashed border-[#E7E5E4] bg-[#FAFAF9] disabled:opacity-60"
+            aria-label={
+              isOwner ? "Subir logo del menú" : "Logo del menú (solo el dueño puede cambiarlo)"
+            }
+          >
+            {logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logo} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <span className="flex h-full w-full items-center justify-center rounded-2xl bg-[var(--color-primary,#F97316)] text-xl font-bold text-white">
+                {logoInitial}
+              </span>
+            )}
+          </button>
+          <div className="min-w-0 flex-1">
+            {isOwner ? (
+              <p className="text-sm text-stone-600">
+                JPEG, PNG o WebP. Máximo 2 MB.
+                {uploadingLogo ? " Subiendo…" : ""}
+              </p>
+            ) : (
+              <p className="text-sm text-stone-600">
+                Solo el dueño puede cambiar el logo.
+              </p>
+            )}
+            {logoError ? (
+              <p role="alert" className="mt-1 text-sm font-medium text-red-600">
+                {logoError}
+              </p>
+            ) : null}
+          </div>
+        </div>
+        <input
+          ref={logoInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          disabled={!isOwner}
+          onChange={(e) => onLogoSelected(e.target.files?.[0] ?? null)}
+        />
+      </section>
 
       <nav aria-label="Filtro de pedidos" className="flex gap-2 overflow-x-auto">
         {CHIPS.map((c) => (

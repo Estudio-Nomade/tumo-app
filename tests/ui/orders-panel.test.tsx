@@ -50,6 +50,19 @@ describe("OrdersPanel (source contracts)", () => {
     expect(panel).toMatch(/Horarios de atención|Productos del menú/)
   })
 
+  test("card Logo del menú reusa POST /api/business/logo con FormData", () => {
+    expect(panel).toContain("Logo del menú")
+    expect(panel).toContain('/api/business/logo')
+    expect(panel).toContain("FormData")
+    expect(panel).toContain('append("file"')
+    expect(panel).toMatch(/image\/jpeg|image\/png|image\/webp/)
+  })
+
+  test("employee no puede subir logo (solo dueño)", () => {
+    expect(panel).toMatch(/Solo el dueño puede cambiar el logo/)
+    expect(panel).toMatch(/role|isOwner|owner/)
+  })
+
   test("realtime: toast de nuevo pedido (INSERT) accesible", () => {
     expect(panel).toContain("newOrderToastMessage")
     expect(panel).toContain("isNewOrder")

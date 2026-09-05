@@ -17,10 +17,15 @@ describe("Catalog (elderly-UX source contracts)", () => {
     expect(src).toMatch(/min-h-\[56px\]|h-\[56px\]|h-14/)
   })
 
-  test("barra de carrito fija abajo", () => {
-    expect(src).toContain("fixed")
-    expect(src).toContain("bottom")
-    expect(src).toMatch(/Ver mi pedido/)
+  test("header muestra logo del negocio o placeholder con inicial", () => {
+    expect(src).toContain("business.logo")
+    expect(src).toMatch(/<img|business\.logo/)
+    expect(src).toMatch(/object-cover|rounded-full/)
+  })
+
+  test("bottom nav Menú y Carrito siempre visible (sin barra Ver mi pedido)", () => {
+    expect(src).toContain("OrdersPublicNav")
+    expect(src).not.toMatch(/Ver mi pedido/)
   })
 
   test("carrito persiste vía loadCart/saveCart (clave tumo_cart_<slug>)", () => {

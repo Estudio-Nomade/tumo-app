@@ -55,6 +55,18 @@ describe("CartWizard (elderly-UX source contracts)", () => {
     expect(cart).toContain("clearCart")
     expect(cart).toContain("loadLastGuest")
   })
+
+  test("bottom nav Menú|Carrito montada", () => {
+    expect(cart).toContain("OrdersPublicNav")
+  })
+
+  test("empty cart con CTA claro al menú", () => {
+    expect(cart).toMatch(/Todavía no agregaste|pedido está vacío|Volvé al menú|Ver el menú/)
+  })
+
+  test("empty cart no muestra Continuar fijo", () => {
+    expect(cart).toMatch(/step === 1 && cart\.length === 0/)
+  })
 })
 
 describe("ProductDetail (elderly-UX source contracts)", () => {
@@ -79,5 +91,9 @@ describe("ProductDetail (elderly-UX source contracts)", () => {
     expect(detail).toContain("Agotado hoy")
     expect(detail).toContain("disabled")
     expect(detail).toContain("missingRequired")
+  })
+
+  test("bottom nav Menú|Carrito montada", () => {
+    expect(detail).toContain("OrdersPublicNav")
   })
 })
