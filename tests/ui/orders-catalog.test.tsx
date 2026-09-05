@@ -56,6 +56,36 @@ describe("Catalog (elderly-UX source contracts)", () => {
     expect(src).toContain("producto/")
   })
 
+  test("entry al detalle por cover/nombre (no solo por variantes en Agregar)", () => {
+    expect(src).toMatch(/href=\{`\/\$\{slug\}\/orders\/producto\/\$\{p\.id\}`\}/)
+    const addOnlyPush =
+      /variantGroups\.length\s*>\s*0[\s\S]*?router\.push\(`\/\$\{slug\}\/orders\/producto/
+    expect(src).toMatch(addOnlyPush)
+  })
+
+  test("badge N fotos solo si count > 1", () => {
+    expect(src).toContain("photoCount")
+    expect(src).toMatch(/count\s*>\s*1/)
+    expect(src).toMatch(/\{count\} fotos/)
+  })
+
+  test("Agregar es hermano del Link (sin nested interactive)", () => {
+    const linkClose = src.indexOf("</Link>")
+    const addBtn = src.indexOf("handleAdd(p)")
+    expect(linkClose).toBeGreaterThan(-1)
+    expect(addBtn).toBeGreaterThan(linkClose)
+  })
+
+  test("catálogo no embebe carrusel en cards", () => {
+    expect(src).not.toContain("ProductPhotoCarousel")
+    expect(src).not.toMatch(/snap-x/)
+  })
+
+  test("handleAdd / Agregar sigue existiendo", () => {
+    expect(src).toContain("handleAdd")
+    expect(src).toMatch(/Agregar/)
+  })
+
   test("banner de pedido pendiente con link a la confirmación", () => {
     expect(src).toContain("pendingOrder")
     expect(src).toContain("pendingOrderBanner")

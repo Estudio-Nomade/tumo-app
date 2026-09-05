@@ -158,3 +158,15 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-orders-products-edit-panel-mobile.md`
   summary: Close button del Sheet es icon-sm (~28px), por debajo del target elderly ≥48px
   evidence: Default de components/ui/sheet.tsx; no tocar primitivo global en este fix
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-orders-public-carousel-entry.md`
+  summary: Catalog UX tests siguen siendo source-contracts (sin RTL de tap→detalle multi-foto)
+  evidence: Estándar del repo para orders-catalog; no captura href mal interpolado en runtime
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-orders-public-carousel-entry.md`
+  summary: img alt y h2 repiten el nombre del producto (anuncio redundante a11y)
+  evidence: Preexistente en catálogo; no reescrito en este fix de entry
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-orders-public-carousel-entry.md`
+  summary: photoCount local vs lógica photos-or-photo del detalle puede divergir
+  evidence: Helper privado en catalog.tsx; extract shared deferred
