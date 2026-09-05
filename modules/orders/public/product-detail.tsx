@@ -34,6 +34,11 @@ export default function ProductDetail({
   const [quantity, setQuantity] = useState(1)
   const [note, setNote] = useState("")
   const [formError, setFormError] = useState("")
+  /** 0-based index of the unit being configured when product has variants. */
+  const [unitIndex, setUnitIndex] = useState(0)
+  const [cartCount, setCartCount] = useState(
+    () => cartSummary(loadCart(slug)).count
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -67,13 +72,25 @@ export default function ProductDetail({
         const ids = multiple[g.id] ?? []
         for (const opt of g.options) {
           if (ids.includes(opt.id)) {
-            out.push({ groupName: g.name, optionName: opt.name, priceDeltaCents: opt.priceDeltaCents, optionId: opt.id })
+            out.push({
+              groupName: g.name,
+              optionName: opt.name,
+              priceDeltaCents: opt.priceDeltaCents,
+              optionId: opt.id,
+            })
           }
         }
       } else {
         const id = single[g.id]
         const opt = g.options.find((o) => o.id === id)
-        if (opt) out.push({ groupName: g.name, optionName: opt.name, priceDeltaCents: opt.priceDeltaCents, optionId: opt.id })
+        if (opt) {
+          out.push({
+            groupName: g.name,
+            optionName: opt.name,
+            priceDeltaCents: opt.priceDeltaCents,
+            optionId: opt.id,
+          })
+        }
       }
     }
     return out
@@ -108,28 +125,71 @@ export default function ProductDetail({
     return false
   }
 
+  function resetUnitChoices() {
+    setSingle({})
+    setMultiple({})
+    setNote("")
+    setFormError("")
+  }
+
+  function changeQuantity(next: number) {
+    const q = Math.max(1, Math.min(20, next))
+    setQuantity(q)
+    setUnitIndex(0)
+    resetUnitChoices()
+  }
+
   function handleAdd() {
     if (!product || !product.isAvailable) return
     if (missingRequired()) {
       setFormError("Elegí una opción para cada grupo marcado")
       return
     }
+
     const noteText = note.trim()
-    // Con variantes: siempre 1 unidad por línea. Si querés otra chica/con extra, volvé a agregar.
-    const qty =
-      product.variantGroups.length > 0 ? 1 : quantity
+    const hasVariants = product.variantGroups.length > 0
+
+    if (!hasVariants) {
+      const item: CartItem = {
+        key: cartItemKey(product.id, [], noteText),
+        productId: product.id,
+        name: product.name,
+        basePriceCents: product.priceCents,
+        quantity,
+        variants: [],
+        notes: noteText || undefined,
+      }
+      const next = addItem(loadCart(slug), item)
+      saveCart(slug, next)
+      notifyOrdersCartChanged()
+      router.push(`/${slug}/orders`)
+      return
+    }
+
+    // Una línea por unidad: cada una puede ser chica/grande o con distinta nota.
     const item: CartItem = {
       key: cartItemKey(product.id, selectedVariants, noteText),
       productId: product.id,
       name: product.name,
       basePriceCents: product.priceCents,
-      quantity: qty,
+      quantity: 1,
       variants: selectedVariants,
       notes: noteText || undefined,
     }
     const next = addItem(loadCart(slug), item)
     saveCart(slug, next)
     notifyOrdersCartChanged()
+    setCartCount(cartSummary(next).count)
+
+    if (unitIndex + 1 < quantity) {
+      setUnitIndex((i) => i + 1)
+      resetUnitChoices()
+      if (typeof window !== "undefined") {
+        window.scrollTo({ top: 0, behavior: "smooth" })
+      }
+      return
+    }
+
     router.push(`/${slug}/orders`)
   }
 
@@ -162,8 +222,13 @@ export default function ProductDetail({
   }
 
   const hasVariants = product.variantGroups.length > 0
-  const addQty = hasVariants ? 1 : quantity
-  const addTotalCents = unitPriceCents * addQty
+  const multiUnit = hasVariants && quantity > 1
+  const isLastUnit = !hasVariants || unitIndex + 1 >= quantity
+  const ctaLabel = !product.isAvailable
+    ? "Agotado hoy"
+    : isLastUnit
+      ? `Agregar · $ ${formatCents(unitPriceCents)}`
+      : `Siguiente · $ ${formatCents(unitPriceCents)}`
 
   return (
     <div className="mx-auto w-full max-w-md pb-36">
@@ -202,11 +267,48 @@ export default function ProductDetail({
           </p>
         ) : null}
 
+        <div className="flex items-center justify-between">
+          <span className="text-base font-semibold text-[var(--color-ink-public,#1C1917)]">
+            Cantidad
+          </span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              aria-label="Menos"
+              onClick={() => changeQuantity(quantity - 1)}
+              className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#E7E5E4] text-[22px] font-bold"
+            >
+              −
+            </button>
+            <span className="w-8 text-center text-[22px] font-bold">{quantity}</span>
+            <button
+              type="button"
+              aria-label="Más"
+              onClick={() => changeQuantity(quantity + 1)}
+              className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#E7E5E4] text-[22px] font-bold"
+            >
+              +
+            </button>
+          </div>
+        </div>
+
+        {multiUnit ? (
+          <p
+            role="status"
+            className="rounded-2xl bg-[var(--color-primary,#F97316)]/10 px-4 py-3 text-base font-semibold text-[var(--color-ink-public,#1C1917)]"
+          >
+            Unidad {unitIndex + 1} de {quantity}. Elegí cómo la querés (tamaño,
+            extras, nota).
+          </p>
+        ) : null}
+
         {product.variantGroups.map((group) => (
           <fieldset key={group.id} className="flex flex-col gap-2">
             <legend className="text-base font-semibold text-[var(--color-ink-public,#1C1917)]">
               {group.name}
-              {group.selectionType === "multiple" ? " · Podés elegir varias" : " · Elegí una"}
+              {group.selectionType === "multiple"
+                ? " · Podés elegir varias"
+                : " · Elegí una"}
             </legend>
             <div className="flex flex-col gap-2">
               {group.options.map((opt) => {
@@ -221,20 +323,29 @@ export default function ProductDetail({
                   >
                     <span className="flex items-center gap-3 text-base text-[var(--color-ink-public,#1C1917)]">
                       <input
-                        type={group.selectionType === "multiple" ? "checkbox" : "radio"}
-                        name={group.id}
+                        type={
+                          group.selectionType === "multiple"
+                            ? "checkbox"
+                            : "radio"
+                        }
+                        name={`${group.id}-${unitIndex}`}
                         checked={checked}
                         onChange={() =>
                           group.selectionType === "multiple"
                             ? toggleMultiple(group.id, opt.id)
-                            : setSingle((prev) => ({ ...prev, [group.id]: opt.id }))
+                            : setSingle((prev) => ({
+                                ...prev,
+                                [group.id]: opt.id,
+                              }))
                         }
                         className="h-5 w-5 accent-[var(--color-primary,#F97316)]"
                       />
                       {opt.name}
                     </span>
                     <span className="text-base font-semibold text-[var(--color-muted-public,#78716C)]">
-                      {opt.priceDeltaCents > 0 ? `+$ ${formatCents(opt.priceDeltaCents)}` : "$ 0"}
+                      {opt.priceDeltaCents > 0
+                        ? `+$ ${formatCents(opt.priceDeltaCents)}`
+                        : "$ 0"}
                     </span>
                   </label>
                 )
@@ -242,38 +353,6 @@ export default function ProductDetail({
             </div>
           </fieldset>
         ))}
-
-        {hasVariants ? (
-          <p className="rounded-2xl bg-[#F5F5F4] px-4 py-3 text-base text-[var(--color-ink-public,#1C1917)]">
-            Se agrega de a una por vez. Si querés otra distinta (chica/grande o con extra),
-            volvé a agregar desde el menú.
-          </p>
-        ) : (
-          <div className="flex items-center justify-between">
-            <span className="text-base font-semibold text-[var(--color-ink-public,#1C1917)]">
-              Cantidad
-            </span>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                aria-label="Menos"
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#E7E5E4] text-[22px] font-bold"
-              >
-                −
-              </button>
-              <span className="w-8 text-center text-[22px] font-bold">{quantity}</span>
-              <button
-                type="button"
-                aria-label="Más"
-                onClick={() => setQuantity((q) => Math.min(20, q + 1))}
-                className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#E7E5E4] text-[22px] font-bold"
-              >
-                +
-              </button>
-            </div>
-          </div>
-        )}
 
         <label className="flex flex-col gap-1.5">
           <span className="text-base font-semibold text-[var(--color-ink-public,#1C1917)]">
@@ -289,7 +368,10 @@ export default function ProductDetail({
         </label>
 
         {formError ? (
-          <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+          <p
+            role="alert"
+            className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-700"
+          >
             {formError}
           </p>
         ) : null}
@@ -302,11 +384,11 @@ export default function ProductDetail({
           onClick={handleAdd}
           className="flex min-h-[56px] w-full max-w-md mx-auto items-center justify-center rounded-2xl bg-[var(--color-primary,#F97316)] px-4 text-base font-bold text-white disabled:bg-stone-300 disabled:text-stone-500"
         >
-          {product.isAvailable ? `Agregar · $ ${formatCents(addTotalCents)}` : "Agotado hoy"}
+          {ctaLabel}
         </button>
       </div>
 
-      <OrdersPublicNav slug={slug} count={cartSummary(loadCart(slug)).count} />
+      <OrdersPublicNav slug={slug} count={cartCount} />
     </div>
   )
 }

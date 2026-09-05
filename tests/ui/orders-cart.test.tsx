@@ -89,23 +89,23 @@ describe("ProductDetail (elderly-UX source contracts)", () => {
     expect(detail).toContain("Podés elegir varias")
   })
 
-  test("stepper de cantidad con tope (productos sin variantes)", () => {
+  test("stepper de cantidad con tope", () => {
     expect(detail).toContain("Cantidad")
     expect(detail).toContain("Math.max(1")
     expect(detail).toContain("Math.min(20")
   })
 
-  test("con variantes: una unidad por vez + guía para otra personalizada", () => {
-    expect(detail).toMatch(/variantGroups\.length/)
-    expect(detail).toMatch(
-      /otra distinta|otra con|agregala de nuevo|volvé a agregar|una por vez/i
-    )
+  test("con variantes y qty>1: pregunta config de cada unidad (N de M)", () => {
+    expect(detail).toMatch(/de \$\{|de \{|unitIndex|unidad/i)
+    expect(detail).toMatch(/\d de |de \$\{quantity\}|de \{quantity\}/i)
+    expect(detail).toMatch(/Siguiente/)
     expect(detail).toMatch(/cartItemKey\([^)]*note/i)
+    expect(detail).toMatch(/variantGroups\.length/)
   })
 
   test("precio live con formatCents", () => {
     expect(detail).toContain("formatCents")
-    expect(detail).toContain("Agregar · $")
+    expect(detail).toMatch(/Agregar · \$|Siguiente · \$/)
   })
 
   test("agotado deshabilitado y required validado", () => {
