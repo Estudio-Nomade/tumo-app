@@ -31,6 +31,11 @@ type CatalogData = {
   pendingOrder: CatalogPendingOrder | null
 }
 
+function photoCount(p: CatalogProduct): number {
+  if (Array.isArray(p.photos) && p.photos.length) return p.photos.length
+  return p.photo ? 1 : 0
+}
+
 export default function Catalog({ slug }: { slug: string }) {
   const business = useBusiness()
   const router = useRouter()
@@ -236,48 +241,64 @@ export default function Catalog({ slug }: { slug: string }) {
           </nav>
 
           <ul className="flex flex-col gap-4 px-4">
-            {visibleProducts.map((p) => (
-              <li
-                key={p.id}
-                className={`overflow-hidden rounded-2xl border border-[#E7E5E4] bg-white ${
-                  p.isAvailable ? "" : "opacity-70"
-                }`}
-              >
-                <div className="flex aspect-[4/3] w-full items-center justify-center bg-[#F5F5F4] text-[var(--color-muted-public,#78716C)]">
-                  {p.photo ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={p.photo}
-                      alt={p.name}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-base">Sin foto</span>
-                  )}
-                </div>
-                <div className="flex flex-col gap-2 p-4">
-                  <h2 className="text-[20px] font-bold leading-tight text-[var(--color-ink-public,#1C1917)]">
-                    {p.name}
-                  </h2>
-                  {p.description ? (
-                    <p className="line-clamp-2 text-base text-[var(--color-muted-public,#78716C)]">
-                      {p.description}
-                    </p>
-                  ) : null}
-                  <p className="text-[22px] font-bold text-[var(--color-ink-public,#1C1917)]">
-                    $ {formatCents(p.priceCents)}
-                  </p>
-                  <button
-                    type="button"
-                    disabled={!open || paused || !p.isAvailable}
-                    onClick={() => handleAdd(p)}
-                    className="min-h-[56px] w-full rounded-2xl bg-[var(--color-primary,#F97316)] text-base font-bold text-white disabled:bg-stone-300 disabled:text-stone-500"
+            {visibleProducts.map((p) => {
+              const count = photoCount(p)
+              const coverUrl = p.photo ?? p.photos[0]?.url ?? null
+              return (
+                <li
+                  key={p.id}
+                  className={`overflow-hidden rounded-2xl border border-[#E7E5E4] bg-white ${
+                    p.isAvailable ? "" : "opacity-70"
+                  }`}
+                >
+                  <Link
+                    href={`/${slug}/orders/producto/${p.id}`}
+                    className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary,#F97316)]"
                   >
-                    {p.isAvailable ? "Agregar" : "Agotado hoy"}
-                  </button>
-                </div>
-              </li>
-            ))}
+                    <div className="relative flex aspect-[4/3] w-full items-center justify-center bg-[#F5F5F4] text-[var(--color-muted-public,#78716C)]">
+                      {coverUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={coverUrl}
+                          alt={p.name}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-base">Sin foto</span>
+                      )}
+                      {count > 1 ? (
+                        <span className="absolute right-2 bottom-2 rounded-full bg-black/70 px-2.5 py-1 text-base font-semibold text-white">
+                          {count} fotos
+                        </span>
+                      ) : null}
+                    </div>
+                    <div className="flex flex-col gap-2 p-4 pb-0">
+                      <h2 className="text-[20px] font-bold leading-tight text-[var(--color-ink-public,#1C1917)]">
+                        {p.name}
+                      </h2>
+                      {p.description ? (
+                        <p className="line-clamp-2 text-base text-[var(--color-muted-public,#78716C)]">
+                          {p.description}
+                        </p>
+                      ) : null}
+                      <p className="text-[22px] font-bold text-[var(--color-ink-public,#1C1917)]">
+                        $ {formatCents(p.priceCents)}
+                      </p>
+                    </div>
+                  </Link>
+                  <div className="p-4 pt-3">
+                    <button
+                      type="button"
+                      disabled={!open || paused || !p.isAvailable}
+                      onClick={() => handleAdd(p)}
+                      className="min-h-[56px] w-full rounded-2xl bg-[var(--color-primary,#F97316)] text-base font-bold text-white disabled:bg-stone-300 disabled:text-stone-500"
+                    >
+                      {p.isAvailable ? "Agregar" : "Agotado hoy"}
+                    </button>
+                  </div>
+                </li>
+              )
+            })}
           </ul>
         </>
       )}
