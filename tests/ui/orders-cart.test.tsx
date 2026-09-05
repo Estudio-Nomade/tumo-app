@@ -73,7 +73,9 @@ describe("CartWizard (elderly-UX source contracts)", () => {
     expect(cart).toMatch(/sticky top-0/)
     expect(cart).toMatch(/border-b/)
     expect(cart).toMatch(/bg-\[var\(--color-surface-public/)
-    expect(cart).toMatch(/min-h-\[48px\].*← Menú|← Menú[\s\S]*min-h-\[48px\]/)
+    expect(cart).toContain("← Menú")
+    expect(cart).toContain("min-h-[48px]")
+    expect(cart).toMatch(/w-full items-center/)
   })
 
   test("bottom nav Menú|Carrito montada", () => {
