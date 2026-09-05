@@ -8,20 +8,6 @@ describe("pendingOrderBanner", () => {
     )
   })
 
-  test("mercadopago pending → mensaje de espera de pago", () => {
-    expect(pendingOrderBanner("mercadopago", "pending")).toBe(
-      "Estamos esperando la confirmación de tu pago en MercadoPago."
-    )
-  })
-
-  test("mercadopago paid → null", () => {
-    expect(pendingOrderBanner("mercadopago", "paid")).toBeNull()
-  })
-
-  test("mercadopago rejected → null (lo maneja la confirmación)", () => {
-    expect(pendingOrderBanner("mercadopago", "rejected")).toBeNull()
-  })
-
   test("transfer pending_receipt → banner para volver a subir la foto", () => {
     expect(pendingOrderBanner("transfer", "pending_receipt")).toMatch(/comprobante/)
   })

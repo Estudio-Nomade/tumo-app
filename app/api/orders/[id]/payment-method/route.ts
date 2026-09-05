@@ -15,7 +15,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const result = await changePaymentMethod(ordersDeps, {
     orderId: id,
-    paymentMethod: body.paymentMethod as "transfer" | "mercadopago" | "at_pickup",
+    paymentMethod: body.paymentMethod as "transfer" | "at_pickup",
   })
   return NextResponse.json(result.body, { status: result.status })
 }

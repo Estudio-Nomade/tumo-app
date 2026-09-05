@@ -6,7 +6,7 @@ export type OrderStatus =
   | "completed"
   | "cancelled"
 
-export type PaymentMethod = "transfer" | "mercadopago" | "at_pickup"
+export type PaymentMethod = "transfer" | "at_pickup"
 
 export type PaymentStatus =
   | "unpaid"
@@ -29,7 +29,6 @@ export const ORDER_STATUSES = [
 
 export const PAYMENT_METHODS = [
   "transfer",
-  "mercadopago",
   "at_pickup",
 ] as const satisfies readonly PaymentMethod[]
 
@@ -50,7 +49,6 @@ export const FULFILLMENT_OPTIONS = [
 const INITIAL_PAYMENT_STATUS: Record<PaymentMethod, PaymentStatus> = {
   at_pickup: "unpaid",
   transfer: "pending_receipt",
-  mercadopago: "pending",
 }
 
 /** payment_status inicial según el método elegido al crear el pedido. */

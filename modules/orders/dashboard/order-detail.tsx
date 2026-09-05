@@ -19,7 +19,7 @@ type OrderDetail = {
   id: string
   orderNumber: number
   status: string
-  paymentMethod: "transfer" | "mercadopago" | "at_pickup"
+  paymentMethod: "transfer" | "at_pickup"
   paymentStatus: string
   fulfillment: string
   deliveryAddress: string | null
@@ -53,9 +53,8 @@ function paymentLabel(method: string, status: string): string {
   if (status === "rejected") return "Pago rechazado"
   if (method === "transfer" && status === "pending_receipt") return "Falta comprobante"
   if (method === "transfer" && status === "pending_verification") return "Revisar comprobante"
-  if (method === "mercadopago" && status === "pending") return "Pago en proceso"
-  if (method === "at_pickup") return "Paga al retirar"
-  return "Pagado"
+  if (method === "at_pickup") return "Efectivo"
+  return "Sin cobrar"
 }
 
 export default function OrderDetail({

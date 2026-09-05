@@ -23,7 +23,7 @@ import AddressAutocomplete from "@/modules/orders/public/address-autocomplete"
 
 type Step = 1 | 2 | 3
 type Fulfillment = "pickup" | "delivery"
-type PaymentMethod = "transfer" | "mercadopago" | "at_pickup"
+type PaymentMethod = "transfer" | "at_pickup"
 
 const STEPS = [
   { n: 1, title: "Tu pedido" },
@@ -367,8 +367,7 @@ export default function CartWizard({ slug }: { slug: string }) {
               {(
                 [
                   ["transfer", "Transferencia", "Pasás la plata y subís la foto del comprobante"],
-                  ["mercadopago", "MercadoPago", "Tarjeta, dinero en cuenta o efectivo"],
-                  ["at_pickup", "Pagás al retirar", "Efectivo u otro medio en el food truck"],
+                  ["at_pickup", "Efectivo", "Pagás en efectivo al retirar o cuando te lo llevan"],
                 ] as [PaymentMethod, string, string][]
               ).map(([value, label, hint]) => (
                 <label

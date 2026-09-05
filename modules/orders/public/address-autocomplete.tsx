@@ -22,20 +22,21 @@ export default function AddressAutocomplete({
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const abortRef = useRef<AbortController | null>(null)
+  const reqIdRef = useRef(0)
+  const q = value.trim()
+  const canSuggest = q.length >= 3
+  const visible = canSuggest ? suggestions : []
 
   useEffect(() => {
-    const q = value.trim()
-    if (q.length < 3) {
-      setSuggestions([])
-      setOpen(false)
-      setLoading(false)
-      return
-    }
+    if (!canSuggest) return
 
     const timer = window.setTimeout(() => {
       abortRef.current?.abort()
       const ac = new AbortController()
       abortRef.current = ac
+      const reqId = ++reqIdRef.current
+      setSuggestions([])
+      setOpen(false)
       setLoading(true)
       const url = `/api/orders/geocode?q=${encodeURIComponent(q)}&slug=${encodeURIComponent(slug)}`
       fetch(url, { signal: ac.signal })
@@ -44,23 +45,27 @@ export default function AddressAutocomplete({
           return (await res.json()) as { results?: Suggestion[] }
         })
         .then((json) => {
+          if (reqId !== reqIdRef.current) return
           const list = Array.isArray(json.results) ? json.results : []
           setSuggestions(list)
           setOpen(list.length > 0)
         })
         .catch((err: unknown) => {
           if (err instanceof DOMException && err.name === "AbortError") return
+          if (reqId !== reqIdRef.current) return
           setSuggestions([])
           setOpen(false)
         })
-        .finally(() => setLoading(false))
+        .finally(() => {
+          if (reqId === reqIdRef.current) setLoading(false)
+        })
     }, 350)
 
     return () => {
       window.clearTimeout(timer)
       abortRef.current?.abort()
     }
-  }, [value, slug])
+  }, [q, slug, canSuggest])
 
   function pick(s: Suggestion) {
     onChange(s.label)
@@ -75,12 +80,12 @@ export default function AddressAutocomplete({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => {
-          if (suggestions.length > 0) setOpen(true)
+          if (visible.length > 0) setOpen(true)
         }}
         placeholder={placeholder}
         autoComplete="street-address"
         role="combobox"
-        aria-expanded={open}
+        aria-expanded={open && visible.length > 0}
         aria-controls={listId}
         aria-autocomplete="list"
         className="min-h-[52px] w-full rounded-2xl border border-[#E7E5E4] px-4 text-base outline-none focus:border-[var(--color-primary,#F97316)]"
@@ -90,14 +95,14 @@ export default function AddressAutocomplete({
           …
         </span>
       ) : null}
-      {open && suggestions.length > 0 ? (
+      {open && visible.length > 0 ? (
         <ul
           id={listId}
           role="listbox"
           className="absolute bottom-full z-40 mb-1 max-h-56 w-full overflow-y-auto rounded-2xl border border-[#E7E5E4] bg-white shadow-lg"
         >
-          {suggestions.map((s) => (
-            <li key={`${s.label}-${s.lat}-${s.lon}`} role="option">
+          {visible.map((s) => (
+            <li key={`${s.label}-${s.lat}-${s.lon}`} role="option" aria-selected={false}>
               <button
                 type="button"
                 className="flex min-h-[48px] w-full items-center px-4 py-3 text-left text-base text-[var(--color-ink-public,#1C1917)] hover:bg-[#FFF7ED]"

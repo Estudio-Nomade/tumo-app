@@ -416,11 +416,11 @@ export async function getOrder(
     : ([] as { order_item_id: string; group_name: string; option_name: string; price_delta_cents: number }[])
 
   const settings = (await deps.sql`
-    SELECT transfer_alias, transfer_cbu, transfer_holder, mp_enabled
+    SELECT transfer_alias, transfer_cbu, transfer_holder
     FROM orders_settings
     WHERE business_id = ${order.business_id}
     LIMIT 1
-  `) as { transfer_alias: string | null; transfer_cbu: string | null; transfer_holder: string | null; mp_enabled: boolean }[]
+  `) as { transfer_alias: string | null; transfer_cbu: string | null; transfer_holder: string | null }[]
 
   const payments = (await deps.sql`
     SELECT status, receipt_mime, encode(receipt_image, 'base64') AS receipt_base64, created_at
@@ -476,7 +476,6 @@ export async function getOrder(
             holder: settings[0].transfer_holder,
           }
         : null,
-      mpEnabled: Boolean(settings[0]?.mp_enabled),
       payment: payments[0]
         ? {
             status: payments[0].status,

@@ -38,9 +38,8 @@ function paymentLabel(method: string, status: string): string {
   if (status === "rejected") return "Pago rechazado"
   if (method === "transfer" && status === "pending_receipt") return "Falta comprobante"
   if (method === "transfer" && status === "pending_verification") return "Revisar comprobante"
-  if (method === "mercadopago" && status === "pending") return "Pago en proceso"
-  if (method === "at_pickup") return "Paga al retirar"
-  return "Pagado"
+  if (method === "at_pickup") return "Efectivo"
+  return "Sin cobrar"
 }
 
 function relativeTime(ts: number): string {

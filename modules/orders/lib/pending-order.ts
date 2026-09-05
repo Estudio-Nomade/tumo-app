@@ -14,8 +14,5 @@ export function pendingOrderBanner(
   if (method === "transfer" && status === "rejected") {
     return "El comprobante no se pudo verificar. Tocá para subir otra foto."
   }
-  if (method === "mercadopago" && status === "pending") {
-    return "Estamos esperando la confirmación de tu pago en MercadoPago."
-  }
   return null
 }

@@ -21,10 +21,12 @@ describe("CartWizard (elderly-UX source contracts)", () => {
     expect(cart).toContain("Pago y tus datos")
   })
 
-  test("tres métodos de pago con explicación", () => {
+  test("dos métodos de pago: Transferencia y Efectivo", () => {
     expect(cart).toContain("Transferencia")
-    expect(cart).toContain("MercadoPago")
-    expect(cart).toContain("Pagás al retirar")
+    expect(cart).toContain("Efectivo")
+    expect(cart).toContain("at_pickup")
+    expect(cart).not.toContain("MercadoPago")
+    expect(cart).not.toContain("mercadopago")
   })
 
   test("confirma con idempotencyKey estable", () => {

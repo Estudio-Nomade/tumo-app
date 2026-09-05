@@ -13,6 +13,7 @@ async function migrate() {
     "008_employees_is_active.sql",
     "009_turnos.sql",
     "010_tumo_admin.sql",
+    "011_orders_drop_mercadopago.sql",
   ]
   for (const file of files) {
     const migration = readFileSync(

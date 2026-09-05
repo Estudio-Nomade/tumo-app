@@ -2,7 +2,7 @@
 title: 'Orders: Photon dirección envío + quitar MercadoPago'
 type: 'feature'
 created: '2026-09-05'
-status: 'in-progress'
+status: 'in-review'
 review_loop_iteration: 0
 baseline_commit: '50bb69f8073ad08eee8cbe868d0c110f0589a636'
 context:

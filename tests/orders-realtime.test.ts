@@ -8,15 +8,6 @@ import {
 } from "@/modules/orders/lib/realtime"
 
 describe("shouldTrackPayment", () => {
-  test("mercadopago pendiente → sigue mirando (espera el webhook)", () => {
-    expect(shouldTrackPayment("mercadopago", "pending")).toBe(true)
-  })
-  test("mercadopago pagado → deja de mirar", () => {
-    expect(shouldTrackPayment("mercadopago", "paid")).toBe(false)
-  })
-  test("mercadopago rechazado → deja de mirar", () => {
-    expect(shouldTrackPayment("mercadopago", "rejected")).toBe(false)
-  })
   test("transferencia en verificación → sigue mirando (espera al empleado)", () => {
     expect(shouldTrackPayment("transfer", "pending_verification")).toBe(true)
   })
