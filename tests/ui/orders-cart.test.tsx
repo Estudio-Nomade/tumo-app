@@ -69,6 +69,13 @@ describe("CartWizard (elderly-UX source contracts)", () => {
     expect(cart).toContain("loadLastGuest")
   })
 
+  test("header del wizard con barra (no back pelado)", () => {
+    expect(cart).toMatch(/sticky top-0/)
+    expect(cart).toMatch(/border-b/)
+    expect(cart).toMatch(/bg-\[var\(--color-surface-public/)
+    expect(cart).toMatch(/min-h-\[48px\].*← Menú|← Menú[\s\S]*min-h-\[48px\]/)
+  })
+
   test("bottom nav Menú|Carrito montada", () => {
     expect(cart).toContain("OrdersPublicNav")
   })
