@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { formatCents, type PaymentStatus } from "@/modules/orders/lib/types"
 import { createOrdersChannel, shouldTrackPayment } from "@/modules/orders/lib/realtime"
-import { mpTimeoutHint } from "@/modules/orders/lib/mp-timeout"
 
 type OrderVariant = { groupName: string; optionName: string; priceDeltaCents: number }
 
@@ -12,7 +11,7 @@ type OrderDetail = {
   id: string
   orderNumber: number
   status: string
-  paymentMethod: "transfer" | "mercadopago" | "at_pickup"
+  paymentMethod: "transfer" | "at_pickup"
   paymentStatus: PaymentStatus
   fulfillment: string
   deliveryFeeCents: number
@@ -45,8 +44,6 @@ export default function OrderConfirmation({
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState("")
   const [changing, setChanging] = useState(false)
-  const [mpSince, setMpSince] = useState<number | null>(null)
-  const [now, setNow] = useState<number>(() => Date.now())
   const busyRef = useRef(false)
 
   useEffect(() => {
@@ -58,17 +55,9 @@ export default function OrderConfirmation({
         if (json.error) {
           setError(json.error)
           setOrder(null)
-          setMpSince(null)
           return
         }
         setOrder(json)
-        setMpSince((prev) => {
-          const pending =
-            json.paymentMethod === "mercadopago" &&
-            json.paymentStatus === "pending"
-          if (pending && prev != null) return prev
-          return pending ? Date.now() : null
-        })
       })
       .catch(() => {
         if (!cancelled) setError("No pudimos cargar tu pedido.")
@@ -101,12 +90,6 @@ export default function OrderConfirmation({
     return () => window.clearInterval(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order?.paymentMethod, order?.paymentStatus])
-
-  useEffect(() => {
-    if (mpSince == null) return
-    const id = window.setInterval(() => setNow(Date.now()), 1000)
-    return () => window.clearInterval(id)
-  }, [mpSince])
 
   async function copyField(value: string, key: string) {
     try {
@@ -210,31 +193,6 @@ export default function OrderConfirmation({
     }
   }
 
-  async function retryMp() {
-    if (busyRef.current) return
-    busyRef.current = true
-    setChanging(true)
-    setError("")
-    try {
-      const res = await fetch(`/api/orders/${orderId}/mp-preference`, {
-        method: "POST",
-      })
-      const json = (await res.json()) as { initPoint?: string; error?: string }
-      if (!res.ok) {
-        setError(json.error ?? "No pudimos conectar con MercadoPago.")
-        return
-      }
-      if (json.initPoint) {
-        window.location.href = json.initPoint
-      }
-    } catch {
-      setError("No pudimos conectar con MercadoPago. Probá de nuevo o elegí otro método.")
-    } finally {
-      busyRef.current = false
-      setChanging(false)
-    }
-  }
-
   if (loading) {
     return (
       <div className="mx-auto flex w-full max-w-md flex-col gap-4 p-4">
@@ -272,9 +230,6 @@ export default function OrderConfirmation({
   const paid = ps === "paid" || pm === "at_pickup"
   const reviewingReceipt = pm === "transfer" && ps === "pending_verification"
   const needsReceipt = pm === "transfer" && (ps === "pending_receipt" || ps === "rejected")
-  const mpWaiting = pm === "mercadopago" && ps === "pending"
-  const mpRejected = pm === "mercadopago" && ps === "rejected"
-  const mpSlowHint = mpTimeoutHint(mpSince != null ? now - mpSince : 0)
 
   const codeDigits = (order.customer.code || "····").slice(0, 4).split("")
 
@@ -394,52 +349,24 @@ export default function OrderConfirmation({
           </button>
         </div>
       ) : reviewingReceipt ? (
-        <p className="rounded-2xl bg-amber-50 px-4 py-3 text-base font-medium text-amber-800">
-          Listo, Carri está revisando tu comprobante.
-        </p>
-      ) : mpWaiting || mpRejected ? (
         <div className="flex flex-col gap-3">
-          {mpWaiting ? (
-            <div className="flex flex-col items-center gap-3 rounded-2xl bg-amber-50 px-4 py-4 text-center">
-              <div
-                role="status"
-                aria-label="Esperando la confirmación de tu pago"
-                className="h-8 w-8 animate-spin rounded-full border-4 border-[#E7E5E4] border-t-[var(--color-primary,#F97316)]"
-              />
-              <p className="text-base font-semibold text-amber-900">
-                Estamos esperando la confirmación de tu pago en MercadoPago.
-              </p>
-              <p className="text-sm text-amber-800">
-                Suele tardar unos segundos. Esta página se actualiza sola.
-              </p>
-              {mpSlowHint ? (
-                <div className="flex w-full flex-col gap-2">
-                  <p role="status" className="text-base font-semibold text-amber-900">
-                    {mpSlowHint}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setReload((n) => n + 1)}
-                    className="min-h-[48px] w-full rounded-xl bg-white px-4 text-base font-semibold text-[var(--color-primary,#F97316)]"
-                  >
-                    Revisar estado
-                  </button>
-                </div>
-              ) : null}
-            </div>
-          ) : (
-            <p className="rounded-2xl bg-amber-50 px-4 py-3 text-base font-medium text-amber-800">
-              El pago no se completó. Podés intentar de nuevo o elegir otra forma.
-            </p>
-          )}
+          <p className="rounded-2xl bg-amber-50 px-4 py-3 text-base font-medium text-amber-800">
+            Listo, Carri está revisando tu comprobante.
+          </p>
           <button
             type="button"
             disabled={changing || uploading}
-            onClick={() => void retryMp()}
-            className="min-h-[56px] w-full rounded-2xl bg-[var(--color-primary,#F97316)] px-4 text-base font-bold text-white disabled:opacity-60"
+            onClick={() => void changeMethod("at_pickup")}
+            className="min-h-[56px] w-full rounded-2xl border border-[#E7E5E4] bg-white px-4 text-base font-bold text-[var(--color-ink-public,#1C1917)] disabled:opacity-60"
           >
-            Reintentar con MercadoPago
+            Preferí pagar en efectivo
           </button>
+        </div>
+      ) : pm === "at_pickup" && ps === "unpaid" ? (
+        <div className="flex flex-col gap-3">
+          <p className="rounded-2xl bg-amber-50 px-4 py-3 text-base font-medium text-amber-800">
+            Pagás en efectivo al retirar o cuando te lo llevan.
+          </p>
           <button
             type="button"
             disabled={changing || uploading}
@@ -447,14 +374,6 @@ export default function OrderConfirmation({
             className="min-h-[56px] w-full rounded-2xl border-2 border-[var(--color-primary,#F97316)] bg-white px-4 text-base font-bold text-[var(--color-primary,#F97316)] disabled:opacity-60"
           >
             Pagar por transferencia
-          </button>
-          <button
-            type="button"
-            disabled={changing || uploading}
-            onClick={() => void changeMethod("at_pickup")}
-            className="min-h-[56px] w-full rounded-2xl border border-[#E7E5E4] bg-white px-4 text-base font-bold text-[var(--color-ink-public,#1C1917)] disabled:opacity-60"
-          >
-            Pagás al retirar
           </button>
         </div>
       ) : null}

@@ -15,9 +15,6 @@ describe("initialPaymentStatus", () => {
   test("transfer → pending_receipt", () => {
     expect(initialPaymentStatus("transfer")).toBe("pending_receipt")
   })
-  test("mercadopago → pending", () => {
-    expect(initialPaymentStatus("mercadopago")).toBe("pending")
-  })
 })
 
 describe("formatCents", () => {
@@ -44,8 +41,9 @@ describe("constantes del dominio", () => {
       "cancelled",
     ])
   })
-  test("métodos de pago", () => {
-    expect(PAYMENT_METHODS).toEqual(["transfer", "mercadopago", "at_pickup"])
+  test("métodos de pago sin mercadopago", () => {
+    expect(PAYMENT_METHODS).toEqual(["transfer", "at_pickup"])
+    expect(PAYMENT_METHODS).not.toContain("mercadopago")
   })
   test("estados del dinero", () => {
     expect(PAYMENT_STATUSES).toEqual([

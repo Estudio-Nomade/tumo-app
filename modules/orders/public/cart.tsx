@@ -19,10 +19,11 @@ import { formatCents } from "@/modules/orders/lib/types"
 import OrdersPublicNav, {
   notifyOrdersCartChanged,
 } from "@/modules/orders/public/orders-public-nav"
+import AddressAutocomplete from "@/modules/orders/public/address-autocomplete"
 
 type Step = 1 | 2 | 3
 type Fulfillment = "pickup" | "delivery"
-type PaymentMethod = "transfer" | "mercadopago" | "at_pickup"
+type PaymentMethod = "transfer" | "at_pickup"
 
 const STEPS = [
   { n: 1, title: "Tu pedido" },
@@ -299,18 +300,17 @@ export default function CartWizard({ slug }: { slug: string }) {
             </label>
 
             {fulfillment === "delivery" ? (
-              <label className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5 overflow-visible">
                 <span className="text-base font-semibold text-[var(--color-ink-public,#1C1917)]">
                   ¿A dónde lo mandamos?
                 </span>
-                <input
-                  type="text"
+                <AddressAutocomplete
+                  slug={slug}
                   value={deliveryAddress}
-                  onChange={(e) => setDeliveryAddress(e.target.value)}
+                  onChange={setDeliveryAddress}
                   placeholder="Calle y número, barrio"
-                  className="min-h-[52px] rounded-2xl border border-[#E7E5E4] px-4 text-base outline-none focus:border-[var(--color-primary,#F97316)]"
                 />
-              </label>
+              </div>
             ) : null}
           </>
         ) : (
@@ -367,8 +367,7 @@ export default function CartWizard({ slug }: { slug: string }) {
               {(
                 [
                   ["transfer", "Transferencia", "Pasás la plata y subís la foto del comprobante"],
-                  ["mercadopago", "MercadoPago", "Tarjeta, dinero en cuenta o efectivo"],
-                  ["at_pickup", "Pagás al retirar", "Efectivo u otro medio en el food truck"],
+                  ["at_pickup", "Efectivo", "Pagás en efectivo al retirar o cuando te lo llevan"],
                 ] as [PaymentMethod, string, string][]
               ).map(([value, label, hint]) => (
                 <label

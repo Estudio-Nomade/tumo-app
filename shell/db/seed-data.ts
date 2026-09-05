@@ -177,7 +177,6 @@ export type SeedPayment = {
   id: string
   method: PaymentMethod
   status: PaymentStatus
-  mpStatus?: string | null
 }
 
 export type SeedOrder = {
@@ -313,7 +312,7 @@ export const demoOrders: SeedOrder[] = [
     orderNumber: 4,
     customerId: C(4),
     status: "confirmed",
-    paymentMethod: "mercadopago",
+    paymentMethod: "transfer",
     paymentStatus: "paid",
     fulfillment: "delivery",
     deliveryAddress: "Belgrano 450, Villa Dolores",
@@ -346,7 +345,7 @@ export const demoOrders: SeedOrder[] = [
       },
     ],
     payments: [
-      { id: uuid("30100000", 2), method: "mercadopago", status: "paid", mpStatus: "approved" },
+      { id: uuid("30100000", 2), method: "transfer", status: "paid" },
     ],
   },
   {

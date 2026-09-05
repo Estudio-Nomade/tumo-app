@@ -21,10 +21,12 @@ describe("CartWizard (elderly-UX source contracts)", () => {
     expect(cart).toContain("Pago y tus datos")
   })
 
-  test("tres métodos de pago con explicación", () => {
+  test("dos métodos de pago: Transferencia y Efectivo", () => {
     expect(cart).toContain("Transferencia")
-    expect(cart).toContain("MercadoPago")
-    expect(cart).toContain("Pagás al retirar")
+    expect(cart).toContain("Efectivo")
+    expect(cart).toContain("at_pickup")
+    expect(cart).not.toContain("MercadoPago")
+    expect(cart).not.toContain("mercadopago")
   })
 
   test("confirma con idempotencyKey estable", () => {
@@ -43,6 +45,17 @@ describe("CartWizard (elderly-UX source contracts)", () => {
     expect(cart).toContain("Escribí la dirección")
     expect(cart).toContain("Escribí tu nombre")
     expect(cart).toContain("Escribí un WhatsApp válido")
+  })
+
+  test("dirección de envío usa autocomplete Photon vía proxy", () => {
+    expect(cart).toContain("AddressAutocomplete")
+    const autocomplete = readFileSync(
+      join(root, "modules/orders/public/address-autocomplete.tsx"),
+      "utf8"
+    )
+    expect(autocomplete).toContain("/api/orders/geocode")
+    expect(autocomplete).toContain('role="listbox"')
+    expect(autocomplete).not.toContain("photon.komoot.io")
   })
 
   test("botones ≥56px y campos ≥52px", () => {

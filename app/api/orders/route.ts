@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       body.fulfillment === "delivery" ? "delivery" : "pickup",
     deliveryAddress:
       typeof body.deliveryAddress === "string" ? body.deliveryAddress : undefined,
-    paymentMethod: body.paymentMethod as "transfer" | "mercadopago" | "at_pickup",
+    paymentMethod: body.paymentMethod as "transfer" | "at_pickup",
     items: Array.isArray(body.items)
       ? (body.items as {
           productId?: unknown

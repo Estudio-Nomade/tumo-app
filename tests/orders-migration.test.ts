@@ -15,6 +15,10 @@ const productsAbm = readFileSync(
   join(root, "shell/db/migrations/006_orders_products_abm.sql"),
   "utf8"
 )
+const dropMp = readFileSync(
+  join(root, "shell/db/migrations/011_orders_drop_mercadopago.sql"),
+  "utf8"
+)
 const migrateTs = readFileSync(join(root, "shell/db/migrate.ts"), "utf8")
 
 const TABLES = [
@@ -40,10 +44,21 @@ describe("migración 004_orders", () => {
     expect(migrateTs).toContain('"004_orders.sql"')
   })
 
-  test("credenciales MP por negocio (005) registradas y con columnas", () => {
+  test("credenciales MP por negocio (005) históricas con columnas", () => {
     expect(migrateTs).toContain('"005_orders_mp_credentials.sql"')
     expect(mpCredentials).toMatch(/mp_access_token TEXT/)
     expect(mpCredentials).toMatch(/mp_webhook_secret TEXT/)
+  })
+
+  test("011 drop mercadopago: backfill + CHECK sin mercadopago", () => {
+    expect(migrateTs).toContain('"011_orders_drop_mercadopago.sql"')
+    expect(dropMp).toMatch(/payment_method\s*=\s*'transfer'/i)
+    expect(dropMp).toMatch(/WHERE payment_method = 'mercadopago'/i)
+    expect(dropMp).toMatch(/method = 'mercadopago'/i)
+    expect(dropMp).toMatch(/pending_receipt/)
+    expect(dropMp).toMatch(/DROP CONSTRAINT.*payment_method/i)
+    expect(dropMp).toMatch(/'transfer',\s*'at_pickup'/)
+    expect(dropMp).not.toMatch(/'mercadopago'.*CHECK|CHECK.*'mercadopago'/)
   })
 
   test("ABM productos (006) registrada: nombre único, precio ≥0, ON DELETE SET NULL", () => {

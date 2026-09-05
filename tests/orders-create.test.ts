@@ -270,6 +270,7 @@ describe("createOrder", () => {
       { phone: "123" },
       { items: [] },
       { paymentMethod: "tarjeta" as never },
+      { paymentMethod: "mercadopago" as never },
     ]
     for (const patch of cases) {
       const r = await createOrder(deps, { ...baseInput, ...patch })

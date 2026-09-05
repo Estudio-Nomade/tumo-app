@@ -106,18 +106,17 @@ async function seed() {
   await sql`
     INSERT INTO orders_settings (
       business_id, delivery_fee_cents, transfer_alias, transfer_cbu,
-      transfer_holder, mp_enabled, is_paused, hours
+      transfer_holder, is_paused, hours
     )
     VALUES (
       ${business.id}, 500, ${"carri.mp"}, ${"0000003100000000000000"},
-      ${"Juan Pérez"}, true, false, ${sql.json(hours as never)}
+      ${"Juan Pérez"}, false, ${sql.json(hours as never)}
     )
     ON CONFLICT (business_id) DO UPDATE SET
       delivery_fee_cents = EXCLUDED.delivery_fee_cents,
       transfer_alias = EXCLUDED.transfer_alias,
       transfer_cbu = EXCLUDED.transfer_cbu,
       transfer_holder = EXCLUDED.transfer_holder,
-      mp_enabled = EXCLUDED.mp_enabled,
       hours = EXCLUDED.hours
   `
 
@@ -209,8 +208,8 @@ async function seed() {
 
     for (const pay of order.payments) {
       await sql`
-        INSERT INTO order_payments (id, order_id, method, status, mp_status)
-        VALUES (${pay.id}, ${order.id}, ${pay.method}, ${pay.status}, ${pay.mpStatus ?? null})
+        INSERT INTO order_payments (id, order_id, method, status)
+        VALUES (${pay.id}, ${order.id}, ${pay.method}, ${pay.status})
       `
     }
   }

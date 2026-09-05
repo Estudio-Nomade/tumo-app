@@ -3,17 +3,13 @@ import type { PaymentMethod, PaymentStatus } from "@/modules/orders/lib/types"
 
 /**
  * ¿El pago de este pedido sigue a la espera de una confirmación externa?
- * - mercadopago + pending: espera el webhook de MP.
  * - transfer + pending_verification: espera que el empleado apruebe el comprobante.
  */
 export function shouldTrackPayment(
   method: PaymentMethod,
   status: PaymentStatus
 ): boolean {
-  return (
-    (method === "mercadopago" && status === "pending") ||
-    (method === "transfer" && status === "pending_verification")
-  )
+  return method === "transfer" && status === "pending_verification"
 }
 
 export type OrdersChannel = { unsubscribe: () => void }

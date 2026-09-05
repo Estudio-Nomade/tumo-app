@@ -27,10 +27,17 @@ describe("OrderConfirmation (source contracts)", () => {
     expect(src).toMatch(/image\/jpeg|image\/png|image\/webp|image\/heic/)
   })
 
-  test("Variante C: reintentar MP / cambiar método", () => {
-    expect(src).toMatch(/Reintentar/)
-    expect(src).toMatch(/Pagar por transferencia/)
-    expect(src).toMatch(/Pagás al retirar/)
+  test("sin MercadoPago: no reintento ni espera MP", () => {
+    expect(src).not.toContain("MercadoPago")
+    expect(src).not.toContain("mercadopago")
+    expect(src).not.toContain("mp-preference")
+    expect(src).not.toContain("mpTimeoutHint")
+    expect(src).not.toContain("retryMp")
+  })
+
+  test("cambio de método solo transfer ↔ efectivo", () => {
+    expect(src).toMatch(/Pagar por transferencia|transferencia/i)
+    expect(src).toMatch(/Efectivo|al retirar/i)
   })
 
   test("estado revisando comprobante", () => {
@@ -47,24 +54,13 @@ describe("OrderConfirmation (source contracts)", () => {
     expect(src).toContain("paymentMethod")
   })
 
-  test("MP pending: spinner de espera con texto y tiempo estimado", () => {
-    expect(src).toMatch(/animate-spin/)
-    expect(src).toMatch(/Estamos esperando la confirmación de tu pago en MercadoPago/)
-    expect(src).toMatch(/unos segundos/)
-  })
-
-  test("MP: polling de respaldo cada 10s mientras espera", () => {
+  test("polling de respaldo mientras espera verificación de transferencia", () => {
     expect(src).toMatch(/setInterval/)
     expect(src).toContain("shouldTrackPayment")
   })
 
   test("pago confirmado → banner verde ✓", () => {
     expect(src).toMatch(/Pago confirmado/)
-  })
-
-  test("MP: timeout amigable con Revisar estado", () => {
-    expect(src).toContain("mpTimeoutHint")
-    expect(src).toContain("Revisar estado")
   })
 
   test("previene doble envío (useRef + disabled cruzado)", () => {
