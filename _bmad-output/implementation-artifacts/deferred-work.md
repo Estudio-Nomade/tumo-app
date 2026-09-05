@@ -130,3 +130,19 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-orders-photon-delivery-remove-mp.md`
   summary: changePaymentMethod no invalida filas order_payments previas al cambiar método
   evidence: Preexistente; review lo re-surfació al quitar MP; transfer↔efectivo puede dejar comprobante huérfano en auditoría
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-orders-product-photo-carousel.md`
+  summary: Race concurrente al subir puede superar el tope de 8 fotos (COUNT sin lock)
+  evidence: addProductPhoto hace COUNT luego INSERT sin FOR UPDATE/tx; paralelismo en admin es raro pero posible
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-orders-product-photo-carousel.md`
+  summary: No hay sniff de magic-bytes; se confía en Content-Type del cliente
+  evidence: Mismo espíritu que logo; bucket filtra mime pero no re-encoda
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-orders-product-photo-carousel.md`
+  summary: deleteProduct no limpia objetos del bucket product-photos (solo CASCADE DB)
+  evidence: Spec marcó cleanup storage best-effort no bloqueante; quota leak posible
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-orders-product-photo-carousel.md`
+  summary: Body completo se bufferiza antes de validar tamaño 2MB
+  evidence: route arrayBuffer() luego domain check; DoS multipart grande mitigable con stream/cap

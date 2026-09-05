@@ -28,12 +28,19 @@ function makeSql(overrides: {
   products?: unknown[]
   groups?: unknown[]
   options?: unknown[]
+  photos?: unknown[]
   settings?: unknown[]
   pendingOrders?: unknown[]
 }) {
   return mock((strings: TemplateStringsArray) => {
     const q = strings.join(" ")
     if (q.includes("product_categories")) return Promise.resolve(overrides.categories ?? [])
+    if (q.includes("product_photos")) {
+      const list = (overrides.photos ?? []) as { sort_order?: number }[]
+      return Promise.resolve(
+        [...list].sort((a, b) => Number(a.sort_order ?? 0) - Number(b.sort_order ?? 0))
+      )
+    }
     if (q.includes("product_variant_options")) return Promise.resolve(overrides.options ?? [])
     if (q.includes("product_variant_groups")) return Promise.resolve(overrides.groups ?? [])
     if (q.includes("FROM products")) return Promise.resolve(overrides.products ?? [])
@@ -111,6 +118,40 @@ describe("getCatalog", () => {
       options: [{ name: "Grande", priceDeltaCents: 800 }],
     })
     expect(body.settings).toMatchObject({ deliveryFeeCents: 500, isPaused: false })
+  })
+
+  test("incluye photos ordenadas y photo cover", async () => {
+    const sql = makeSql({
+      products: [{ ...productRow, photo: "https://cdn/cover.png" }],
+      photos: [
+        {
+          id: "ph2",
+          product_id: "p1",
+          url: "https://cdn/b.png",
+          sort_order: 1,
+        },
+        {
+          id: "ph1",
+          product_id: "p1",
+          url: "https://cdn/cover.png",
+          sort_order: 0,
+        },
+      ],
+      settings: [{ delivery_fee_cents: 0, is_paused: false, hours: openHours() }],
+    })
+    const r = await getCatalog(
+      makeDeps({ sql: sql as unknown as CatalogDeps["sql"] }),
+      { slug: "carri" }
+    )
+    expect(r.status).toBe(200)
+    const p = (r.body as {
+      products: {
+        photo: string | null
+        photos: { id: string; sortOrder: number }[]
+      }[]
+    }).products[0]
+    expect(p.photo).toBe("https://cdn/cover.png")
+    expect(p.photos.map((x) => x.id)).toEqual(["ph1", "ph2"])
   })
 
   test("cerrado por horario → isOpen false con nextOpening", async () => {

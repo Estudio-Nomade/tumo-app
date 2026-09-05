@@ -31,15 +31,26 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "JSON inválido." }, { status: 400 })
   }
 
-  const result = await updateProduct(productsDeps, {
+  const patch: {
+    productId: string
+    businessId: string
+    name: string
+    priceCents: number
+    description?: string
+    categoryId?: string | null
+    photo?: string | null
+  } = {
     productId: id,
     businessId: session.businessId,
     name: body.name ?? "",
     priceCents: Number(body.priceCents),
     description: body.description,
     categoryId: body.categoryId,
-    photo: body.photo,
-  })
+  }
+  if (Object.prototype.hasOwnProperty.call(body, "photo")) {
+    patch.photo = body.photo
+  }
+  const result = await updateProduct(productsDeps, patch)
   return NextResponse.json(result.body, { status: result.status })
 }
 

@@ -19,6 +19,10 @@ const dropMp = readFileSync(
   join(root, "shell/db/migrations/011_orders_drop_mercadopago.sql"),
   "utf8"
 )
+const productPhotos = readFileSync(
+  join(root, "shell/db/migrations/012_product_photos.sql"),
+  "utf8"
+)
 const migrateTs = readFileSync(join(root, "shell/db/migrate.ts"), "utf8")
 
 const TABLES = [
@@ -66,6 +70,17 @@ describe("migración 004_orders", () => {
     expect(productsAbm).toMatch(/lower\(name\)/)
     expect(productsAbm).toMatch(/price_cents >= 0/)
     expect(productsAbm).toMatch(/ON DELETE SET NULL/)
+  })
+
+  test("012 product_photos: tabla, index, backfill y FK cascade", () => {
+    expect(migrateTs).toContain('"012_product_photos.sql"')
+    expect(productPhotos).toMatch(/CREATE TABLE IF NOT EXISTS product_photos/)
+    expect(productPhotos).toMatch(/product_id UUID NOT NULL REFERENCES products\(id\) ON DELETE CASCADE/)
+    expect(productPhotos).toMatch(/url TEXT NOT NULL/)
+    expect(productPhotos).toMatch(/sort_order INT NOT NULL DEFAULT 0/)
+    expect(productPhotos).toMatch(/product_photos_product_sort_idx/)
+    expect(productPhotos).toMatch(/INSERT INTO product_photos/)
+    expect(productPhotos).toMatch(/p\.photo IS NOT NULL/)
   })
 
   test("no altera la tabla customers", () => {
