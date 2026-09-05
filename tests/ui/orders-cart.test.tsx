@@ -64,7 +64,7 @@ describe("CartWizard (elderly-UX source contracts)", () => {
   })
 
   test("Volver al menú o al paso anterior", () => {
-    expect(cart).toMatch(/← Menú|← Atrás/)
+    expect(cart).toMatch(/Menú|Atrás/)
     expect(cart).toContain("clearCart")
     expect(cart).toContain("loadLastGuest")
   })
@@ -73,9 +73,13 @@ describe("CartWizard (elderly-UX source contracts)", () => {
     expect(cart).toMatch(/sticky top-0/)
     expect(cart).toMatch(/border-b/)
     expect(cart).toMatch(/bg-\[var\(--color-surface-public/)
-    expect(cart).toContain("← Menú")
+    expect(cart).toContain("Menú")
+    expect(cart).toContain("Atrás")
+    // Back CTA is a real chip/button, not naked text
+    expect(cart).toMatch(/bg-\[#F5F5F4\]/)
+    expect(cart).toMatch(/border border-\[#E7E5E4\]/)
+    expect(cart).toMatch(/rounded-2xl/)
     expect(cart).toContain("min-h-[48px]")
-    expect(cart).toMatch(/w-full items-center/)
   })
 
   test("bottom nav Menú|Carrito montada", () => {
