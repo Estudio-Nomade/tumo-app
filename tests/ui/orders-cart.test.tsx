@@ -64,9 +64,22 @@ describe("CartWizard (elderly-UX source contracts)", () => {
   })
 
   test("Volver al menú o al paso anterior", () => {
-    expect(cart).toMatch(/← Menú|← Atrás/)
+    expect(cart).toMatch(/Menú|Atrás/)
     expect(cart).toContain("clearCart")
     expect(cart).toContain("loadLastGuest")
+  })
+
+  test("header del wizard con barra (no back pelado)", () => {
+    expect(cart).toMatch(/sticky top-0/)
+    expect(cart).toMatch(/border-b/)
+    expect(cart).toMatch(/bg-\[var\(--color-surface-public/)
+    expect(cart).toContain("Menú")
+    expect(cart).toContain("Atrás")
+    // Back CTA is a real orange chip, not naked text
+    expect(cart).toMatch(/color-primary|#F97316/)
+    expect(cart).toMatch(/rounded-2xl/)
+    expect(cart).toContain("min-h-[48px]")
+    expect(cart).toMatch(/font-bold/)
   })
 
   test("bottom nav Menú|Carrito montada", () => {
