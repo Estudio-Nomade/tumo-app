@@ -16,6 +16,7 @@ import { formatCents } from "@/modules/orders/lib/types"
 import OrdersPublicNav, {
   notifyOrdersCartChanged,
 } from "@/modules/orders/public/orders-public-nav"
+import ProductPhotoCarousel from "@/modules/orders/public/product-photo-carousel"
 
 export default function ProductDetail({
   slug,
@@ -168,14 +169,16 @@ export default function ProductDetail({
         ← Volver
       </button>
 
-      <div className="flex aspect-[4/3] w-full items-center justify-center bg-[#F5F5F4] text-[var(--color-muted-public,#78716C)]">
-        {product.photo ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={product.photo} alt={product.name} className="h-full w-full object-cover" />
-        ) : (
-          <span className="text-base">Sin foto</span>
-        )}
-      </div>
+      <ProductPhotoCarousel
+        photos={
+          product.photos?.length
+            ? product.photos
+            : product.photo
+              ? [{ url: product.photo }]
+              : []
+        }
+        alt={product.name}
+      />
 
       <div className="flex flex-col gap-4 p-4">
         <div>

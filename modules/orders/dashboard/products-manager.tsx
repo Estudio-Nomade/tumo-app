@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { formatCents } from "@/modules/orders/lib/types"
 import {
@@ -20,11 +20,14 @@ type VariantGroup = {
   options: VariantOption[]
 }
 
+type ProductPhoto = { id: string; url: string; sortOrder: number }
+
 type Product = {
   id: string
   name: string
   description: string | null
   photo: string | null
+  photos?: ProductPhoto[]
   categoryId: string | null
   categoryName: string | null
   priceCents: number
@@ -39,16 +42,16 @@ type Draft = {
   price: string
   description: string
   categoryId: string
-  photo: string
   groups: VariantGroup[]
 }
+
+const MAX_PHOTOS = 8
 
 const emptyDraft = (): Draft => ({
   name: "",
   price: "",
   description: "",
   categoryId: "",
-  photo: "",
   groups: [],
 })
 
@@ -58,7 +61,6 @@ function fromProduct(p: Product): Draft {
     price: String(p.priceCents),
     description: p.description ?? "",
     categoryId: p.categoryId ?? "",
-    photo: p.photo ?? "",
     groups: (p.variantGroups ?? []).map((g) => ({
       name: g.name,
       selectionType: g.selectionType === "multiple" ? "multiple" : "single",
@@ -86,6 +88,15 @@ export default function ProductsManager({ slug }: { slug: string }) {
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState("")
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null)
+  const [editPhotos, setEditPhotos] = useState<ProductPhoto[]>([])
+  const [uploadingPhotos, setUploadingPhotos] = useState(false)
+  const [photoError, setPhotoError] = useState("")
+  const formOpenRef = useRef(formOpen)
+  const editingIdRef = useRef(editing?.id)
+  useEffect(() => {
+    formOpenRef.current = formOpen
+    editingIdRef.current = editing?.id
+  }, [formOpen, editing?.id])
 
   function showToast(msg: string) {
     setToast(msg)
@@ -104,7 +115,22 @@ export default function ProductsManager({ slug }: { slug: string }) {
           setError(prod.error)
           setProducts([])
         } else {
-          setProducts(Array.isArray(prod.products) ? prod.products : [])
+          const list = Array.isArray(prod.products) ? prod.products : []
+          setProducts(list)
+          const openId = formOpenRef.current ? editingIdRef.current : undefined
+          if (openId) {
+            const fresh = list.find((p) => p.id === openId)
+            if (fresh) {
+              setEditing((cur) => (cur ? { ...cur, ...fresh } : cur))
+              setEditPhotos(
+                Array.isArray(fresh.photos) && fresh.photos.length
+                  ? [...fresh.photos].sort((a, b) => a.sortOrder - b.sortOrder)
+                  : fresh.photo
+                    ? [{ id: "cover", url: fresh.photo, sortOrder: 0 }]
+                    : []
+              )
+            }
+          }
         }
         setCategories(Array.isArray(cats.categories) ? cats.categories : [])
       })
@@ -148,6 +174,8 @@ export default function ProductsManager({ slug }: { slug: string }) {
   function openNew() {
     setEditing(null)
     setDraft(emptyDraft())
+    setEditPhotos([])
+    setPhotoError("")
     setFormError("")
     setFormOpen(true)
   }
@@ -155,8 +183,108 @@ export default function ProductsManager({ slug }: { slug: string }) {
   function openEdit(p: Product) {
     setEditing(p)
     setDraft(fromProduct(p))
+    setEditPhotos(
+      Array.isArray(p.photos) && p.photos.length
+        ? [...p.photos].sort((a, b) => a.sortOrder - b.sortOrder)
+        : p.photo
+          ? [{ id: "cover", url: p.photo, sortOrder: 0 }]
+          : []
+    )
+    setPhotoError("")
     setFormError("")
     setFormOpen(true)
+  }
+
+  async function uploadPhotos(files: FileList | null) {
+    if (!files?.length || !editing?.id) return
+    setPhotoError("")
+    const remaining = MAX_PHOTOS - editPhotos.filter((p) => p.id !== "cover").length
+    if (remaining <= 0) {
+      setPhotoError("Podés subir hasta 8 fotos.")
+      return
+    }
+    const all = Array.from(files)
+    if (all.length > remaining) {
+      setPhotoError("Podés subir hasta 8 fotos.")
+    }
+    const list = all.slice(0, remaining)
+    setUploadingPhotos(true)
+    try {
+      for (const file of list) {
+        const fd = new FormData()
+        fd.append("file", file)
+        const res = await fetch(`/api/orders/products/${editing.id}/photos`, {
+          method: "POST",
+          body: fd,
+        })
+        const json = (await res.json()) as {
+          id?: string
+          url?: string
+          sortOrder?: number
+          error?: string
+        }
+        if (!res.ok) {
+          setPhotoError(json.error ?? "No se pudo subir la foto.")
+          break
+        }
+        if (json.id && json.url) {
+          setEditPhotos((prev) => [
+            ...prev.filter((p) => p.id !== "cover"),
+            {
+              id: json.id!,
+              url: json.url!,
+              sortOrder: Number(json.sortOrder ?? prev.length),
+            },
+          ])
+        }
+      }
+      setRetry((n) => n + 1)
+    } catch {
+      setPhotoError("No se pudo subir la foto.")
+    } finally {
+      setUploadingPhotos(false)
+    }
+  }
+
+  async function deletePhoto(photoId: string) {
+    if (!editing?.id) return
+    setPhotoError("")
+    try {
+      if (photoId === "cover") {
+        const res = await fetch(`/api/orders/products/${editing.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: draft.name.trim() || editing.name,
+            priceCents: Number(draft.price.replace(/\D/g, "")) || editing.priceCents,
+            description: draft.description,
+            categoryId: draft.categoryId || null,
+            photo: null,
+          }),
+        })
+        const json = (await res.json()) as { error?: string }
+        if (!res.ok) {
+          setPhotoError(json.error ?? "No se pudo eliminar la foto.")
+          return
+        }
+        setEditPhotos([])
+        setRetry((n) => n + 1)
+        return
+      }
+      const res = await fetch(
+        `/api/orders/products/${editing.id}/photos/${photoId}`,
+        { method: "DELETE" }
+      )
+      const json = (await res.json()) as { error?: string }
+      if (!res.ok) {
+        setPhotoError(json.error ?? "No se pudo eliminar la foto.")
+        return
+      }
+      setEditPhotos((prev) => prev.filter((p) => p.id !== photoId))
+      setRetry((n) => n + 1)
+    } catch {
+      setPhotoError("No se pudo eliminar la foto.")
+    }
   }
 
   async function save() {
@@ -178,7 +306,6 @@ export default function ProductsManager({ slug }: { slug: string }) {
         priceCents,
         description: draft.description,
         categoryId: draft.categoryId || null,
-        photo: draft.photo || null,
       }
       const res = editing
         ? await fetch(`/api/orders/products/${editing.id}`, {
@@ -208,6 +335,25 @@ export default function ProductsManager({ slug }: { slug: string }) {
           setFormError(vj.error ?? "El producto se guardó, pero no las variantes.")
           return
         }
+      }
+      if (!editing && productId) {
+        setEditing({
+          id: productId,
+          name,
+          description: draft.description || null,
+          photo: null,
+          photos: [],
+          categoryId: draft.categoryId || null,
+          categoryName: null,
+          priceCents,
+          isAvailable: true,
+          variantGroups: draft.groups,
+        })
+        setEditPhotos([])
+        showToast("Producto creado. Ahora podés agregar fotos.")
+        setLoading(true)
+        setRetry((n) => n + 1)
+        return
       }
       setFormOpen(false)
       setLoading(true)
@@ -333,6 +479,16 @@ export default function ProductsManager({ slug }: { slug: string }) {
               className="flex flex-col gap-2 rounded-2xl border border-[#E7E5E4] bg-white px-4 py-3"
             >
               <div className="flex items-center justify-between gap-3">
+                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-[#F5F5F4]">
+                  {p.photo || p.photos?.[0]?.url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={p.photo ?? p.photos?.[0]?.url ?? ""}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  ) : null}
+                </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-base font-semibold text-stone-900">{p.name}</p>
                   <p className="text-sm text-stone-600">
@@ -428,14 +584,64 @@ export default function ProductsManager({ slug }: { slug: string }) {
                 ))}
               </select>
             </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-base font-semibold">Foto (URL, opcional)</span>
-              <input
-                value={draft.photo}
-                onChange={(e) => setDraft((d) => ({ ...d, photo: e.target.value }))}
-                className="min-h-[52px] rounded-2xl border border-[#E7E5E4] px-4 text-base"
-              />
-            </label>
+            <div className="flex flex-col gap-2">
+              <p className="text-base font-semibold">Fotos</p>
+              {!editing?.id ? (
+                <p className="text-sm text-stone-600">
+                  Guardá el producto primero para poder subir fotos.
+                </p>
+              ) : (
+                <>
+                  <p className="text-sm text-stone-600">Podés subir hasta 8 fotos.</p>
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                    {editPhotos.map((ph, i) => (
+                      <div
+                        key={ph.id}
+                        className="relative overflow-hidden rounded-xl border border-[#E7E5E4] bg-[#F5F5F4]"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={ph.url}
+                          alt=""
+                          className="aspect-square w-full object-cover"
+                        />
+                        {i === 0 ? (
+                          <span className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-0.5 text-xs font-semibold text-white">
+                            Principal
+                          </span>
+                        ) : null}
+                        <button
+                          type="button"
+                          onClick={() => void deletePhoto(ph.id)}
+                          className="absolute bottom-2 right-2 min-h-[48px] min-w-[48px] rounded-xl bg-white/95 px-2 text-sm font-semibold text-red-600 shadow"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <label className="flex min-h-[56px] cursor-pointer items-center justify-center rounded-2xl border border-dashed border-[#E7E5E4] px-4 text-base font-semibold text-[var(--color-primary,#F97316)]">
+                    {uploadingPhotos ? "Subiendo…" : "Agregar fotos"}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      multiple
+                      disabled={uploadingPhotos || editPhotos.length >= MAX_PHOTOS}
+                      className="sr-only"
+                      onChange={(e) => {
+                        void uploadPhotos(e.target.files)
+                        e.target.value = ""
+                      }}
+                    />
+                  </label>
+                  {photoError ? (
+                    <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                      {photoError}
+                    </p>
+                  ) : null}
+                </>
+              )}
+            </div>
 
             <div className="flex flex-col gap-2">
               <p className="text-base font-semibold">Variantes</p>

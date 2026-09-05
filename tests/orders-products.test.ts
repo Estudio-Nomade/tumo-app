@@ -95,6 +95,58 @@ describe("listProducts", () => {
       isAvailable: true,
     })
   })
+
+  test("incluye photos ordenadas y photo = cover", async () => {
+    const calls: { q: string; values: unknown[] }[] = []
+    const sql = mock((strings: TemplateStringsArray, ...values: unknown[]) => {
+      const q = strings.join(" ")
+      calls.push({ q, values })
+      if (q.includes("FROM products p") || (q.includes("FROM products") && q.includes("category"))) {
+        return Promise.resolve([
+          {
+            id: "p1",
+            name: "Hamburguesa Clásica",
+            category_id: "c1",
+            category_name: "Hamburguesas",
+            price_cents: 4500,
+            is_available: true,
+            sort_order: 0,
+            description: null,
+            photo: "https://cdn/cover.png",
+          },
+        ])
+      }
+      if (q.includes("FROM product_photos")) {
+        return Promise.resolve(
+          [
+            {
+              id: "ph2",
+              product_id: "p1",
+              url: "https://cdn/b.png",
+              sort_order: 1,
+            },
+            {
+              id: "ph1",
+              product_id: "p1",
+              url: "https://cdn/cover.png",
+              sort_order: 0,
+            },
+          ].sort((a, b) => a.sort_order - b.sort_order)
+        )
+      }
+      if (q.includes("product_variant")) return Promise.resolve([])
+      return Promise.resolve([])
+    })
+    const r = await listProducts(
+      { sql: sql as unknown as ProductsDeps["sql"] },
+      { businessId: "biz-1" }
+    )
+    expect(r.status).toBe(200)
+    const p = (r.body as { products: { photo: string | null; photos: { id: string; sortOrder: number }[] }[] })
+      .products[0]
+    expect(p.photo).toBe("https://cdn/cover.png")
+    expect(p.photos.map((x) => x.id)).toEqual(["ph1", "ph2"])
+  })
 })
 
 describe("setAvailability", () => {

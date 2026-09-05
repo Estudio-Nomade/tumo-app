@@ -75,6 +75,20 @@ export async function listProducts(
       }[])
     : []
 
+  const photoRows = ids.length
+    ? ((await deps.sql`
+        SELECT id, product_id, url, sort_order
+        FROM product_photos
+        WHERE product_id = ANY(${ids})
+        ORDER BY sort_order ASC, created_at ASC
+      `) as {
+        id: string
+        product_id: string
+        url: string
+        sort_order: number
+      }[])
+    : []
+
   const optionsByGroup = new Map<string, typeof options>()
   for (const o of options) {
     const list = optionsByGroup.get(o.group_id) ?? []
@@ -87,32 +101,49 @@ export async function listProducts(
     list.push(g)
     groupsByProduct.set(g.product_id, list)
   }
+  const photosByProduct = new Map<
+    string,
+    { id: string; url: string; sortOrder: number }[]
+  >()
+  for (const ph of photoRows) {
+    const list = photosByProduct.get(ph.product_id) ?? []
+    list.push({
+      id: ph.id,
+      url: ph.url,
+      sortOrder: Number(ph.sort_order),
+    })
+    photosByProduct.set(ph.product_id, list)
+  }
 
   return {
     status: 200,
     body: {
-      products: rows.map((r) => ({
-        id: r.id,
-        name: r.name,
-        description: r.description,
-        photo: r.photo,
-        categoryId: r.category_id,
-        categoryName: r.category_name,
-        priceCents: Number(r.price_cents),
-        isAvailable: Boolean(r.is_available),
-        sortOrder: Number(r.sort_order),
-        variantGroups: (groupsByProduct.get(r.id) ?? []).map((g) => ({
-          id: g.id,
-          name: g.name,
-          selectionType: g.selection_type,
-          isRequired: Boolean(g.is_required),
-          options: (optionsByGroup.get(g.id) ?? []).map((o) => ({
-            id: o.id,
-            name: o.name,
-            priceDeltaCents: Number(o.price_delta_cents),
+      products: rows.map((r) => {
+        const photos = photosByProduct.get(r.id) ?? []
+        return {
+          id: r.id,
+          name: r.name,
+          description: r.description,
+          photo: photos[0]?.url ?? r.photo ?? null,
+          photos,
+          categoryId: r.category_id,
+          categoryName: r.category_name,
+          priceCents: Number(r.price_cents),
+          isAvailable: Boolean(r.is_available),
+          sortOrder: Number(r.sort_order),
+          variantGroups: (groupsByProduct.get(r.id) ?? []).map((g) => ({
+            id: g.id,
+            name: g.name,
+            selectionType: g.selection_type,
+            isRequired: Boolean(g.is_required),
+            options: (optionsByGroup.get(g.id) ?? []).map((o) => ({
+              id: o.id,
+              name: o.name,
+              priceDeltaCents: Number(o.price_delta_cents),
+            })),
           })),
-        })),
-      })),
+        }
+      }),
     },
   }
 }
@@ -238,6 +269,7 @@ export async function updateProduct(
     priceCents: number
     description?: string
     categoryId?: string | null
+    /** Si se omite, no toca products.photo (cover lo maneja product_photos). */
     photo?: string | null
   }
 ): Promise<JsonResult> {
@@ -258,16 +290,27 @@ export async function updateProduct(
     return { status: 409, body: { error: "Ya hay un producto con ese nombre." } }
   }
 
-  const rows = (await deps.sql`
-    UPDATE products
-    SET name = ${name},
-        description = ${input.description?.trim() || null},
-        price_cents = ${priceCents},
-        category_id = ${input.categoryId || null},
-        photo = ${input.photo?.trim() || null}
-    WHERE id = ${productId} AND business_id = ${businessId}
-    RETURNING id
-  `) as { id: string }[]
+  const touchPhoto = Object.prototype.hasOwnProperty.call(input, "photo")
+  const rows = touchPhoto
+    ? ((await deps.sql`
+        UPDATE products
+        SET name = ${name},
+            description = ${input.description?.trim() || null},
+            price_cents = ${priceCents},
+            category_id = ${input.categoryId || null},
+            photo = ${input.photo?.trim() || null}
+        WHERE id = ${productId} AND business_id = ${businessId}
+        RETURNING id
+      `) as { id: string }[])
+    : ((await deps.sql`
+        UPDATE products
+        SET name = ${name},
+            description = ${input.description?.trim() || null},
+            price_cents = ${priceCents},
+            category_id = ${input.categoryId || null}
+        WHERE id = ${productId} AND business_id = ${businessId}
+        RETURNING id
+      `) as { id: string }[])
 
   if (!rows[0]) {
     return { status: 404, body: { error: "No encontramos ese producto." } }

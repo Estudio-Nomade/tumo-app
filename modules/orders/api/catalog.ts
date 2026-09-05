@@ -62,6 +62,12 @@ export type CatalogVariantGroup = {
   sortOrder: number
   options: CatalogVariantOption[]
 }
+export type CatalogProductPhoto = {
+  id: string
+  url: string
+  sortOrder: number
+}
+
 export type CatalogProduct = {
   id: string
   categoryId: string | null
@@ -69,6 +75,7 @@ export type CatalogProduct = {
   description: string | null
   priceCents: number
   photo: string | null
+  photos: CatalogProductPhoto[]
   isAvailable: boolean
   sortOrder: number
   variantGroups: CatalogVariantGroup[]
@@ -140,6 +147,21 @@ export async function getCatalog(
     WHERE business_id = ${business.id}
     ORDER BY sort_order ASC, name ASC
   `) as ProductRow[]
+
+  const productIds = products.map((p) => p.id)
+  const photoRows = productIds.length
+    ? ((await deps.sql`
+        SELECT id, product_id, url, sort_order
+        FROM product_photos
+        WHERE product_id = ANY(${productIds})
+        ORDER BY sort_order ASC, created_at ASC
+      `) as {
+        id: string
+        product_id: string
+        url: string
+        sort_order: number
+      }[])
+    : []
 
   const groups = (await deps.sql`
     SELECT g.id, g.product_id, g.name, g.selection_type, g.is_required, g.sort_order
@@ -215,6 +237,17 @@ export async function getCatalog(
     groupsByProduct.set(g.product_id, list)
   }
 
+  const photosByProduct = new Map<string, CatalogProductPhoto[]>()
+  for (const ph of photoRows) {
+    const list = photosByProduct.get(ph.product_id) ?? []
+    list.push({
+      id: ph.id,
+      url: ph.url,
+      sortOrder: Number(ph.sort_order),
+    })
+    photosByProduct.set(ph.product_id, list)
+  }
+
   return {
     status: 200,
     body: {
@@ -223,17 +256,21 @@ export async function getCatalog(
         name: c.name,
         sortOrder: Number(c.sort_order),
       })),
-      products: products.map((p) => ({
-        id: p.id,
-        categoryId: p.category_id,
-        name: p.name,
-        description: p.description,
-        priceCents: Number(p.price_cents),
-        photo: p.photo,
-        isAvailable: Boolean(p.is_available),
-        sortOrder: Number(p.sort_order),
-        variantGroups: groupsByProduct.get(p.id) ?? [],
-      })),
+      products: products.map((p) => {
+        const photos = photosByProduct.get(p.id) ?? []
+        return {
+          id: p.id,
+          categoryId: p.category_id,
+          name: p.name,
+          description: p.description,
+          priceCents: Number(p.price_cents),
+          photo: photos[0]?.url ?? p.photo ?? null,
+          photos,
+          isAvailable: Boolean(p.is_available),
+          sortOrder: Number(p.sort_order),
+          variantGroups: groupsByProduct.get(p.id) ?? [],
+        }
+      }),
       settings,
       pendingOrder,
     },

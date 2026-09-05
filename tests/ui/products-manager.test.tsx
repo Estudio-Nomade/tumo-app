@@ -32,4 +32,14 @@ describe("ProductsManager (source contracts)", () => {
     expect(src).toContain("Disponible")
     expect(src).toContain("Agotado")
   })
+
+  test("multi-foto: upload real a /photos, multiple, no solo URL", () => {
+    expect(src).toMatch(/\/photos/)
+    expect(src).toMatch(/product-photos|Fotos/)
+    expect(src).toMatch(/type=["']file["']/)
+    expect(src).toMatch(/multiple/)
+    expect(src).toMatch(/image\/jpeg/)
+    expect(src).toMatch(/Podés subir hasta 8/)
+    expect(src).not.toMatch(/Foto \(URL, opcional\)/)
+  })
 })

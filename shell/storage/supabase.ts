@@ -1,9 +1,14 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js"
 import { LOGO_BUCKET, type LogoStorage } from "@/shell/business/logo"
+import {
+  PRODUCT_PHOTOS_BUCKET,
+  type ProductPhotoStorage,
+} from "@/modules/orders/api/product-photos"
 
 type GlobalStore = typeof globalThis & {
   __tumoSupabase?: SupabaseClient
   __tumoLogoBucketReady?: boolean
+  __tumoProductPhotosBucketReady?: boolean
 }
 
 /**
@@ -105,6 +110,60 @@ export function createSupabaseLogoStorage(): LogoStorage {
     async remove(path) {
       const client = getSupabaseAdmin()
       const { error } = await client.storage.from(LOGO_BUCKET).remove([path])
+      if (error) throw error
+    },
+  }
+}
+
+async function ensureProductPhotosBucket(client: SupabaseClient): Promise<void> {
+  const g = globalThis as GlobalStore
+  if (g.__tumoProductPhotosBucketReady) return
+
+  const { data: buckets, error: listError } = await client.storage.listBuckets()
+  if (listError) throw listError
+
+  const exists = (buckets ?? []).some((b) => b.name === PRODUCT_PHOTOS_BUCKET)
+  if (!exists) {
+    const { error: createError } = await client.storage.createBucket(
+      PRODUCT_PHOTOS_BUCKET,
+      {
+        public: true,
+        fileSizeLimit: "2MB",
+        allowedMimeTypes: ["image/jpeg", "image/png", "image/webp"],
+      }
+    )
+    if (createError && !/already exists/i.test(createError.message)) {
+      throw createError
+    }
+  }
+
+  g.__tumoProductPhotosBucketReady = true
+}
+
+export function createSupabaseProductPhotoStorage(): ProductPhotoStorage {
+  return {
+    async upload(path, bytes, contentType) {
+      const client = getSupabaseAdmin()
+      await ensureProductPhotosBucket(client)
+      const body = Buffer.from(bytes)
+      const { error } = await client.storage
+        .from(PRODUCT_PHOTOS_BUCKET)
+        .upload(path, body, {
+          contentType,
+          upsert: false,
+          cacheControl: "3600",
+        })
+      if (error) throw error
+      const { data } = client.storage
+        .from(PRODUCT_PHOTOS_BUCKET)
+        .getPublicUrl(path)
+      return { publicUrl: data.publicUrl }
+    },
+    async remove(path) {
+      const client = getSupabaseAdmin()
+      const { error } = await client.storage
+        .from(PRODUCT_PHOTOS_BUCKET)
+        .remove([path])
       if (error) throw error
     },
   }
