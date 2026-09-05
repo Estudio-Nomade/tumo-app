@@ -221,9 +221,12 @@ export default function CartWizard({ slug }: { slug: string }) {
             if (step === 1) router.push(`/${slug}/orders`)
             else setStep((s) => (s === 3 ? 2 : 1))
           }}
-          className="mb-1 flex min-h-[48px] w-full items-center rounded-xl px-1 text-left text-base font-semibold text-[var(--color-primary,#F97316)]"
+          className="mb-2 inline-flex min-h-[48px] items-center gap-2 rounded-2xl border border-[#E7E5E4] bg-[#F5F5F4] px-4 text-base font-semibold text-[var(--color-ink-public,#1C1917)]"
         >
-          {step === 1 ? "← Menú" : "← Atrás"}
+          <span aria-hidden className="text-lg leading-none">
+            ←
+          </span>
+          {step === 1 ? "Menú" : "Atrás"}
         </button>
         <p className="text-sm font-semibold text-[var(--color-primary,#F97316)]">
           Paso {stepLabel.n} de 3
