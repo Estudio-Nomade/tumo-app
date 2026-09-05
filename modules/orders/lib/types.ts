@@ -71,6 +71,7 @@ export type SqlTagged = ((
   ...values: unknown[]
 ) => Promise<unknown[]>) & {
   begin?: <T>(fn: (sql: SqlTagged) => Promise<T>) => Promise<T>
+  json?: (value: unknown) => unknown
 }
 
 export type JsonResult = {

@@ -7,6 +7,25 @@ export type DayHours = {
 /** Días 0–6 (0=domingo, como JS getDay). Día sin entrada = cerrado. */
 export type OrdersHours = Record<string, DayHours | undefined>
 
+/** Normaliza hours leídos de jsonb (objeto o string double-encoded). */
+export function coerceHours(raw: unknown): OrdersHours {
+  if (typeof raw === "string") {
+    try {
+      const parsed: unknown = JSON.parse(raw)
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+        return parsed as OrdersHours
+      }
+    } catch {
+      /* fallthrough */
+    }
+    return {}
+  }
+  if (raw && typeof raw === "object" && !Array.isArray(raw)) {
+    return raw as OrdersHours
+  }
+  return {}
+}
+
 export type OpeningInfo = {
   /** "hoy" | "mañana" | "el <día>" */
   dayLabel: string
