@@ -221,7 +221,7 @@ export default function CartWizard({ slug }: { slug: string }) {
             if (step === 1) router.push(`/${slug}/orders`)
             else setStep((s) => (s === 3 ? 2 : 1))
           }}
-          className="mb-2 inline-flex min-h-[48px] items-center gap-2 rounded-2xl border border-[#E7E5E4] bg-[#F5F5F4] px-4 text-base font-semibold text-[var(--color-ink-public,#1C1917)]"
+          className="mb-2 inline-flex min-h-[48px] items-center gap-2 rounded-2xl border border-[var(--color-primary,#F97316)]/25 bg-[var(--color-primary,#F97316)]/12 px-4 text-base font-bold text-[var(--color-primary,#F97316)] shadow-sm active:scale-[0.98]"
         >
           <span aria-hidden className="text-lg leading-none">
             ←

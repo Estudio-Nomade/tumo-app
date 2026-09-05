@@ -75,11 +75,11 @@ describe("CartWizard (elderly-UX source contracts)", () => {
     expect(cart).toMatch(/bg-\[var\(--color-surface-public/)
     expect(cart).toContain("Menú")
     expect(cart).toContain("Atrás")
-    // Back CTA is a real chip/button, not naked text
-    expect(cart).toMatch(/bg-\[#F5F5F4\]/)
-    expect(cart).toMatch(/border border-\[#E7E5E4\]/)
+    // Back CTA is a real orange chip, not naked text
+    expect(cart).toMatch(/color-primary|#F97316/)
     expect(cart).toMatch(/rounded-2xl/)
     expect(cart).toContain("min-h-[48px]")
+    expect(cart).toMatch(/font-bold/)
   })
 
   test("bottom nav Menú|Carrito montada", () => {
