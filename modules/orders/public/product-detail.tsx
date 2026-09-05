@@ -85,8 +85,6 @@ export default function ProductDetail({
     return product.priceCents + delta
   }, [product, selectedVariants])
 
-  const totalCents = unitPriceCents * quantity
-
   function toggleMultiple(groupId: string, optionId: string) {
     setMultiple((prev) => {
       const current = prev[groupId] ?? []
@@ -116,14 +114,18 @@ export default function ProductDetail({
       setFormError("Elegí una opción para cada grupo marcado")
       return
     }
+    const noteText = note.trim()
+    // Con variantes: siempre 1 unidad por línea. Si querés otra chica/con extra, volvé a agregar.
+    const qty =
+      product.variantGroups.length > 0 ? 1 : quantity
     const item: CartItem = {
-      key: cartItemKey(product.id, selectedVariants),
+      key: cartItemKey(product.id, selectedVariants, noteText),
       productId: product.id,
       name: product.name,
       basePriceCents: product.priceCents,
-      quantity,
+      quantity: qty,
       variants: selectedVariants,
-      notes: note.trim() || undefined,
+      notes: noteText || undefined,
     }
     const next = addItem(loadCart(slug), item)
     saveCart(slug, next)
@@ -158,6 +160,10 @@ export default function ProductDetail({
       </div>
     )
   }
+
+  const hasVariants = product.variantGroups.length > 0
+  const addQty = hasVariants ? 1 : quantity
+  const addTotalCents = unitPriceCents * addQty
 
   return (
     <div className="mx-auto w-full max-w-md pb-36">
@@ -237,30 +243,37 @@ export default function ProductDetail({
           </fieldset>
         ))}
 
-        <div className="flex items-center justify-between">
-          <span className="text-base font-semibold text-[var(--color-ink-public,#1C1917)]">
-            Cantidad
-          </span>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              aria-label="Menos"
-              onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-              className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#E7E5E4] text-[22px] font-bold"
-            >
-              −
-            </button>
-            <span className="w-8 text-center text-[22px] font-bold">{quantity}</span>
-            <button
-              type="button"
-              aria-label="Más"
-              onClick={() => setQuantity((q) => Math.min(20, q + 1))}
-              className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#E7E5E4] text-[22px] font-bold"
-            >
-              +
-            </button>
+        {hasVariants ? (
+          <p className="rounded-2xl bg-[#F5F5F4] px-4 py-3 text-base text-[var(--color-ink-public,#1C1917)]">
+            Se agrega de a una por vez. Si querés otra distinta (chica/grande o con extra),
+            volvé a agregar desde el menú.
+          </p>
+        ) : (
+          <div className="flex items-center justify-between">
+            <span className="text-base font-semibold text-[var(--color-ink-public,#1C1917)]">
+              Cantidad
+            </span>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                aria-label="Menos"
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#E7E5E4] text-[22px] font-bold"
+              >
+                −
+              </button>
+              <span className="w-8 text-center text-[22px] font-bold">{quantity}</span>
+              <button
+                type="button"
+                aria-label="Más"
+                onClick={() => setQuantity((q) => Math.min(20, q + 1))}
+                className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#E7E5E4] text-[22px] font-bold"
+              >
+                +
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         <label className="flex flex-col gap-1.5">
           <span className="text-base font-semibold text-[var(--color-ink-public,#1C1917)]">
@@ -289,7 +302,7 @@ export default function ProductDetail({
           onClick={handleAdd}
           className="flex min-h-[56px] w-full max-w-md mx-auto items-center justify-center rounded-2xl bg-[var(--color-primary,#F97316)] px-4 text-base font-bold text-white disabled:bg-stone-300 disabled:text-stone-500"
         >
-          {product.isAvailable ? `Agregar · $ ${formatCents(totalCents)}` : "Agotado hoy"}
+          {product.isAvailable ? `Agregar · $ ${formatCents(addTotalCents)}` : "Agotado hoy"}
         </button>
       </div>
 

@@ -154,6 +154,48 @@ describe("getCatalog", () => {
     expect(p.photos.map((x) => x.id)).toEqual(["ph1", "ph2"])
   })
 
+  test("productos siguen orden de categorías (comida antes que bebidas)", async () => {
+    const sql = makeSql({
+      categories: [
+        { id: "c-burg", name: "Hamburguesas", sort_order: 0 },
+        { id: "c-drink", name: "Bebidas", sort_order: 3 },
+      ],
+      // Misma p.sort_order: sin join a categoría, Coca gana por name ASC
+      products: [
+        {
+          id: "p-coca",
+          category_id: "c-drink",
+          name: "Coca-Cola 500ml",
+          description: null,
+          price_cents: 1500,
+          photo: null,
+          is_available: true,
+          sort_order: 0,
+        },
+        {
+          id: "p-burg",
+          category_id: "c-burg",
+          name: "Hamburguesa Clásica",
+          description: null,
+          price_cents: 4500,
+          photo: null,
+          is_available: true,
+          sort_order: 0,
+        },
+      ],
+      settings: [{ delivery_fee_cents: 0, is_paused: false, hours: openHours() }],
+    })
+    const r = await getCatalog(
+      makeDeps({ sql: sql as unknown as CatalogDeps["sql"] }),
+      { slug: "carri" }
+    )
+    expect(r.status).toBe(200)
+    const ids = (
+      r.body as { products: { id: string; name: string }[] }
+    ).products.map((p) => p.id)
+    expect(ids).toEqual(["p-burg", "p-coca"])
+  })
+
   test("cerrado por horario → isOpen false con nextOpening", async () => {
     const sunday = new Date("2026-08-23T15:00:00-03:00")
     const sql = makeSql({
