@@ -146,3 +146,15 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-orders-product-photo-carousel.md`
   summary: Body completo se bufferiza antes de validar tamaño 2MB
   evidence: route arrayBuffer() luego domain check; DoS multipart grande mitigable con stream/cap
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-orders-products-edit-panel-mobile.md`
+  summary: Sheet bottom full-dvh en desktop/tablet puede ser agresivo vs panel parcial
+  evidence: Handoff eligió un solo patrón Sheet bottom; md: right/max-w-lg queda como mejora UX
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-orders-products-edit-panel-mobile.md`
+  summary: Teclado virtual iOS puede chocar con footer sticky del Sheet (100dvh)
+  evidence: Sin visualViewport; handoff marca full-screen route solo si Sheet falla en prueba real
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-orders-products-edit-panel-mobile.md`
+  summary: Close button del Sheet es icon-sm (~28px), por debajo del target elderly ≥48px
+  evidence: Default de components/ui/sheet.tsx; no tocar primitivo global en este fix

@@ -11,6 +11,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+} from "@/components/ui/sheet"
 
 type VariantOption = { name: string; priceDeltaCents: number }
 type VariantGroup = {
@@ -537,186 +543,202 @@ export default function ProductsManager({ slug }: { slug: string }) {
         </ul>
       )}
 
-      <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="max-h-[90dvh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editing ? "Editar producto" : "Nuevo producto"}</DialogTitle>
-            <DialogDescription>Nombre, precio y variantes. Los precios van en centavos enteros.</DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-3">
-            <label className="flex flex-col gap-1.5">
-              <span className="text-base font-semibold">Nombre</span>
-              <input
-                value={draft.name}
-                onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
-                className="min-h-[52px] rounded-2xl border border-[#E7E5E4] px-4 text-base"
-              />
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-base font-semibold">Precio (centavos)</span>
-              <input
-                inputMode="numeric"
-                value={draft.price}
-                onChange={(e) => setDraft((d) => ({ ...d, price: e.target.value }))}
-                className="min-h-[52px] rounded-2xl border border-[#E7E5E4] px-4 text-base"
-              />
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-base font-semibold">Descripción (opcional)</span>
-              <input
-                value={draft.description}
-                onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
-                className="min-h-[52px] rounded-2xl border border-[#E7E5E4] px-4 text-base"
-              />
-            </label>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-base font-semibold">Categoría</span>
-              <select
-                value={draft.categoryId}
-                onChange={(e) => setDraft((d) => ({ ...d, categoryId: e.target.value }))}
-                className="min-h-[52px] rounded-2xl border border-[#E7E5E4] px-4 text-base"
-              >
-                <option value="">Sin categoría</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="flex flex-col gap-2">
-              <p className="text-base font-semibold">Fotos</p>
-              {!editing?.id ? (
-                <p className="text-sm text-stone-600">
-                  Guardá el producto primero para poder subir fotos.
-                </p>
-              ) : (
-                <>
-                  <p className="text-sm text-stone-600">Podés subir hasta 8 fotos.</p>
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                    {editPhotos.map((ph, i) => (
-                      <div
-                        key={ph.id}
-                        className="relative overflow-hidden rounded-xl border border-[#E7E5E4] bg-[#F5F5F4]"
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={ph.url}
-                          alt=""
-                          className="aspect-square w-full object-cover"
-                        />
-                        {i === 0 ? (
-                          <span className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-0.5 text-xs font-semibold text-white">
-                            Principal
-                          </span>
-                        ) : null}
-                        <button
-                          type="button"
-                          onClick={() => void deletePhoto(ph.id)}
-                          className="absolute bottom-2 right-2 min-h-[48px] min-w-[48px] rounded-xl bg-white/95 px-2 text-sm font-semibold text-red-600 shadow"
+      <Sheet open={formOpen} onOpenChange={setFormOpen}>
+        <SheetContent
+          side="bottom"
+          showCloseButton
+          className="flex w-full max-w-none flex-col gap-0 rounded-t-2xl p-0 data-[side=bottom]:h-[100dvh] data-[side=bottom]:max-h-[100dvh]"
+        >
+          <div className="flex shrink-0 items-start justify-between gap-3 border-b border-[#E7E5E4] px-4 pb-3 pt-[max(1rem,env(safe-area-inset-top))] pr-14">
+            <div>
+              <SheetTitle className="text-lg font-bold text-stone-900">
+                {editing ? "Editar producto" : "Nuevo producto"}
+              </SheetTitle>
+              <SheetDescription className="text-sm text-stone-600">
+                Nombre, precio y variantes. Precios en centavos.
+              </SheetDescription>
+            </div>
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3">
+            <div className="flex flex-col gap-3">
+              <label className="flex flex-col gap-1.5">
+                <span className="text-base font-semibold">Nombre</span>
+                <input
+                  value={draft.name}
+                  onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
+                  className="min-h-[52px] w-full min-w-0 rounded-2xl border border-[#E7E5E4] px-4 text-base"
+                />
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-base font-semibold">Precio (centavos)</span>
+                <input
+                  inputMode="numeric"
+                  value={draft.price}
+                  onChange={(e) => setDraft((d) => ({ ...d, price: e.target.value }))}
+                  className="min-h-[52px] w-full min-w-0 rounded-2xl border border-[#E7E5E4] px-4 text-base"
+                />
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-base font-semibold">Descripción (opcional)</span>
+                <input
+                  value={draft.description}
+                  onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
+                  className="min-h-[52px] w-full min-w-0 rounded-2xl border border-[#E7E5E4] px-4 text-base"
+                />
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-base font-semibold">Categoría</span>
+                <select
+                  value={draft.categoryId}
+                  onChange={(e) => setDraft((d) => ({ ...d, categoryId: e.target.value }))}
+                  className="min-h-[52px] w-full min-w-0 rounded-2xl border border-[#E7E5E4] px-4 text-base"
+                >
+                  <option value="">Sin categoría</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="flex flex-col gap-2">
+                <p className="text-base font-semibold">Fotos</p>
+                {!editing?.id ? (
+                  <p className="text-sm text-stone-600">
+                    Guardá el producto primero para poder subir fotos.
+                  </p>
+                ) : (
+                  <>
+                    <p className="text-sm text-stone-600">Podés subir hasta 8 fotos.</p>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                      {editPhotos.map((ph, i) => (
+                        <div
+                          key={ph.id}
+                          className="relative overflow-hidden rounded-xl border border-[#E7E5E4] bg-[#F5F5F4]"
                         >
-                          Eliminar
-                        </button>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={ph.url}
+                            alt=""
+                            className="aspect-square w-full object-cover"
+                          />
+                          {i === 0 ? (
+                            <span className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-0.5 text-xs font-semibold text-white">
+                              Principal
+                            </span>
+                          ) : null}
+                          <button
+                            type="button"
+                            onClick={() => void deletePhoto(ph.id)}
+                            className="absolute bottom-2 right-2 min-h-[48px] min-w-[48px] rounded-xl bg-white/95 px-2 text-sm font-semibold text-red-600 shadow"
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <label className="flex min-h-[56px] cursor-pointer items-center justify-center rounded-2xl border border-dashed border-[#E7E5E4] px-4 text-base font-semibold text-[var(--color-primary,#F97316)]">
+                      {uploadingPhotos ? "Subiendo…" : "Agregar fotos"}
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        multiple
+                        disabled={uploadingPhotos || editPhotos.length >= MAX_PHOTOS}
+                        className="sr-only"
+                        onChange={(e) => {
+                          void uploadPhotos(e.target.files)
+                          e.target.value = ""
+                        }}
+                      />
+                    </label>
+                    {photoError ? (
+                      <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                        {photoError}
+                      </p>
+                    ) : null}
+                  </>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <p className="text-base font-semibold">Variantes</p>
+                {draft.groups.map((g, gi) => (
+                  <div key={gi} className="rounded-xl border border-[#E7E5E4] p-3">
+                    <input
+                      value={g.name}
+                      placeholder="Nombre del grupo (ej. Tamaño)"
+                      onChange={(e) => patchGroup(gi, { name: e.target.value })}
+                      className="mb-2 min-h-[52px] w-full min-w-0 rounded-xl border border-[#E7E5E4] px-3 text-base"
+                    />
+                    {g.options.map((o, oi) => (
+                      <div key={oi} className="mb-2 flex flex-col gap-2 sm:flex-row">
+                        <input
+                          value={o.name}
+                          placeholder="Opción"
+                          onChange={(e) => patchOption(gi, oi, { name: e.target.value })}
+                          className="min-h-[48px] w-full min-w-0 flex-1 rounded-xl border border-[#E7E5E4] px-3 text-base"
+                        />
+                        <input
+                          inputMode="numeric"
+                          value={String(o.priceDeltaCents)}
+                          aria-label="priceDeltaCents"
+                          onChange={(e) =>
+                            patchOption(gi, oi, {
+                              priceDeltaCents: Number(e.target.value.replace(/[^\d-]/g, "")) || 0,
+                            })
+                          }
+                          className="min-h-[48px] w-full min-w-0 rounded-xl border border-[#E7E5E4] px-3 text-base sm:w-28"
+                        />
                       </div>
                     ))}
+                    <button
+                      type="button"
+                      onClick={() => addOption(gi)}
+                      className="min-h-[48px] text-base font-semibold text-[var(--color-primary,#F97316)]"
+                    >
+                      + Opción
+                    </button>
                   </div>
-                  <label className="flex min-h-[56px] cursor-pointer items-center justify-center rounded-2xl border border-dashed border-[#E7E5E4] px-4 text-base font-semibold text-[var(--color-primary,#F97316)]">
-                    {uploadingPhotos ? "Subiendo…" : "Agregar fotos"}
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp"
-                      multiple
-                      disabled={uploadingPhotos || editPhotos.length >= MAX_PHOTOS}
-                      className="sr-only"
-                      onChange={(e) => {
-                        void uploadPhotos(e.target.files)
-                        e.target.value = ""
-                      }}
-                    />
-                  </label>
-                  {photoError ? (
-                    <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-                      {photoError}
-                    </p>
-                  ) : null}
-                </>
-              )}
-            </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addGroup}
+                  className="min-h-[48px] text-left text-base font-semibold text-[var(--color-primary,#F97316)]"
+                >
+                  + Grupo de variantes
+                </button>
+              </div>
 
+            </div>
+          </div>
+
+          <div className="shrink-0 border-t border-[#E7E5E4] bg-popover px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             <div className="flex flex-col gap-2">
-              <p className="text-base font-semibold">Variantes</p>
-              {draft.groups.map((g, gi) => (
-                <div key={gi} className="rounded-xl border border-[#E7E5E4] p-3">
-                  <input
-                    value={g.name}
-                    placeholder="Nombre del grupo (ej. Tamaño)"
-                    onChange={(e) => patchGroup(gi, { name: e.target.value })}
-                    className="mb-2 min-h-[52px] w-full rounded-xl border border-[#E7E5E4] px-3 text-base"
-                  />
-                  {g.options.map((o, oi) => (
-                    <div key={oi} className="mb-2 flex gap-2">
-                      <input
-                        value={o.name}
-                        placeholder="Opción"
-                        onChange={(e) => patchOption(gi, oi, { name: e.target.value })}
-                        className="min-h-[48px] flex-1 rounded-xl border border-[#E7E5E4] px-3 text-base"
-                      />
-                      <input
-                        inputMode="numeric"
-                        value={String(o.priceDeltaCents)}
-                        aria-label="priceDeltaCents"
-                        onChange={(e) =>
-                          patchOption(gi, oi, {
-                            priceDeltaCents: Number(e.target.value.replace(/[^\d-]/g, "")) || 0,
-                          })
-                        }
-                        className="min-h-[48px] w-24 rounded-xl border border-[#E7E5E4] px-3 text-base"
-                      />
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={() => addOption(gi)}
-                    className="min-h-[48px] text-base font-semibold text-[var(--color-primary,#F97316)]"
-                  >
-                    + Opción
-                  </button>
-                </div>
-              ))}
+              {formError ? (
+                <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                  {formError}
+                </p>
+              ) : null}
               <button
                 type="button"
-                onClick={addGroup}
-                className="min-h-[48px] text-left text-base font-semibold text-[var(--color-primary,#F97316)]"
+                disabled={saving}
+                onClick={() => void save()}
+                className="min-h-[56px] w-full rounded-xl bg-[var(--color-primary,#F97316)] px-4 text-base font-bold text-white disabled:opacity-60"
               >
-                + Grupo de variantes
+                {saving ? "Guardando…" : "Guardar"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormOpen(false)}
+                className="min-h-[48px] w-full rounded-xl border border-[#E7E5E4] px-4 text-base font-semibold"
+              >
+                Cancelar
               </button>
             </div>
-
-            {formError ? (
-              <p role="alert" className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-                {formError}
-              </p>
-            ) : null}
           </div>
-          <DialogFooter>
-            <button
-              type="button"
-              onClick={() => setFormOpen(false)}
-              className="min-h-[48px] rounded-xl border border-[#E7E5E4] px-4 text-base font-semibold"
-            >
-              Cancelar
-            </button>
-            <button
-              type="button"
-              disabled={saving}
-              onClick={() => void save()}
-              className="min-h-[56px] rounded-xl bg-[var(--color-primary,#F97316)] px-4 text-base font-bold text-white disabled:opacity-60"
-            >
-              {saving ? "Guardando…" : "Guardar"}
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
 
       <Dialog open={Boolean(deleteTarget)} onOpenChange={(o) => !o && setDeleteTarget(null)}>
         <DialogContent>

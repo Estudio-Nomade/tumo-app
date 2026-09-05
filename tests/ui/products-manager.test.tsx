@@ -42,4 +42,28 @@ describe("ProductsManager (source contracts)", () => {
     expect(src).toMatch(/Podés subir hasta 8/)
     expect(src).not.toMatch(/Foto \(URL, opcional\)/)
   })
+
+  test("editor Nuevo/Editar: Sheet bottom full-height, no Dialog angosto", () => {
+    expect(src).toMatch(/from ["']@\/components\/ui\/sheet["']/)
+    expect(src).toMatch(/Sheet open=\{formOpen\}/)
+    expect(src).toMatch(/SheetContent/)
+    expect(src).toMatch(/side=["']bottom["']/)
+    expect(src).toMatch(/data-\[side=bottom\]:h-\[100dvh\]/)
+    expect(src).toMatch(/max-w-none/)
+    expect(src).not.toMatch(/Dialog open=\{formOpen\}/)
+  })
+
+  test("editor: body scrolleable + footer fijo con Guardar y safe-area", () => {
+    expect(src).toMatch(/overflow-y-auto/)
+    expect(src).toMatch(/overscroll-contain/)
+    expect(src).toMatch(/flex-1/)
+    expect(src).toMatch(/safe-area-inset-bottom/)
+    expect(src).toMatch(/safe-area-inset-top/)
+    expect(src).toMatch(/min-h-\[56px\][\s\S]{0,200}Guardar|Guardar[\s\S]{0,80}min-h-\[56px\]/)
+    expect(src).toMatch(/shrink-0/)
+    // formError visible junto al CTA sticky
+    expect(src).toMatch(
+      /safe-area-inset-bottom[\s\S]{0,400}formError[\s\S]{0,400}Guardar/
+    )
+  })
 })
