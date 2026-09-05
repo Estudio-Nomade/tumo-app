@@ -14,6 +14,9 @@ import {
 } from "@/modules/orders/lib/cart"
 import { formatCents } from "@/modules/orders/lib/types"
 import { pendingOrderBanner } from "@/modules/orders/lib/pending-order"
+import OrdersPublicNav, {
+  notifyOrdersCartChanged,
+} from "@/modules/orders/public/orders-public-nav"
 import type {
   CatalogCategory,
   CatalogPendingOrder,
@@ -99,6 +102,7 @@ export default function Catalog({ slug }: { slug: string }) {
     const next = addItem(cart, item)
     setCart(next)
     saveCart(slug, next)
+    notifyOrdersCartChanged()
     showToast("Agregado ✓")
   }
 
@@ -110,15 +114,36 @@ export default function Catalog({ slug }: { slug: string }) {
 
   const summary = cartSummary(cart)
 
+  const logoInitial = (business.name.trim()?.[0] ?? "?").toUpperCase()
+
   return (
     <div className="flex min-h-[100dvh] w-full flex-col bg-[var(--color-surface-public,#FFFFFF)] pb-24">
       <header className="sticky top-0 z-10 bg-[var(--color-surface-public,#FFFFFF)] px-4 pt-3 pb-2">
-        <h1 className="text-[22px] font-bold tracking-tight text-[var(--color-ink-public,#1C1917)]">
-          {business.name}
-        </h1>
-        <p className="text-base text-[var(--color-muted-public,#78716C)]">
-          Elegí lo que vas a pedir
-        </p>
+        <div className="flex items-center gap-3">
+          {business.logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={business.logo}
+              alt={business.name}
+              className="h-12 w-12 shrink-0 rounded-full object-cover"
+            />
+          ) : (
+            <span
+              aria-hidden
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary,#F97316)] text-lg font-bold text-white"
+            >
+              {logoInitial}
+            </span>
+          )}
+          <div className="min-w-0">
+            <h1 className="text-[22px] font-bold tracking-tight text-[var(--color-ink-public,#1C1917)]">
+              {business.name}
+            </h1>
+            <p className="text-base text-[var(--color-muted-public,#78716C)]">
+              Elegí lo que vas a pedir
+            </p>
+          </div>
+        </div>
       </header>
 
       {pendingOrder && pendingBannerMessage ? (
@@ -257,20 +282,7 @@ export default function Catalog({ slug }: { slug: string }) {
         </>
       )}
 
-      {summary.count > 0 ? (
-        <div className="fixed inset-x-0 bottom-0 z-20 px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-          <Link
-            href={`/${slug}/orders/cart`}
-            className="flex min-h-[56px] w-full max-w-md mx-auto items-center justify-between rounded-2xl bg-[var(--color-primary,#F97316)] px-5 text-base font-bold text-white shadow-lg"
-          >
-            <span>Ver mi pedido</span>
-            <span>
-              {summary.count} {summary.count === 1 ? "ítem" : "ítems"} · ${" "}
-              {formatCents(summary.subtotalCents)}
-            </span>
-          </Link>
-        </div>
-      ) : null}
+      <OrdersPublicNav slug={slug} count={summary.count} />
 
       {toast ? (
         <p
