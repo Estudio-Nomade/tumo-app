@@ -1,5 +1,6 @@
 import { describe, expect, mock, test } from "bun:test"
 import {
+  createCategory,
   createProduct,
   deleteProduct,
   listCategories,
@@ -17,11 +18,21 @@ function makeSql(overrides: {
   deleted?: unknown[]
   existing?: unknown[]
   categories?: unknown[]
+  categoryInserted?: unknown[]
+  maxSort?: unknown[]
 } = {}) {
   const calls: { q: string; values: unknown[] }[] = []
   const sql = mock((strings: TemplateStringsArray, ...values: unknown[]) => {
     const q = strings.join(" ")
     calls.push({ q, values })
+    if (q.includes("INSERT INTO product_categories")) {
+      return Promise.resolve(
+        overrides.categoryInserted ?? [{ id: "c-new", name: "Postres", sort_order: 4 }]
+      )
+    }
+    if (q.includes("MAX(sort_order)") && q.includes("product_categories")) {
+      return Promise.resolve(overrides.maxSort ?? [{ max: 3 }])
+    }
     if (q.includes("INSERT INTO products")) {
       return Promise.resolve(overrides.inserted ?? [{ id: "p-new" }])
     }
@@ -31,11 +42,12 @@ function makeSql(overrides: {
     if (q.includes("UPDATE products")) {
       return Promise.resolve(overrides.updated ?? [{ id: "p1", is_available: false }])
     }
-    if (q.includes("FROM product_categories")) {
-      return Promise.resolve(overrides.categories ?? [{ id: "c1", name: "Hamburguesas" }])
-    }
+    // nameTaken (products) o createCategory duplicate check
     if (q.includes("lower(name)") || q.includes("LOWER(name)")) {
       return Promise.resolve(overrides.existing ?? [])
+    }
+    if (q.includes("FROM product_categories")) {
+      return Promise.resolve(overrides.categories ?? [{ id: "c1", name: "Hamburguesas" }])
     }
     if (q.includes("FROM products")) {
       return Promise.resolve(
@@ -297,6 +309,41 @@ describe("listCategories", () => {
     expect((r.body as { categories: { name: string }[] }).categories[0].name).toBe(
       "Hamburguesas"
     )
+  })
+})
+
+describe("createCategory", () => {
+  test("nombre vacío → 400", async () => {
+    const r = await createCategory(makeDeps(), { businessId: "biz-1", name: "  " })
+    expect(r.status).toBe(400)
+  })
+
+  test("businessId vacío → 400", async () => {
+    const r = await createCategory(makeDeps(), { businessId: "", name: "Postres" })
+    expect(r.status).toBe(400)
+  })
+
+  test("nombre duplicado → 409", async () => {
+    const { sql } = makeSql({ existing: [{ id: "c1" }] })
+    const deps = makeDeps({ sql: sql as unknown as ProductsDeps["sql"] })
+    const r = await createCategory(deps, { businessId: "biz-1", name: "Hamburguesas" })
+    expect(r.status).toBe(409)
+  })
+
+  test("crea categoría al final del sort_order", async () => {
+    const { sql, calls } = makeSql({
+      categoryInserted: [{ id: "c-new", name: "Postres", sort_order: 4 }],
+      maxSort: [{ max: 3 }],
+    })
+    const deps = makeDeps({ sql: sql as unknown as ProductsDeps["sql"] })
+    const r = await createCategory(deps, { businessId: "biz-1", name: "  Postres  " })
+    expect(r.status).toBe(200)
+    const body = r.body as { id: string; name: string; sortOrder: number }
+    expect(body).toMatchObject({ id: "c-new", name: "Postres", sortOrder: 4 })
+    expect(calls.some((c) => c.q.includes("INSERT INTO product_categories"))).toBe(true)
+    const insert = calls.find((c) => c.q.includes("INSERT INTO product_categories"))
+    expect(insert!.values).toContain("Postres")
+    expect(insert!.values).toContain(4)
   })
 })
 

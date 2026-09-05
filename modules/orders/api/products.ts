@@ -221,6 +221,53 @@ export async function listCategories(
   }
 }
 
+export async function createCategory(
+  deps: ProductsDeps,
+  input: { businessId: string; name: string }
+): Promise<JsonResult> {
+  const businessId = input.businessId?.trim() ?? ""
+  const name = input.name?.trim() ?? ""
+  if (!businessId) {
+    return { status: 400, body: { error: "businessId es requerido." } }
+  }
+  if (!name) {
+    return { status: 400, body: { error: "Escribí el nombre de la categoría." } }
+  }
+
+  const existing = (await deps.sql`
+    SELECT id
+    FROM product_categories
+    WHERE business_id = ${businessId} AND lower(name) = lower(${name})
+    LIMIT 1
+  `) as { id: string }[]
+  if (existing[0]) {
+    return { status: 409, body: { error: "Ya hay una categoría con ese nombre." } }
+  }
+
+  const maxRows = (await deps.sql`
+    SELECT MAX(sort_order) AS max
+    FROM product_categories
+    WHERE business_id = ${businessId}
+  `) as { max: number | null }[]
+  const nextSort = Number(maxRows[0]?.max ?? -1) + 1
+
+  const inserted = (await deps.sql`
+    INSERT INTO product_categories (business_id, name, sort_order)
+    VALUES (${businessId}, ${name}, ${nextSort})
+    RETURNING id, name, sort_order
+  `) as { id: string; name: string; sort_order: number }[]
+
+  const row = inserted[0]
+  return {
+    status: 200,
+    body: {
+      id: row.id,
+      name: row.name,
+      sortOrder: Number(row.sort_order),
+    },
+  }
+}
+
 export async function createProduct(
   deps: ProductsDeps,
   input: {
