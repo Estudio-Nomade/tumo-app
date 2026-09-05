@@ -45,6 +45,17 @@ describe("CartWizard (elderly-UX source contracts)", () => {
     expect(cart).toContain("Escribí un WhatsApp válido")
   })
 
+  test("dirección de envío usa autocomplete Photon vía proxy", () => {
+    expect(cart).toContain("AddressAutocomplete")
+    const autocomplete = readFileSync(
+      join(root, "modules/orders/public/address-autocomplete.tsx"),
+      "utf8"
+    )
+    expect(autocomplete).toContain("/api/orders/geocode")
+    expect(autocomplete).toContain('role="listbox"')
+    expect(autocomplete).not.toContain("photon.komoot.io")
+  })
+
   test("botones ≥56px y campos ≥52px", () => {
     expect(cart).toMatch(/min-h-\[56px\]/)
     expect(cart).toMatch(/min-h-\[52px\]/)

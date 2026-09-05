@@ -19,6 +19,7 @@ import { formatCents } from "@/modules/orders/lib/types"
 import OrdersPublicNav, {
   notifyOrdersCartChanged,
 } from "@/modules/orders/public/orders-public-nav"
+import AddressAutocomplete from "@/modules/orders/public/address-autocomplete"
 
 type Step = 1 | 2 | 3
 type Fulfillment = "pickup" | "delivery"
@@ -299,18 +300,17 @@ export default function CartWizard({ slug }: { slug: string }) {
             </label>
 
             {fulfillment === "delivery" ? (
-              <label className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-1.5 overflow-visible">
                 <span className="text-base font-semibold text-[var(--color-ink-public,#1C1917)]">
                   ¿A dónde lo mandamos?
                 </span>
-                <input
-                  type="text"
+                <AddressAutocomplete
+                  slug={slug}
                   value={deliveryAddress}
-                  onChange={(e) => setDeliveryAddress(e.target.value)}
+                  onChange={setDeliveryAddress}
                   placeholder="Calle y número, barrio"
-                  className="min-h-[52px] rounded-2xl border border-[#E7E5E4] px-4 text-base outline-none focus:border-[var(--color-primary,#F97316)]"
                 />
-              </label>
+              </div>
             ) : null}
           </>
         ) : (
