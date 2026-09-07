@@ -32,6 +32,8 @@ type BookingRow = {
   ends_at: Date | string
   customer_id?: string
   notes?: string | null
+  customer_name?: string | null
+  customer_phone?: string | null
 }
 
 function mapBooking(r: BookingRow) {
@@ -47,6 +49,8 @@ function mapBooking(r: BookingRow) {
     endsAt: new Date(r.ends_at).toISOString(),
     customerId: r.customer_id,
     notes: r.notes ?? null,
+    customerName: r.customer_name ?? null,
+    customerPhone: r.customer_phone ?? null,
   }
 }
 
@@ -283,10 +287,12 @@ export async function getBooking(
   }
 
   const rows = (await deps.sql`
-    SELECT id, status, payment_method, payment_status, service_name, price_cents,
-           duration_minutes, starts_at, ends_at, customer_id, notes
-    FROM turnos_bookings
-    WHERE id = ${bookingId} AND business_id = ${businessId}
+    SELECT b.id, b.status, b.payment_method, b.payment_status, b.service_name, b.price_cents,
+           b.duration_minutes, b.starts_at, b.ends_at, b.customer_id, b.notes,
+           c.name AS customer_name, c.phone AS customer_phone
+    FROM turnos_bookings b
+    LEFT JOIN customers c ON c.id = b.customer_id
+    WHERE b.id = ${bookingId} AND b.business_id = ${businessId}
   `) as BookingRow[]
 
   if (!rows[0]) {
