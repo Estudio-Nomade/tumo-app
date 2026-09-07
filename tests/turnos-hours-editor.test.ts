@@ -5,6 +5,7 @@ import {
   DAY_ORDER,
   editorStateToHours,
   hoursToEditorState,
+  normalizeHm,
   validateTurnosDayWindow,
   type DayEditorState,
 } from "@/modules/turnos/lib/hours-editor"
@@ -66,11 +67,47 @@ describe("hoursToEditorState / editorStateToHours", () => {
     expect(hours).toEqual({ mon: [["10:00", "14:00"]] } satisfies HoursMap)
     expect(hours.tue).toBeUndefined()
   })
+
+  test("día no tocado conserva multi-ventana original", () => {
+    const original: HoursMap = {
+      wed: [
+        ["09:00", "12:00"],
+        ["15:00", "18:00"],
+      ],
+      mon: [["10:00", "14:00"]],
+    }
+    const editor = hoursToEditorState(original)
+    editor.mon = { closed: false, open: "11:00", close: "13:00" }
+    const hours = editorStateToHours(editor, {
+      original,
+      touched: new Set(["mon"]),
+    })
+    expect(hours.mon).toEqual([["11:00", "13:00"]])
+    expect(hours.wed).toEqual([
+      ["09:00", "12:00"],
+      ["15:00", "18:00"],
+    ])
+  })
+
+  test("hours string JSON o basura → editor cerrado seguro", () => {
+    expect(hoursToEditorState('{"mon":[["09:00","12:00"]]}').mon.closed).toBe(
+      false
+    )
+    expect(hoursToEditorState("nope").mon.closed).toBe(true)
+    expect(hoursToEditorState([] as unknown as HoursMap).fri.closed).toBe(true)
+  })
 })
 
-describe("validateTurnosDayWindow", () => {
+describe("normalizeHm / validateTurnosDayWindow", () => {
+  test("normaliza HH:MM:SS y H:MM", () => {
+    expect(normalizeHm("9:30")).toBe("09:30")
+    expect(normalizeHm("09:30:00")).toBe("09:30")
+  })
+
   test("cierra > abre → ok", () => {
     expect(validateTurnosDayWindow("09:00", "18:00")).toBeNull()
+    expect(validateTurnosDayWindow("9:00", "18:00")).toBeNull()
+    expect(validateTurnosDayWindow("09:00:00", "18:00:00")).toBeNull()
   })
 
   test("cierra ≤ abre → error", () => {
@@ -79,7 +116,7 @@ describe("validateTurnosDayWindow", () => {
   })
 
   test("formato inválido → error", () => {
-    expect(validateTurnosDayWindow("9:00", "18:00")).toMatch(/horario/i)
+    expect(validateTurnosDayWindow("xx", "18:00")).toMatch(/horario/i)
     expect(validateTurnosDayWindow("", "18:00")).toMatch(/horario/i)
   })
 })

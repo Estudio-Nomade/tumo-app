@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import type { HoursMap } from "@/modules/turnos/lib/availability"
 import {
+  DAY_ORDER,
   editorStateToHours,
   hoursToEditorState,
   validateEditorState,
@@ -20,61 +21,125 @@ export default function TurnosSettingsForm({ slug }: { slug: string }) {
   const [days, setDays] = useState<Record<DayKey, DayEditorState>>(() =>
     hoursToEditorState({})
   )
+  const [originalHours, setOriginalHours] = useState<HoursMap>({})
+  const [touched, setTouched] = useState<Set<DayKey>>(() => new Set())
+  const [loaded, setLoaded] = useState(false)
+  const [loadFailed, setLoadFailed] = useState(false)
   const [msg, setMsg] = useState("")
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     let cancelled = false
     void fetch("/api/turnos/settings")
-      .then((r) => r.json())
+      .then(async (r) => {
+        if (!r.ok) throw new Error("load")
+        return r.json() as Promise<{ settings?: Record<string, unknown> }>
+      })
       .then((d) => {
         if (cancelled) return
         const s = d.settings
-        if (!s) return
-        setAlias(s.transferAlias ?? "")
-        setCbu(s.transferCbu ?? "")
-        setHolder(s.transferHolder ?? "")
-        setWhatsappPhone(s.whatsappPhone ?? "")
+        if (!s) {
+          setLoaded(true)
+          return
+        }
+        setAlias(String(s.transferAlias ?? ""))
+        setCbu(String(s.transferCbu ?? ""))
+        setHolder(String(s.transferHolder ?? ""))
+        setWhatsappPhone(String(s.whatsappPhone ?? ""))
         setPaused(Boolean(s.isPaused))
-        setDays(hoursToEditorState((s.hours ?? {}) as HoursMap))
+        const hours = (s.hours ?? {}) as HoursMap
+        setOriginalHours(
+          typeof hours === "object" && hours && !Array.isArray(hours)
+            ? (hours as HoursMap)
+            : {}
+        )
+        setDays(hoursToEditorState(hours))
+        setTouched(new Set())
+        setLoadFailed(false)
+        setLoaded(true)
       })
-      .catch(() => null)
+      .catch(() => {
+        if (!cancelled) {
+          setLoadFailed(true)
+          setMsg("No se pudo cargar la configuración.")
+          setLoaded(true)
+        }
+      })
     return () => {
       cancelled = true
     }
   }, [])
 
+  function onDaysChange(next: Record<DayKey, DayEditorState>) {
+    const changed = new Set(touched)
+    for (const { key } of DAY_ORDER) {
+      const a = days[key]
+      const b = next[key]
+      if (
+        a.closed !== b.closed ||
+        a.open !== b.open ||
+        a.close !== b.close
+      ) {
+        changed.add(key)
+      }
+    }
+    setTouched(changed)
+    setDays(next)
+  }
+
   async function save() {
+    if (!loaded) return
     setMsg("")
-    const hoursErr = validateEditorState(days)
+    if (loadFailed) {
+      setMsg("Recargá la página antes de guardar.")
+      return
+    }
+    const hoursErr = validateEditorState(days, touched)
     if (hoursErr) {
       setMsg(hoursErr)
       return
     }
-    const hours = editorStateToHours(days)
-    setSaving(true)
-    const res = await fetch("/api/turnos/settings", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        transferAlias: alias,
-        transferCbu: cbu,
-        transferHolder: holder,
-        whatsappPhone: whatsappPhone,
-        isPaused: paused,
-        hours,
-      }),
+    const hours = editorStateToHours(days, {
+      original: originalHours,
+      touched,
     })
-    setSaving(false)
-    if (!res.ok) {
-      const d = await res.json()
-      setMsg(d.error ?? "Error al guardar")
-      return
+    setSaving(true)
+    try {
+      const res = await fetch("/api/turnos/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          transferAlias: alias,
+          transferCbu: cbu,
+          transferHolder: holder,
+          whatsappPhone: whatsappPhone,
+          isPaused: paused,
+          hours,
+        }),
+      })
+      if (!res.ok) {
+        let err = "Error al guardar"
+        try {
+          const d = (await res.json()) as { error?: string }
+          err = d.error ?? err
+        } catch {
+          /* ignore */
+        }
+        setMsg(err)
+        return
+      }
+      setOriginalHours(hours)
+      setTouched(new Set())
+      setMsg("Guardado.")
+    } catch {
+      setMsg("No se pudo guardar. Revisá la conexión.")
+    } finally {
+      setSaving(false)
     }
-    setMsg("Guardado.")
   }
 
   const waEmpty = whatsappPhone.trim() === ""
+  const busy = saving || !loaded
 
   return (
     <div className="mx-auto flex w-full max-w-lg flex-col gap-4 p-2">
@@ -89,7 +154,16 @@ export default function TurnosSettingsForm({ slug }: { slug: string }) {
         Para nombre, logo o colores del negocio andá a Ajustes (shell).
       </p>
 
-      <TurnosHoursEditor days={days} onChange={setDays} disabled={saving} />
+      {!loaded ? (
+        <p className="text-base text-stone-600">Cargando horarios…</p>
+      ) : (
+        <TurnosHoursEditor
+          days={days}
+          onChange={onDaysChange}
+          disabled={busy}
+          originalHours={originalHours}
+        />
+      )}
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold text-stone-900">
@@ -100,6 +174,7 @@ export default function TurnosSettingsForm({ slug }: { slug: string }) {
           <input
             className="min-h-[52px] rounded-xl border border-stone-200 px-3 text-base"
             value={alias}
+            disabled={busy}
             onChange={(e) => setAlias(e.target.value)}
           />
         </label>
@@ -108,6 +183,7 @@ export default function TurnosSettingsForm({ slug }: { slug: string }) {
           <input
             className="min-h-[52px] rounded-xl border border-stone-200 px-3 text-base"
             value={cbu}
+            disabled={busy}
             onChange={(e) => setCbu(e.target.value)}
           />
         </label>
@@ -116,6 +192,7 @@ export default function TurnosSettingsForm({ slug }: { slug: string }) {
           <input
             className="min-h-[52px] rounded-xl border border-stone-200 px-3 text-base"
             value={holder}
+            disabled={busy}
             onChange={(e) => setHolder(e.target.value)}
           />
         </label>
@@ -138,6 +215,7 @@ export default function TurnosSettingsForm({ slug }: { slug: string }) {
           <input
             className="min-h-[52px] rounded-xl border border-stone-200 px-3 text-base"
             value={whatsappPhone}
+            disabled={busy}
             onChange={(e) => setWhatsappPhone(e.target.value)}
             placeholder="Ej. +54 9 11 1234-5678"
             inputMode="tel"
@@ -154,6 +232,7 @@ export default function TurnosSettingsForm({ slug }: { slug: string }) {
         <input
           type="checkbox"
           checked={paused}
+          disabled={busy}
           onChange={(e) => setPaused(e.target.checked)}
           className="h-6 w-6"
         />
@@ -168,12 +247,12 @@ export default function TurnosSettingsForm({ slug }: { slug: string }) {
       )}
       <button
         type="button"
-        disabled={saving}
+        disabled={busy}
         onClick={() => void save()}
         className="min-h-[56px] rounded-2xl text-lg font-bold text-white disabled:opacity-60"
         style={{ background: "var(--color-primary, #F97316)" }}
       >
-        {saving ? "Guardando…" : "Guardar ajustes"}
+        {saving ? "Guardando…" : !loaded ? "Cargando…" : "Guardar ajustes"}
       </button>
     </div>
   )

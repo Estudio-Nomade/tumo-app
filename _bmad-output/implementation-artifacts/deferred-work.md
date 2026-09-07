@@ -190,3 +190,19 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-fix-turnos-receipt-upload.md`
   summary: Re-upload de comprobante desde confirmation.tsx post-create
   evidence: Spec Ask First / residual; wizard reusa bookingId pero confirmation no sube receipt
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-turnos-hours-editor.md`
+  summary: Validar hours en servidor (PUT settings) con mismas reglas HH:MM y close>open
+  evidence: Client-only validateEditorState; upsertSettings acepta hours unknown; bypass API posible
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-turnos-hours-editor.md`
+  summary: createBooking no verifica que startsAt caiga dentro de HoursMap
+  evidence: Solo is_paused + overlap; preexistente; owner edita hours creyendo enforcement total
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-turnos-hours-editor.md`
+  summary: Concurrencia optimistic locking en turnos_settings (updated_at / 409)
+  evidence: Last-write-wins en upsert; tabs concurrentes pueden pisarse
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-turnos-hours-editor.md`
+  summary: Test de occupancy cancelled debe ejercer el filtro SQL de availability route
+  evidence: turnos-availability.test.ts hardcodea existing:[]; no cubre status != cancelled en route

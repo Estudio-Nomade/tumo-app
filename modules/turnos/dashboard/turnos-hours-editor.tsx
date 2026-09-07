@@ -2,19 +2,32 @@
 
 import {
   DAY_ORDER,
+  dayHasMultiWindow,
+  normalizeHm,
   type DayEditorState,
   type DayKey,
 } from "@/modules/turnos/lib/hours-editor"
+import type { HoursMap } from "@/modules/turnos/lib/availability"
 
 type Props = {
   days: Record<DayKey, DayEditorState>
   onChange: (next: Record<DayKey, DayEditorState>) => void
   disabled?: boolean
+  originalHours?: HoursMap | null
 }
 
-export default function TurnosHoursEditor({ days, onChange, disabled }: Props) {
+export default function TurnosHoursEditor({
+  days,
+  onChange,
+  disabled,
+  originalHours,
+}: Props) {
   function update(key: DayKey, patch: Partial<DayEditorState>) {
-    onChange({ ...days, [key]: { ...days[key], ...patch } })
+    const cur = days[key]
+    const nextPatch = { ...patch }
+    if (patch.open != null) nextPatch.open = normalizeHm(patch.open)
+    if (patch.close != null) nextPatch.close = normalizeHm(patch.close)
+    onChange({ ...days, [key]: { ...cur, ...nextPatch } })
   }
 
   return (
@@ -29,6 +42,7 @@ export default function TurnosHoursEditor({ days, onChange, disabled }: Props) {
       <ul className="flex flex-col gap-3">
         {DAY_ORDER.map(({ key, label }) => {
           const day = days[key]
+          const multi = dayHasMultiWindow(originalHours, key)
           return (
             <li
               key={key}
@@ -61,6 +75,12 @@ export default function TurnosHoursEditor({ days, onChange, disabled }: Props) {
                   </button>
                 </div>
               </div>
+              {multi && !day.closed ? (
+                <p className="mt-2 text-xs text-amber-800">
+                  Este día tiene más de una franja. Si lo editás, se guarda una
+                  sola.
+                </p>
+              ) : null}
               {!day.closed ? (
                 <div className="mt-3 flex flex-col gap-3 sm:flex-row">
                   <label className="flex flex-1 flex-col gap-1.5">
@@ -69,6 +89,7 @@ export default function TurnosHoursEditor({ days, onChange, disabled }: Props) {
                     </span>
                     <input
                       type="time"
+                      step={60}
                       disabled={disabled}
                       value={day.open}
                       onChange={(e) => update(key, { open: e.target.value })}
@@ -81,6 +102,7 @@ export default function TurnosHoursEditor({ days, onChange, disabled }: Props) {
                     </span>
                     <input
                       type="time"
+                      step={60}
                       disabled={disabled}
                       value={day.close}
                       onChange={(e) => update(key, { close: e.target.value })}

@@ -2,7 +2,7 @@
 title: 'feat(turnos): editor de horarios + Ajustes/WA visibles + no clobber hours'
 type: 'feature'
 created: '2026-09-07'
-status: 'in-progress'
+status: 'in-review'
 review_loop_iteration: 0
 baseline_commit: 'f59cc69bff7e630056ac9a9973e7abc3cfaf9a23'
 context:
