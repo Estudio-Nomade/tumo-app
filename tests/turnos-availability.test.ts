@@ -55,4 +55,33 @@ describe("generateSlots", () => {
     })
     expect(slots).toEqual([])
   })
+
+  test("booking activo saca el slot; cancelled no está en existing", () => {
+    const withActive = generateSlots({
+      day: "2026-08-31",
+      durationMinutes: 30,
+      hours,
+      existing: [
+        {
+          startsAt: "2026-08-31T10:00:00.000Z",
+          endsAt: "2026-08-31T10:30:00.000Z",
+        },
+      ],
+      paused: false,
+      timeZoneOffsetMinutes: 0,
+    })
+    expect(withActive).not.toContain("10:00")
+    expect(withActive).toContain("09:00")
+
+    // API only passes non-cancelled bookings into existing — cancelled = empty existing
+    const afterCancel = generateSlots({
+      day: "2026-08-31",
+      durationMinutes: 30,
+      hours,
+      existing: [],
+      paused: false,
+      timeZoneOffsetMinutes: 0,
+    })
+    expect(afterCancel).toContain("10:00")
+  })
 })

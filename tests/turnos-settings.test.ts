@@ -90,6 +90,108 @@ describe("upsertSettings", () => {
     expect(r.status).toBe(200)
   })
 
+  test("hours undefined preserva hours actuales", async () => {
+    const existingHours = {
+      mon: [["10:00", "14:00"]],
+      wed: [["09:00", "12:00"]],
+    }
+    const calls: { q: string; values: unknown[] }[] = []
+    const sql = mock((strings: TemplateStringsArray, ...values: unknown[]) => {
+      const q = strings.join(" ")
+      calls.push({ q, values })
+      if (q.includes("FROM turnos_settings")) {
+        return Promise.resolve([
+          {
+            business_id: "biz-1",
+            transfer_alias: "a",
+            transfer_cbu: "b",
+            transfer_holder: "c",
+            is_paused: false,
+            hours: existingHours,
+            whatsapp_phone: null,
+          },
+        ])
+      }
+      if (q.includes("INSERT INTO turnos_settings")) {
+        return Promise.resolve([
+          {
+            business_id: "biz-1",
+            transfer_alias: "nuevo",
+            transfer_cbu: "b",
+            transfer_holder: "c",
+            is_paused: false,
+            hours: existingHours,
+            whatsapp_phone: null,
+          },
+        ])
+      }
+      return Promise.resolve([])
+    })
+    const r = await upsertSettings(
+      { sql: sql as unknown as SettingsDeps["sql"] },
+      { businessId: "biz-1", transferAlias: "nuevo" }
+    )
+    expect(r.status).toBe(200)
+    const insert = calls.find((c) => c.q.includes("INSERT INTO turnos_settings"))
+    expect(insert).toBeDefined()
+    const hoursArg = insert!.values.find(
+      (v) => typeof v === "string" && v.includes("10:00")
+    )
+    expect(hoursArg).toBeDefined()
+    expect(String(hoursArg)).toContain("10:00")
+    expect(String(hoursArg)).toContain("14:00")
+    expect(String(hoursArg)).not.toMatch(/09:00.*18:00/)
+  })
+
+  test("hours explícitos reemplazan el mapa", async () => {
+    const newHours = { fri: [["11:00", "15:00"]] }
+    const calls: { q: string; values: unknown[] }[] = []
+    const sql = mock((strings: TemplateStringsArray, ...values: unknown[]) => {
+      const q = strings.join(" ")
+      calls.push({ q, values })
+      if (q.includes("FROM turnos_settings")) {
+        return Promise.resolve([
+          {
+            business_id: "biz-1",
+            transfer_alias: "a",
+            transfer_cbu: null,
+            transfer_holder: null,
+            is_paused: false,
+            hours: { mon: [["09:00", "18:00"]] },
+            whatsapp_phone: null,
+          },
+        ])
+      }
+      if (q.includes("INSERT INTO turnos_settings")) {
+        return Promise.resolve([
+          {
+            business_id: "biz-1",
+            transfer_alias: "a",
+            transfer_cbu: null,
+            transfer_holder: null,
+            is_paused: false,
+            hours: newHours,
+            whatsapp_phone: null,
+          },
+        ])
+      }
+      return Promise.resolve([])
+    })
+    const r = await upsertSettings(
+      { sql: sql as unknown as SettingsDeps["sql"] },
+      { businessId: "biz-1", hours: newHours }
+    )
+    expect(r.status).toBe(200)
+    const insert = calls.find((c) => c.q.includes("INSERT INTO turnos_settings"))
+    expect(insert).toBeDefined()
+    const hoursArg = insert!.values.find(
+      (v) => typeof v === "string" && v.includes("fri")
+    )
+    expect(hoursArg).toBeDefined()
+    expect(String(hoursArg)).toContain("11:00")
+    expect(String(hoursArg)).not.toContain("mon")
+  })
+
   test("persiste whatsappPhone en INSERT", async () => {
     const calls: { q: string; values: unknown[] }[] = []
     const sql = mock((strings: TemplateStringsArray, ...values: unknown[]) => {
