@@ -1,6 +1,12 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
+import {
+  compressImage,
+  extensionForReceiptMime,
+  isAllowedReceiptMime,
+  MAX_RECEIPT_BYTES,
+} from "@/modules/turnos/lib/receipt-image"
 import { formatCents } from "@/modules/turnos/lib/types"
 
 type Service = {
@@ -62,6 +68,8 @@ export default function BookingWizard({ slug, businessName }: Props) {
   const [bookingId, setBookingId] = useState<string | null>(null)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const busyRef = useRef(false)
+  const idempotencyKeyRef = useRef(crypto.randomUUID())
 
   const service = useMemo(
     () => services.find((s) => s.id === serviceId) ?? null,
@@ -105,6 +113,8 @@ export default function BookingWizard({ slug, businessName }: Props) {
   }, [day, serviceId, slug])
 
   async function createAndMaybePay() {
+    if (busyRef.current) return
+    busyRef.current = true
     setError("")
     setLoading(true)
     try {
@@ -112,46 +122,94 @@ export default function BookingWizard({ slug, businessName }: Props) {
         setError("Faltan datos de la reserva.")
         return
       }
-      const startsAt = new Date(`${day}T${time}:00`)
-      const res = await fetch("/api/turnos/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          slug,
-          serviceId: service.id,
-          startsAt: startsAt.toISOString(),
-          customerName: name.trim(),
-          customerPhone: phone.trim(),
-          paymentMethod: payMethod,
-          idempotencyKey: crypto.randomUUID(),
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        setError(data.error ?? "No se pudo crear la reserva.")
-        return
-      }
-      const id = data.booking?.id as string
-      setBookingId(id)
 
+      let mime: string | undefined
+      let b64: string | undefined
       if (payMethod === "transfer" && receiptFile) {
-        const buf = new Uint8Array(await receiptFile.arrayBuffer())
-        const b64 = btoa(String.fromCharCode(...buf))
-        await fetch(`/api/turnos/bookings/${id}/receipt`, {
+        if (receiptFile.type && !isAllowedReceiptMime(receiptFile.type)) {
+          const loose = receiptFile.type.startsWith("image/")
+          if (!loose) {
+            setError("Subí una foto del comprobante (JPG o PNG).")
+            return
+          }
+        }
+        try {
+          const compressed = await compressImage(receiptFile)
+          mime = compressed.mime
+          b64 = compressed.data
+        } catch {
+          setError("No pudimos leer el comprobante. Probá otra foto.")
+          return
+        }
+        if (!b64 || !mime || !isAllowedReceiptMime(mime)) {
+          setError("No pudimos leer el comprobante. Probá otra foto.")
+          return
+        }
+        const approxBytes = Math.floor((b64.length * 3) / 4)
+        if (approxBytes > MAX_RECEIPT_BYTES) {
+          setError("La foto es muy pesada. Probá otra más liviana.")
+          return
+        }
+      }
+
+      let id = bookingId
+      if (!id) {
+        const startsAt = new Date(`${day}T${time}:00`)
+        const res = await fetch("/api/turnos/bookings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            slug,
+            serviceId: service.id,
+            startsAt: startsAt.toISOString(),
+            customerName: name.trim(),
+            customerPhone: phone.trim(),
+            paymentMethod: payMethod,
+            idempotencyKey: idempotencyKeyRef.current,
+          }),
+        })
+        const data = await res.json()
+        if (!res.ok) {
+          setError(data.error ?? "No se pudo crear la reserva.")
+          return
+        }
+        id = data.booking?.id as string
+        setBookingId(id)
+      }
+
+      if (payMethod === "transfer" && b64 && mime && id) {
+        const ext = extensionForReceiptMime(mime)
+        const baseName = receiptFile?.name.replace(/\.\w+$/, "") || "comprobante"
+        const receiptRes = await fetch(`/api/turnos/bookings/${id}/receipt`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             slug,
             receiptBase64: b64,
-            receiptMime: receiptFile.type || "image/jpeg",
-            receiptFilename: receiptFile.name,
+            receiptMime: mime,
+            receiptFilename: baseName + ext,
           }),
         })
+        const receiptData = (await receiptRes.json().catch(() => ({}))) as {
+          error?: string
+        }
+        if (!receiptRes.ok) {
+          setError(
+            receiptData.error ??
+              "La reserva se creó pero el comprobante no subió. Reintentá o abrí la confirmación."
+          )
+          return
+        }
       }
       window.location.href = `/${slug}/turnos/${id}`
-    } catch {
-      setError("No pudimos completar la reserva. Revisá tu conexión.")
+    } catch (err) {
+      if (err instanceof TypeError) {
+        setError("No pudimos completar la reserva. Revisá tu conexión.")
+      } else {
+        setError("No pudimos completar la reserva. Intentá de nuevo.")
+      }
     } finally {
+      busyRef.current = false
       setLoading(false)
     }
   }
@@ -379,11 +437,11 @@ export default function BookingWizard({ slug, businessName }: Props) {
                 <span className="text-sm font-semibold text-stone-600">
                   {receiptFile
                     ? receiptFile.name
-                    : "Subir foto o PDF del comprobante"}
+                    : "Subir foto del comprobante (JPG o PNG)"}
                 </span>
                 <input
                   type="file"
-                  accept="image/*,application/pdf"
+                  accept="image/jpeg,image/png,image/webp,image/*"
                   className="hidden"
                   onChange={(e) => setReceiptFile(e.target.files?.[0] ?? null)}
                 />
@@ -399,6 +457,14 @@ export default function BookingWizard({ slug, businessName }: Props) {
           )}
 
           {error && <p className="text-base font-medium text-red-600">{error}</p>}
+          {error && bookingId && (
+            <a
+              href={`/${slug}/turnos/${bookingId}`}
+              className="text-center text-sm font-semibold text-[var(--color-primary,#F97316)] underline"
+            >
+              Ver reserva creada
+            </a>
+          )}
 
           <button
             type="button"

@@ -170,3 +170,23 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-orders-public-carousel-entry.md`
   summary: photoCount local vs lógica photos-or-photo del detalle puede divergir
   evidence: Helper privado en catalog.tsx; extract shared deferred
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-fix-turnos-receipt-upload.md`
+  summary: UNIQUE/upsert en turnos_payments por booking_id y rechazo si ya paid
+  evidence: INSERT incondicional; retries pueden apilar filas de payment
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-fix-turnos-receipt-upload.md`
+  summary: Auth del POST receipt (solo slug+bookingId público)
+  evidence: Preexistente; cualquiera con UUID puede adjuntar comprobante
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-fix-turnos-receipt-upload.md`
+  summary: HEIC sin compress canvas sigue pudiendo superar 3MB en iPhone
+  evidence: Passthrough FileReader; validación server/client por tamaño pero no re-encode HEIC
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-fix-turnos-receipt-upload.md`
+  summary: Separar constants de receipt-image del código DOM (FileReader/canvas)
+  evidence: payments domain importa el mismo módulo que define APIs de browser
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-fix-turnos-receipt-upload.md`
+  summary: Re-upload de comprobante desde confirmation.tsx post-create
+  evidence: Spec Ask First / residual; wizard reusa bookingId pero confirmation no sube receipt
