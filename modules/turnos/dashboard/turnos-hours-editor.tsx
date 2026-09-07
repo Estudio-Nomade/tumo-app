@@ -88,15 +88,19 @@ export default function TurnosHoursEditor({ days, onChange, disabled }: Props) {
                   {label}
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-stone-600">
-                    Cerrado
+                  <span
+                    className={`text-sm font-semibold ${
+                      day.closed ? "text-stone-600" : "text-green-700"
+                    }`}
+                  >
+                    {day.closed ? "Cerrado" : "Abierto"}
                   </span>
                   <button
                     type="button"
                     role="switch"
                     disabled={disabled}
-                    aria-checked={day.closed}
-                    aria-label={`${day.closed ? "Abrir" : "Cerrar"} el ${label}`}
+                    aria-checked={!day.closed}
+                    aria-label={`${day.closed ? "Cerrado" : "Abierto"} el ${label}`}
                     onClick={() => toggleClosed(key)}
                     className={`flex h-[48px] w-16 items-center rounded-full p-1.5 transition disabled:opacity-60 ${
                       day.closed ? "bg-stone-300" : "bg-green-500"

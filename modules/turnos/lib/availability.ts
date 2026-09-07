@@ -10,6 +10,23 @@ export type ExistingBooking = {
   endsAt: string
 }
 
+/** Normaliza hours leídos de jsonb (objeto o string double-encoded). */
+export function coerceHoursMap(raw: unknown): HoursMap {
+  if (raw == null) return {}
+  let value: unknown = raw
+  if (typeof value === "string") {
+    try {
+      value = JSON.parse(value) as unknown
+    } catch {
+      return {}
+    }
+  }
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return {}
+  }
+  return value as HoursMap
+}
+
 function parseHm(hm: string): number {
   const [h, m] = hm.split(":").map((x) => Number(x))
   return h * 60 + m
@@ -25,7 +42,7 @@ function formatHm(mins: number): string {
 export function generateSlots(input: {
   day: string
   durationMinutes: number
-  hours: HoursMap
+  hours: HoursMap | unknown
   existing: ExistingBooking[]
   paused: boolean
   /** Minutes east of UTC for interpreting existing ISO vs day; default 0 (UTC day). */
@@ -42,7 +59,8 @@ export function generateSlots(input: {
   // Build noon UTC then apply — use UTC date parts for DOW of the calendar day string
   const utcNoon = Date.UTC(y, mo - 1, d, 12, 0, 0)
   const dow = DOW[new Date(utcNoon).getUTCDay()]
-  const windows = input.hours[dow] ?? []
+  const hours = coerceHoursMap(input.hours)
+  const windows = hours[dow] ?? []
   if (!windows.length) return []
 
   const offset = input.timeZoneOffsetMinutes ?? 0

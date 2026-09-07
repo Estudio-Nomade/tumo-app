@@ -1,5 +1,23 @@
 import { describe, expect, test } from "bun:test"
-import { generateSlots } from "@/modules/turnos/lib/availability"
+import {
+  coerceHoursMap,
+  generateSlots,
+} from "@/modules/turnos/lib/availability"
+
+describe("coerceHoursMap", () => {
+  test("string JSON → objeto HoursMap", () => {
+    const hours = coerceHoursMap(
+      JSON.stringify({ mon: [["09:00", "18:00"]] })
+    )
+    expect(hours.mon).toEqual([["09:00", "18:00"]])
+  })
+
+  test("basura → {}", () => {
+    expect(coerceHoursMap("nope")).toEqual({})
+    expect(coerceHoursMap(null)).toEqual({})
+    expect(coerceHoursMap([])).toEqual({})
+  })
+})
 
 describe("generateSlots", () => {
   const hours = {
@@ -54,6 +72,18 @@ describe("generateSlots", () => {
       paused: true,
     })
     expect(slots).toEqual([])
+  })
+
+  test("hours string JSON mon 09–18 incluye 09:00 en lunes", () => {
+    const slots = generateSlots({
+      day: "2026-08-31",
+      durationMinutes: 30,
+      hours: JSON.stringify({ mon: [["09:00", "18:00"]] }) as never,
+      existing: [],
+      paused: false,
+    })
+    expect(slots).toContain("09:00")
+    expect(slots).toContain("17:30")
   })
 
   test("booking activo saca el slot; cancelled no está en existing", () => {
