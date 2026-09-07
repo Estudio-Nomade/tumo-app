@@ -52,6 +52,7 @@ export async function PUT(req: NextRequest) {
     transferHolder: body.transferHolder as string | undefined,
     isPaused: body.isPaused as boolean | undefined,
     hours: body.hours,
+    whatsappPhone: body.whatsappPhone as string | null | undefined,
   })
   return NextResponse.json(result.body, { status: result.status })
 }

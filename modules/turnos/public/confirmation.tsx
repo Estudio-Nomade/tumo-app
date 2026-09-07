@@ -1,7 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { formatCents } from "@/modules/turnos/lib/types"
+import {
+  buildBookingWhatsAppHref,
+  buildBookingWhatsAppMessage,
+} from "@/modules/turnos/lib/whatsapp"
 
 type Booking = {
   id: string
@@ -24,23 +28,32 @@ export default function BookingConfirmation({
   businessName: string
 }) {
   const [booking, setBooking] = useState<Booking | null>(null)
+  const [whatsappPhone, setWhatsappPhone] = useState<string | null>(null)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false
-    void fetch(
-      `/api/turnos/bookings/${encodeURIComponent(bookingId)}?slug=${encodeURIComponent(slug)}`
-    )
-      .then((r) => r.json())
-      .then((d) => {
+    void Promise.all([
+      fetch(
+        `/api/turnos/bookings/${encodeURIComponent(bookingId)}?slug=${encodeURIComponent(slug)}`
+      ).then((r) => r.json()),
+      fetch(
+        `/api/turnos/settings?slug=${encodeURIComponent(slug)}`
+      ).then((r) => r.json()),
+    ])
+      .then(([bookingData, settingsData]) => {
         if (cancelled) return
-        if (d.error || !d.booking) {
-          setError(d.error ?? "No encontramos esa reserva.")
+        if (bookingData.error || !bookingData.booking) {
+          setError(bookingData.error ?? "No encontramos esa reserva.")
           setBooking(null)
         } else {
-          setBooking(d.booking as Booking)
+          setBooking(bookingData.booking as Booking)
         }
+        setWhatsappPhone(
+          (settingsData.settings?.whatsappPhone as string | null | undefined) ??
+            null
+        )
         setLoading(false)
       })
       .catch(() => {
@@ -53,6 +66,20 @@ export default function BookingConfirmation({
       cancelled = true
     }
   }, [bookingId, slug])
+
+  const waHref = useMemo(() => {
+    if (!booking || !whatsappPhone) return null
+    const text = buildBookingWhatsAppMessage({
+      businessName,
+      serviceName: booking.serviceName,
+      startsAt: booking.startsAt,
+      durationMinutes: booking.durationMinutes,
+      priceCents: booking.priceCents,
+      paymentMethod: booking.paymentMethod,
+      bookingId: booking.id,
+    })
+    return buildBookingWhatsAppHref({ phone: whatsappPhone, text })
+  }, [booking, businessName, whatsappPhone])
 
   if (loading) {
     return (
@@ -114,6 +141,21 @@ export default function BookingConfirmation({
         <p className="mt-2 text-sm font-semibold text-stone-700">{payLabel}</p>
         <p className="mt-1 text-sm text-stone-400">#{booking.id.slice(0, 8)}</p>
       </div>
+      {waHref ? (
+        <a
+          href={waHref}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex min-h-[56px] w-full items-center justify-center rounded-2xl bg-[#25D366] text-lg font-bold text-white"
+        >
+          Avisar por WhatsApp
+        </a>
+      ) : null}
+      {booking.paymentMethod === "transfer" && waHref ? (
+        <p className="text-sm text-stone-500">
+          En WhatsApp podés adjuntar el comprobante que subiste.
+        </p>
+      ) : null}
       <a
         href={`/${slug}/turnos`}
         className="flex min-h-[52px] w-full items-center justify-center rounded-2xl border border-stone-200 text-base font-semibold"
