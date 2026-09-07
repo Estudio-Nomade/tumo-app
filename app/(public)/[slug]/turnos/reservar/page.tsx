@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import BookingWizard from "@/modules/turnos/public/booking-wizard"
+import { hasModuleAccess } from "@/shell/billing/access"
 import { getBusiness } from "@/shell/db/business"
 
 type PageProps = {
@@ -9,7 +10,7 @@ type PageProps = {
 export default async function TurnosReservarPage({ params }: PageProps) {
   const { slug } = await params
   const business = await getBusiness(slug)
-  if (!business || !business.active_modules.includes("turnos")) notFound()
+  if (!business || !hasModuleAccess(business, "turnos")) notFound()
 
   return (
     <BookingWizard

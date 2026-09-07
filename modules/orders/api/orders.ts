@@ -1,5 +1,6 @@
 import type { Business } from "@/lib/modules"
 import { normalizePhone } from "@/lib/phone"
+import { hasModuleAccess } from "@/shell/billing/access"
 import type {
   Fulfillment,
   JsonResult,
@@ -163,7 +164,7 @@ export async function createOrder(
   if (!business) {
     return { status: 404, body: { error: "Negocio no encontrado" } }
   }
-  if (!business.active_modules.includes("orders")) {
+  if (!hasModuleAccess(business, "orders")) {
     return { status: 404, body: { error: "Este negocio no recibe pedidos." } }
   }
 

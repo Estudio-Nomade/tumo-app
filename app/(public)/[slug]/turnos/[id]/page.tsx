@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import BookingConfirmation from "@/modules/turnos/public/confirmation"
+import { hasModuleAccess } from "@/shell/billing/access"
 import { getBusiness } from "@/shell/db/business"
 
 type PageProps = {
@@ -9,7 +10,7 @@ type PageProps = {
 export default async function TurnosConfirmationPage({ params }: PageProps) {
   const { slug, id } = await params
   const business = await getBusiness(slug)
-  if (!business || !business.active_modules.includes("turnos")) notFound()
+  if (!business || !hasModuleAccess(business, "turnos")) notFound()
 
   return (
     <BookingConfirmation

@@ -1,5 +1,6 @@
 import { cookies } from "next/headers"
 import { notFound, redirect } from "next/navigation"
+import { getActiveModules } from "@/lib/modules"
 import { validateSession } from "@/shell/auth/session"
 import { getBusiness } from "@/shell/db/business"
 import SettingsForm from "@/shell/ui/settings-form"
@@ -38,7 +39,7 @@ export default async function DashboardSettingsPage({ params }: PageProps) {
       initialSecondary={business.secondary_color}
       rewardName={business.reward_name}
       purchasesNeeded={business.points_needed}
-      activeModuleIds={business.active_modules}
+      activeModuleIds={getActiveModules(business).map((m) => m.id)}
       ownerName={ownerName}
       ownerInitial={ownerInitial}
     />

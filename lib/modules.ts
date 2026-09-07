@@ -2,6 +2,7 @@ import type { ComponentType } from "react"
 import { loyaltyModule } from "@/modules/loyalty"
 import { ordersModule } from "@/modules/orders"
 import { turnosModule } from "@/modules/turnos"
+import { hasModuleAccess } from "@/shell/billing/access"
 
 export type ActivityEvent = {
   timestamp: number
@@ -20,6 +21,9 @@ export type Business = {
   surface_color?: string | null
   tagline?: string | null
   active_modules: string[]
+  /** From business_billing; optional for legacy fixtures. */
+  billing_status?: "al_dia" | "pendiente" | "vencido" | null
+  billing_next_due_at?: string | Date | null
   points_needed: number
   reward_name: string
   point_ranges: {
@@ -85,6 +89,7 @@ export function getRegisteredModuleIds(): string[] {
 
 export function getActiveModules(business: Business): Module[] {
   return business.active_modules
+    .filter((id) => hasModuleAccess(business, id))
     .map((id) => registry[id])
     .filter((mod): mod is Module => Boolean(mod))
 }

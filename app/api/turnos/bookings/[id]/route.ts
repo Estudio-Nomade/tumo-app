@@ -10,6 +10,7 @@ import {
 } from "@/modules/turnos/api/payments"
 import { bookingsDeps, paymentsDeps } from "@/modules/turnos/lib/default-deps"
 import { validateSession } from "@/shell/auth/session"
+import { hasModuleAccess } from "@/shell/billing/access"
 import { getBusiness } from "@/shell/db/business"
 
 type Ctx = { params: Promise<{ id: string }> }
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest, ctx: Ctx) {
     return NextResponse.json({ error: "slug es requerido." }, { status: 400 })
   }
   const business = await getBusiness(slug)
-  if (!business || !business.active_modules.includes("turnos")) {
+  if (!business || !hasModuleAccess(business, "turnos")) {
     return NextResponse.json({ error: "Negocio no encontrado." }, { status: 404 })
   }
   const result = await getBooking(bookingsDeps, {

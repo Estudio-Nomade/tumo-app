@@ -53,6 +53,16 @@ describe("getActiveModules", () => {
     })
     expect(result).toEqual([])
   })
+
+  test("vacío si billing vencido aunque haya contrato", () => {
+    const result = getActiveModules({
+      ...business,
+      active_modules: ["loyalty", "orders"],
+      billing_status: "vencido",
+      billing_next_due_at: null,
+    })
+    expect(result).toEqual([])
+  })
 })
 
 describe("loyaltyModule", () => {

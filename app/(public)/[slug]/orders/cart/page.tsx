@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
-import { getBusiness } from "@/shell/db/business"
 import CartWizard from "@/modules/orders/public/cart"
+import { hasModuleAccess } from "@/shell/billing/access"
+import { getBusiness } from "@/shell/db/business"
 
 type PageProps = {
   params: Promise<{ slug: string }>
@@ -9,7 +10,7 @@ type PageProps = {
 export default async function OrdersCartPage({ params }: PageProps) {
   const { slug } = await params
   const business = await getBusiness(slug)
-  if (!business || !business.active_modules.includes("orders")) notFound()
+  if (!business || !hasModuleAccess(business, "orders")) notFound()
 
   return <CartWizard slug={slug} />
 }
