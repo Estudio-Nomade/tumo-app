@@ -12,6 +12,19 @@ import {
 } from "@/modules/turnos/lib/hours-editor"
 import TurnosHoursEditor from "@/modules/turnos/dashboard/turnos-hours-editor"
 
+function windowsEqual(
+  a: DayEditorState["windows"] | undefined,
+  b: DayEditorState["windows"] | undefined
+): boolean {
+  const aw = a ?? []
+  const bw = b ?? []
+  if (aw.length !== bw.length) return false
+  for (let i = 0; i < aw.length; i++) {
+    if (aw[i].open !== bw[i].open || aw[i].close !== bw[i].close) return false
+  }
+  return true
+}
+
 export default function TurnosSettingsForm({ slug }: { slug: string }) {
   const [alias, setAlias] = useState("")
   const [cbu, setCbu] = useState("")
@@ -75,11 +88,7 @@ export default function TurnosSettingsForm({ slug }: { slug: string }) {
     for (const { key } of DAY_ORDER) {
       const a = days[key]
       const b = next[key]
-      if (
-        a.closed !== b.closed ||
-        a.open !== b.open ||
-        a.close !== b.close
-      ) {
+      if (a.closed !== b.closed || !windowsEqual(a.windows, b.windows)) {
         changed.add(key)
       }
     }
@@ -161,7 +170,6 @@ export default function TurnosSettingsForm({ slug }: { slug: string }) {
           days={days}
           onChange={onDaysChange}
           disabled={busy}
-          originalHours={originalHours}
         />
       )}
 

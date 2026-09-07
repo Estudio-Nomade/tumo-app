@@ -12,14 +12,19 @@ export const DAY_ORDER = [
 
 export type DayKey = (typeof DAY_ORDER)[number]["key"]
 
+export type WindowEditor = { open: string; close: string }
+
 export type DayEditorState = {
   closed: boolean
-  open: string
-  close: string
+  windows: WindowEditor[]
 }
 
 const DEFAULT_OPEN = "09:00"
 const DEFAULT_CLOSE = "18:00"
+const DEFAULT_WINDOW: WindowEditor = {
+  open: DEFAULT_OPEN,
+  close: DEFAULT_CLOSE,
+}
 
 const HM_RE = /^([01]\d|2[0-3]):([0-5]\d)$/
 
@@ -55,19 +60,24 @@ function coerceHoursMap(hours: unknown): HoursMap {
   return raw as HoursMap
 }
 
-function readWindow(
-  windows: unknown
-): { open: string; close: string } | null {
-  if (!Array.isArray(windows) || windows.length === 0) return null
-  const first = windows[0]
-  if (!Array.isArray(first) || first.length < 2) return null
-  const open = normalizeHm(String(first[0] ?? ""))
-  const close = normalizeHm(String(first[1] ?? ""))
-  if (!open && !close) return null
-  return {
-    open: open || DEFAULT_OPEN,
-    close: close || DEFAULT_CLOSE,
+function readWindows(windows: unknown): WindowEditor[] {
+  if (!Array.isArray(windows) || windows.length === 0) return []
+  const out: WindowEditor[] = []
+  for (const first of windows) {
+    if (!Array.isArray(first) || first.length < 2) continue
+    const open = normalizeHm(String(first[0] ?? ""))
+    const close = normalizeHm(String(first[1] ?? ""))
+    if (!open && !close) continue
+    out.push({
+      open: open || DEFAULT_OPEN,
+      close: close || DEFAULT_CLOSE,
+    })
   }
+  return out
+}
+
+export function defaultWindow(): WindowEditor {
+  return { ...DEFAULT_WINDOW }
 }
 
 export function hoursToEditorState(
@@ -76,25 +86,17 @@ export function hoursToEditorState(
   const src = coerceHoursMap(hours)
   const out = {} as Record<DayKey, DayEditorState>
   for (const { key } of DAY_ORDER) {
-    const w = readWindow(src[key])
-    if (w) {
-      out[key] = { closed: false, open: w.open, close: w.close }
+    const windows = readWindows(src[key])
+    if (windows.length > 0) {
+      out[key] = { closed: false, windows }
     } else {
-      out[key] = {
-        closed: true,
-        open: DEFAULT_OPEN,
-        close: DEFAULT_CLOSE,
-      }
+      out[key] = { closed: true, windows: [defaultWindow()] }
     }
   }
   return out
 }
 
-/**
- * Serializa el editor a HoursMap.
- * Días no tocados conservan ventanas originales (multi-franja).
- * Días tocados: cerrado → omit; abierto → una sola [[open, close]].
- */
+/** Serializa el editor a HoursMap (N franjas por día abierto). */
 export function editorStateToHours(
   state: Record<DayKey, DayEditorState>,
   options?: {
@@ -121,7 +123,11 @@ export function editorStateToHours(
     }
     const d = state[key]
     if (!d || d.closed) continue
-    out[key] = [[normalizeHm(d.open), normalizeHm(d.close)]]
+    const windows = (d.windows ?? [])
+      .map((w) => [normalizeHm(w.open), normalizeHm(w.close)] as [string, string])
+      .filter(([o, c]) => o && c)
+    if (windows.length === 0) continue
+    out[key] = windows
   }
   return out
 }
@@ -142,6 +148,18 @@ export function validateTurnosDayWindow(
   return null
 }
 
+function windowsOverlap(
+  a: WindowEditor,
+  b: WindowEditor
+): boolean {
+  const a0 = parseHm(a.open)
+  const a1 = parseHm(a.close)
+  const b0 = parseHm(b.open)
+  const b1 = parseHm(b.close)
+  if (a0 == null || a1 == null || b0 == null || b1 == null) return false
+  return a0 < b1 && b0 < a1
+}
+
 export function validateEditorState(
   state: Record<DayKey, DayEditorState>,
   touched?: ReadonlySet<DayKey> | DayKey[]
@@ -153,8 +171,21 @@ export function validateEditorState(
     if (keys && !keys.has(key)) continue
     const d = state[key]
     if (!d || d.closed) continue
-    const err = validateTurnosDayWindow(d.open, d.close)
-    if (err) return `${label}: ${err}`
+    const windows = d.windows ?? []
+    if (windows.length === 0) {
+      return `${label}: agregá al menos una franja o marcá Cerrado.`
+    }
+    for (let i = 0; i < windows.length; i++) {
+      const err = validateTurnosDayWindow(windows[i].open, windows[i].close)
+      if (err) return `${label}: ${err}`
+    }
+    for (let i = 0; i < windows.length; i++) {
+      for (let j = i + 1; j < windows.length; j++) {
+        if (windowsOverlap(windows[i], windows[j])) {
+          return `${label}: las franjas no se pueden superponer.`
+        }
+      }
+    }
   }
   return null
 }
