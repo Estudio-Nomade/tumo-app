@@ -1,5 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server"
-import { createService, listServices } from "@/modules/turnos/api/services"
+import {
+  createService,
+  listServices,
+  updateService,
+} from "@/modules/turnos/api/services"
 import { servicesDeps } from "@/modules/turnos/lib/default-deps"
 import { validateSession } from "@/shell/auth/session"
 import { getBusiness } from "@/shell/db/business"
@@ -58,6 +62,34 @@ export async function POST(req: NextRequest) {
     name: body.name ?? "",
     priceCents: body.priceCents ?? -1,
     durationMinutes: body.durationMinutes ?? 0,
+  })
+  return NextResponse.json(result.body, { status: result.status })
+}
+
+export async function PATCH(req: NextRequest) {
+  const session = await sessionOf(req)
+  if (!session) {
+    return NextResponse.json({ error: "No autenticado." }, { status: 401 })
+  }
+  let body: {
+    serviceId?: string
+    name?: string
+    priceCents?: number
+    durationMinutes?: number
+    isActive?: boolean
+  }
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: "JSON inválido." }, { status: 400 })
+  }
+  const result = await updateService(servicesDeps, {
+    businessId: session.businessId,
+    serviceId: body.serviceId ?? "",
+    name: body.name,
+    priceCents: body.priceCents,
+    durationMinutes: body.durationMinutes,
+    isActive: body.isActive,
   })
   return NextResponse.json(result.body, { status: result.status })
 }

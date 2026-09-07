@@ -5,6 +5,30 @@ import {
   updateService,
   type ServicesDeps,
 } from "@/modules/turnos/api/services"
+import {
+  formatCents,
+  parsePesosInput,
+  pesosAmountToInput,
+} from "@/modules/turnos/lib/types"
+
+describe("parsePesosInput / formatCents (pesos enteros AR)", () => {
+  test("formatCents 12500 → 12.500", () => {
+    expect(formatCents(12500)).toBe("12.500")
+    expect(formatCents(8000)).toBe("8.000")
+  })
+
+  test("parsePesosInput no multiplica ×100", () => {
+    expect(parsePesosInput("8000")).toBe(8000)
+    expect(parsePesosInput("8.000")).toBe(8000)
+    expect(parsePesosInput("12500")).toBe(12500)
+    expect(parsePesosInput("12.500")).toBe(12500)
+  })
+
+  test("pesosAmountToInput round-trip con lista", () => {
+    expect(pesosAmountToInput(8000)).toBe("8000")
+    expect(parsePesosInput(pesosAmountToInput(12500))).toBe(12500)
+  })
+})
 
 function makeSql(overrides: {
   services?: unknown[]
@@ -138,5 +162,67 @@ describe("updateService", () => {
     expect(r.status).toBe(200)
     const body = r.body as { service: { priceCents: number } }
     expect(body.service.priceCents).toBe(13000)
+  })
+
+  test("actualiza nombre duración y desactiva", async () => {
+    const { sql, calls } = makeSql({
+      updated: [
+        {
+          id: "s1",
+          name: "Corte premium",
+          price_cents: 12500,
+          duration_minutes: 45,
+          is_active: false,
+          sort_order: 0,
+        },
+      ],
+    })
+    const r = await updateService(
+      { sql: sql as unknown as ServicesDeps["sql"] },
+      {
+        businessId: "biz-1",
+        serviceId: "s1",
+        name: "Corte premium",
+        durationMinutes: 45,
+        isActive: false,
+      }
+    )
+    expect(r.status).toBe(200)
+    const body = r.body as {
+      service: { name: string; durationMinutes: number; isActive: boolean }
+    }
+    expect(body.service.name).toBe("Corte premium")
+    expect(body.service.durationMinutes).toBe(45)
+    expect(body.service.isActive).toBe(false)
+    expect(calls.some((c) => c.q.includes("UPDATE turnos_services"))).toBe(true)
+  })
+})
+
+describe("source contracts edit servicio", () => {
+  test("route expone PATCH con updateService", async () => {
+    const { readFileSync } = await import("node:fs")
+    const { join } = await import("node:path")
+    const root = join(import.meta.dir, "..")
+    const route = readFileSync(
+      join(root, "app/api/turnos/services/route.ts"),
+      "utf8"
+    )
+    expect(route).toMatch(/export async function PATCH/)
+    expect(route).toMatch(/updateService/)
+    expect(route).toMatch(/serviceId/)
+  })
+
+  test("UI permite Editar y Guardar cambios de servicio existente", async () => {
+    const { readFileSync } = await import("node:fs")
+    const { join } = await import("node:path")
+    const root = join(import.meta.dir, "..")
+    const ui = readFileSync(
+      join(root, "modules/turnos/dashboard/services-manager.tsx"),
+      "utf8"
+    )
+    expect(ui).toMatch(/Editar/)
+    expect(ui).toMatch(/method:\s*["']PATCH["']/)
+    expect(ui).toMatch(/Guardar cambios/)
+    expect(ui).toMatch(/isActive/)
   })
 })
