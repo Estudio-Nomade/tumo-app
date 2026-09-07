@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from "react"
 import { formatCents } from "@/modules/turnos/lib/types"
+import {
+  bookingStatusBadgeClass,
+  bookingStatusLabel,
+  paymentStatusBadgeClass,
+  paymentStatusLabel,
+} from "@/modules/turnos/lib/status-labels"
 
 type Booking = {
   id: string
@@ -9,6 +15,7 @@ type Booking = {
   serviceName: string
   status: string
   paymentStatus: string
+  paymentMethod?: string
   priceCents: number
 }
 
@@ -114,12 +121,19 @@ export default function TurnosPanel({ slug }: Props) {
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xl font-bold">{hm}</span>
-                  <span className="flex gap-1">
-                    <span className="rounded-full bg-green-50 px-2 py-1 text-xs font-semibold text-green-800">
-                      {b.status}
+                  <span className="flex flex-wrap justify-end gap-1">
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-semibold ${bookingStatusBadgeClass(b.status)}`}
+                    >
+                      {bookingStatusLabel(b.status)}
                     </span>
-                    <span className="rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-800">
-                      {b.paymentStatus}
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-semibold ${paymentStatusBadgeClass(b.paymentStatus)}`}
+                    >
+                      {paymentStatusLabel(
+                        b.paymentMethod ?? "transfer",
+                        b.paymentStatus
+                      )}
                     </span>
                   </span>
                 </div>
