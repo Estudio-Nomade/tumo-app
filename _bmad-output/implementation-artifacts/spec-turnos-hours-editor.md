@@ -2,7 +2,7 @@
 title: 'feat(turnos): editor de horarios + Ajustes/WA visibles + no clobber hours'
 type: 'feature'
 created: '2026-09-07'
-status: 'in-review'
+status: 'done'
 review_loop_iteration: 0
 baseline_commit: 'f59cc69bff7e630056ac9a9973e7abc3cfaf9a23'
 context:
@@ -131,3 +131,43 @@ expected: all pass; eslint clean
 2. Set lun–vie 10:00–14:00, sáb/dom cerrados, WA demo si humano lo pide; Guardar; hard refresh → persiste
 3. Cliente reservar: solo 10–14; reservar un slot → desaparece
 4. Confirmación con CTA WA si hay número
+
+## Suggested Review Order
+
+**Helpers HoursMap ↔ editor**
+
+- serialize con touched: multi-ventana intacta si no se tocó el día
+  [`hours-editor.ts:98`](../../modules/turnos/lib/hours-editor.ts#L98)
+
+- hydrate seguro (JSON string / basura / 1ª ventana)
+  [`hours-editor.ts:73`](../../modules/turnos/lib/hours-editor.ts#L73)
+
+- normaliza HH:MM:SS del type=time
+  [`hours-editor.ts:27`](../../modules/turnos/lib/hours-editor.ts#L27)
+
+**Form ajustes (save + hydrate race)**
+
+- bloquea save hasta loaded; try/finally; preserve hours no touched
+  [`settings-form.tsx:90`](../../modules/turnos/dashboard/settings-form.tsx#L90)
+
+- tracks touched days al editar
+  [`settings-form.tsx:73`](../../modules/turnos/dashboard/settings-form.tsx#L73)
+
+- copy WA + banner vacío
+  [`settings-form.tsx:203`](../../modules/turnos/dashboard/settings-form.tsx#L203)
+
+**UI editor + panel**
+
+- 7 filas, Cerrado/Abre/Cierra, copy ocupación
+  [`turnos-hours-editor.tsx:40`](../../modules/turnos/dashboard/turnos-hours-editor.tsx#L40)
+
+- label Ajustes (no solo ⚙)
+  [`panel.tsx:66`](../../modules/turnos/dashboard/panel.tsx#L66)
+
+**Tests**
+
+- helpers + multi-window preserve + source contracts
+  [`turnos-hours-editor.test.ts:1`](../../tests/turnos-hours-editor.test.ts#L1)
+
+- upsert hours undefined / replace
+  [`turnos-settings.test.ts:93`](../../tests/turnos-settings.test.ts#L93)
