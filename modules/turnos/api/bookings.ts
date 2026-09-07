@@ -5,6 +5,7 @@ import type {
   TurnosPaymentMethod,
 } from "@/modules/turnos/lib/types"
 import { initialPaymentStatus } from "@/modules/turnos/lib/types"
+import { hasModuleAccess } from "@/shell/billing/access"
 
 export type BookingsDeps = {
   sql: SqlTagged
@@ -123,7 +124,7 @@ export async function createBooking(
   }
 
   const business = await deps.getBusiness(businessId)
-  if (!business || !business.active_modules?.includes("turnos")) {
+  if (!business || !hasModuleAccess(business, "turnos")) {
     return { status: 404, body: { error: "Módulo de turnos no disponible." } }
   }
 

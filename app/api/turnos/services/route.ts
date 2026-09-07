@@ -6,6 +6,7 @@ import {
 } from "@/modules/turnos/api/services"
 import { servicesDeps } from "@/modules/turnos/lib/default-deps"
 import { validateSession } from "@/shell/auth/session"
+import { hasModuleAccess } from "@/shell/billing/access"
 import { getBusiness } from "@/shell/db/business"
 
 async function sessionOf(req: NextRequest) {
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
 
   if (slug) {
     const business = await getBusiness(slug)
-    if (!business?.active_modules.includes("turnos")) {
+    if (!business || !hasModuleAccess(business, "turnos")) {
       return NextResponse.json({ error: "No encontrado." }, { status: 404 })
     }
     const result = await listServices(servicesDeps, {

@@ -7,6 +7,7 @@ import {
   type HoursMap,
 } from "@/modules/turnos/lib/availability"
 import { servicesDeps, settingsDeps, taggedSql } from "@/modules/turnos/lib/default-deps"
+import { hasModuleAccess } from "@/shell/billing/access"
 import { getBusiness } from "@/shell/db/business"
 
 export async function GET(req: NextRequest) {
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest) {
   const serviceId = searchParams.get("serviceId") ?? ""
 
   const business = await getBusiness(slug)
-  if (!business?.active_modules.includes("turnos")) {
+  if (!business || !hasModuleAccess(business, "turnos")) {
     return NextResponse.json({ error: "No encontrado." }, { status: 404 })
   }
 

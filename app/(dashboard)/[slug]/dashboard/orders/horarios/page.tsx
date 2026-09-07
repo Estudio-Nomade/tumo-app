@@ -3,6 +3,7 @@ import { cookies } from "next/headers"
 import { notFound, redirect } from "next/navigation"
 import HoursEditor from "@/modules/orders/dashboard/hours-editor"
 import { validateSession } from "@/shell/auth/session"
+import { hasModuleAccess } from "@/shell/billing/access"
 import { getBusiness } from "@/shell/db/business"
 
 type PageProps = {
@@ -12,7 +13,7 @@ type PageProps = {
 export default async function DashboardOrdersHoursPage({ params }: PageProps) {
   const { slug } = await params
   const business = await getBusiness(slug)
-  if (!business) notFound()
+  if (!business || !hasModuleAccess(business, "orders")) notFound()
 
   const cookieStore = await cookies()
   const token = cookieStore.get("session_token")?.value

@@ -1,8 +1,9 @@
 import { cookies } from "next/headers"
 import { notFound, redirect } from "next/navigation"
-import { validateSession } from "@/shell/auth/session"
-import { getBusiness } from "@/shell/db/business"
 import ProgramForm from "@/modules/loyalty/dashboard/program-form"
+import { validateSession } from "@/shell/auth/session"
+import { hasModuleAccess } from "@/shell/billing/access"
+import { getBusiness } from "@/shell/db/business"
 
 type PageProps = {
   params: Promise<{ slug: string }>
@@ -11,7 +12,7 @@ type PageProps = {
 export default async function LoyaltyProgramPage({ params }: PageProps) {
   const { slug } = await params
   const business = await getBusiness(slug)
-  if (!business) notFound()
+  if (!business || !hasModuleAccess(business, "loyalty")) notFound()
 
   const cookieStore = await cookies()
   const token = cookieStore.get("session_token")?.value

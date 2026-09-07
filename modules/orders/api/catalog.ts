@@ -4,8 +4,10 @@ import {
   coerceHours,
   isOpenNow,
   nextOpening,
+  type OpeningInfo,
   type OrdersHours,
 } from "@/modules/orders/lib/hours"
+import { hasModuleAccess } from "@/shell/billing/access"
 
 export type CatalogDeps = {
   sql: SqlTagged
@@ -132,6 +134,9 @@ export async function getCatalog(
   const business = await deps.getBusiness(slug)
   if (!business) {
     return { status: 404, body: { error: "Negocio no encontrado" } }
+  }
+  if (!hasModuleAccess(business, "orders")) {
+    return { status: 404, body: { error: "Este negocio no recibe pedidos." } }
   }
 
   const categories = (await deps.sql`

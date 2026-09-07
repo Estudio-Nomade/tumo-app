@@ -6,6 +6,7 @@ import LoyaltyCard, {
   type LoyaltyCardData,
 } from "@/modules/loyalty/public/card"
 import { validateSession } from "@/shell/auth/session"
+import { hasModuleAccess } from "@/shell/billing/access"
 import { getBusiness } from "@/shell/db/business"
 
 type PageProps = {
@@ -17,7 +18,7 @@ export default async function CustomerLoyaltyDeepLinkPage({
 }: PageProps) {
   const { slug, code } = await params
   const business = await getBusiness(slug)
-  if (!business) notFound()
+  if (!business || !hasModuleAccess(business, "loyalty")) notFound()
 
   const digits = code.replace(/\D/g, "").slice(0, 4)
   if (digits.length !== 4) notFound()

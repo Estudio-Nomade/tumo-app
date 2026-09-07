@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server"
 import { getSettings, upsertSettings } from "@/modules/turnos/api/settings"
 import { settingsDeps } from "@/modules/turnos/lib/default-deps"
 import { validateSession } from "@/shell/auth/session"
+import { hasModuleAccess } from "@/shell/billing/access"
 import { getBusiness } from "@/shell/db/business"
 
 async function sessionOf(req: NextRequest) {
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest) {
   const slug = searchParams.get("slug")
   if (slug) {
     const business = await getBusiness(slug)
-    if (!business?.active_modules.includes("turnos")) {
+    if (!business || !hasModuleAccess(business, "turnos")) {
       return NextResponse.json({ error: "No encontrado." }, { status: 404 })
     }
     const result = await getSettings(settingsDeps, { businessId: business.id })

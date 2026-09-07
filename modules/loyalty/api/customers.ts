@@ -5,6 +5,7 @@ import type {
   JsonResult,
   SqlTagged,
 } from "@/modules/loyalty/lib/types"
+import { hasModuleAccess } from "@/shell/billing/access"
 
 export type CustomerDeps = {
   sql: SqlTagged
@@ -45,6 +46,9 @@ export async function registerCustomer(
   const business = await deps.getBusiness(slug)
   if (!business) {
     return { status: 404, body: { error: "Negocio no encontrado" } }
+  }
+  if (!hasModuleAccess(business, "loyalty")) {
+    return { status: 404, body: { error: "Módulo de fidelización no disponible." } }
   }
 
   const existing = (await deps.sql`
@@ -115,6 +119,9 @@ export async function getCustomer(
   const business = await deps.getBusiness(slug)
   if (!business) {
     return { status: 404, body: { error: "Negocio no encontrado" } }
+  }
+  if (!hasModuleAccess(business, "loyalty")) {
+    return { status: 404, body: { error: "Módulo de fidelización no disponible." } }
   }
 
   let rows: CustomerRow[] = []
