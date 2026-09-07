@@ -5,6 +5,7 @@ import type { MetricsDeps } from "@/modules/turnos/api/metrics"
 import type { PaymentsDeps } from "@/modules/turnos/api/payments"
 import type { ServicesDeps } from "@/modules/turnos/api/services"
 import type { SettingsDeps } from "@/modules/turnos/api/settings"
+import { generateTurnosCustomerCode } from "@/modules/turnos/lib/generate-code"
 import type { SqlTagged } from "@/modules/turnos/lib/types"
 
 const taggedSql = sql as unknown as SqlTagged
@@ -17,6 +18,7 @@ export const metricsDeps: MetricsDeps = { sql: taggedSql }
 export const bookingsDeps: BookingsDeps = {
   sql: taggedSql,
   getBusiness: async (id: string) => getBusinessById(id),
+  generateCode: generateTurnosCustomerCode,
 }
 
 export { getBusiness, getBusinessById, taggedSql }
