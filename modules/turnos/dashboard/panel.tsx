@@ -63,7 +63,7 @@ export default function TurnosPanel({ slug }: Props) {
             href={`/${slug}/dashboard/turnos/ajustes`}
             className="inline-flex min-h-[48px] items-center rounded-xl border border-stone-200 px-3 text-sm font-semibold"
           >
-            ⚙
+            Ajustes
           </a>
         </div>
       </div>
