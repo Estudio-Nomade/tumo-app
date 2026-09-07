@@ -1,6 +1,5 @@
-import { notFound } from "next/navigation"
 import CartWizard from "@/modules/orders/public/cart"
-import { hasModuleAccess } from "@/shell/billing/access"
+import { ModuleAccessGate } from "@/shell/billing/module-access-gate"
 import { getBusiness } from "@/shell/db/business"
 
 type PageProps = {
@@ -10,7 +9,10 @@ type PageProps = {
 export default async function OrdersCartPage({ params }: PageProps) {
   const { slug } = await params
   const business = await getBusiness(slug)
-  if (!business || !hasModuleAccess(business, "orders")) notFound()
 
-  return <CartWizard slug={slug} />
+  return (
+    <ModuleAccessGate business={business} moduleId="orders" audience="public">
+      <CartWizard slug={slug} />
+    </ModuleAccessGate>
+  )
 }

@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test"
 import type { Business } from "@/lib/modules"
 import {
+  evaluateModuleAccess,
   hasModuleAccess,
   isBillingOverdue,
   type BusinessBillingSnapshot,
@@ -121,5 +122,56 @@ describe("hasModuleAccess", () => {
 
   test("true si sin campos billing (legacy)", () => {
     expect(hasModuleAccess(baseBusiness, "orders", now)).toBe(true)
+  })
+})
+
+describe("evaluateModuleAccess", () => {
+  test("ok si contratado y al día", () => {
+    const biz: Business = {
+      ...baseBusiness,
+      billing_status: "al_dia",
+      billing_next_due_at: "2026-10-07T00:00:00.000Z",
+    }
+    expect(evaluateModuleAccess(biz, "orders", now)).toEqual({
+      ok: true,
+      reason: "ok",
+    })
+  })
+
+  test("not_contracted si no está en active_modules", () => {
+    const biz: Business = {
+      ...baseBusiness,
+      active_modules: ["loyalty"],
+      billing_status: "al_dia",
+      billing_next_due_at: "2026-10-01T00:00:00.000Z",
+    }
+    expect(evaluateModuleAccess(biz, "orders", now)).toEqual({
+      ok: false,
+      reason: "not_contracted",
+    })
+  })
+
+  test("billing_overdue si contratado pero mora (prioridad sobre contrato)", () => {
+    const biz: Business = {
+      ...baseBusiness,
+      billing_status: "vencido",
+      billing_next_due_at: null,
+    }
+    expect(evaluateModuleAccess(biz, "orders", now)).toEqual({
+      ok: false,
+      reason: "billing_overdue",
+    })
+  })
+
+  test("not_contracted gana si no tiene el módulo aunque también esté vencido", () => {
+    const biz: Business = {
+      ...baseBusiness,
+      active_modules: ["loyalty"],
+      billing_status: "vencido",
+    }
+    expect(evaluateModuleAccess(biz, "orders", now)).toEqual({
+      ok: false,
+      reason: "not_contracted",
+    })
   })
 })

@@ -53,8 +53,36 @@ export function hasModuleAccess(
   moduleId: string,
   now: Date = new Date()
 ): boolean {
-  if (!business.active_modules?.includes(moduleId)) return false
-  return !isBillingOverdue(billingSnapshotFromBusiness(business), now)
+  return evaluateModuleAccess(business, moduleId, now).ok
+}
+
+export type ModuleAccessReason = "ok" | "not_contracted" | "billing_overdue"
+
+export type ModuleAccessResult = {
+  ok: boolean
+  reason: ModuleAccessReason
+}
+
+/**
+ * Distinguishes "never bought this module" vs "paused for unpaid Tumo fee".
+ * Contract check first so a business that never had orders still 404s as not found,
+ * not as subscription expired.
+ */
+export function evaluateModuleAccess(
+  business: Pick<
+    Business,
+    "active_modules" | "billing_status" | "billing_next_due_at"
+  >,
+  moduleId: string,
+  now: Date = new Date()
+): ModuleAccessResult {
+  if (!business.active_modules?.includes(moduleId)) {
+    return { ok: false, reason: "not_contracted" }
+  }
+  if (isBillingOverdue(billingSnapshotFromBusiness(business), now)) {
+    return { ok: false, reason: "billing_overdue" }
+  }
+  return { ok: true, reason: "ok" }
 }
 
 /** Whether shell should persist status=vencido (lazy expire). */
