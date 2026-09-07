@@ -83,6 +83,7 @@ function makeDeps(opts: {
         reward_name: "x",
         point_ranges: [],
       }) as never,
+    generateCode: () => "1234",
   }
 }
 
@@ -120,6 +121,83 @@ describe("createBooking", () => {
     const body = r.body as { booking: { id: string; paymentMethod: string } }
     expect(body.booking.id).toBe("b1")
     expect(body.booking.paymentMethod).toBe("at_location")
+  })
+
+  test("cliente nuevo: INSERT customers incluye code (NOT NULL)", async () => {
+    const calls: { q: string; values: unknown[] }[] = []
+    const sql = mock((strings: TemplateStringsArray, ...values: unknown[]) => {
+      const q = strings.join(" ")
+      calls.push({ q, values })
+      if (q.includes("FROM turnos_services")) {
+        return Promise.resolve([
+          {
+            id: "svc1",
+            name: "Corte",
+            price_cents: 12500,
+            duration_minutes: 30,
+            is_active: true,
+          },
+        ])
+      }
+      if (q.includes("FROM turnos_settings")) {
+        return Promise.resolve([
+          { is_paused: false, hours: { mon: [["09:00", "18:00"]] } },
+        ])
+      }
+      if (q.includes("FROM customers") && q.includes("phone")) {
+        return Promise.resolve([]) // no existe
+      }
+      if (q.includes("FROM customers") && q.includes("code")) {
+        return Promise.resolve([]) // no collision
+      }
+      if (q.includes("INSERT INTO customers")) {
+        return Promise.resolve([{ id: "cust-new" }])
+      }
+      if (q.includes("INSERT INTO turnos_bookings")) {
+        return Promise.resolve([
+          {
+            id: "b1",
+            status: "confirmed",
+            payment_method: "at_location",
+            payment_status: "unpaid",
+            service_name: "Corte",
+            price_cents: 12500,
+            duration_minutes: 30,
+            starts_at: new Date("2026-08-31T12:00:00.000Z"),
+            ends_at: new Date("2026-08-31T12:30:00.000Z"),
+          },
+        ])
+      }
+      if (q.includes("FROM turnos_bookings")) {
+        return Promise.resolve([])
+      }
+      return Promise.resolve([])
+    })
+
+    const deps: BookingsDeps = {
+      sql: sql as unknown as BookingsDeps["sql"],
+      getBusiness: async () =>
+        ({
+          id: "biz-1",
+          active_modules: ["turnos"],
+        }) as never,
+      generateCode: () => "4821",
+    }
+
+    const r = await createBooking(deps, {
+      businessId: "biz-1",
+      serviceId: "svc1",
+      startsAt: "2026-08-31T12:00:00.000Z",
+      customerName: "Martina",
+      customerPhone: "2266515776",
+      paymentMethod: "transfer",
+      idempotencyKey: "k-new-cust",
+    })
+    expect(r.status).toBe(201)
+    const insert = calls.find((c) => c.q.includes("INSERT INTO customers"))
+    expect(insert).toBeDefined()
+    expect(insert!.q).toMatch(/code/)
+    expect(insert!.values).toContain("4821")
   })
 
   test("idempotencyKey vacío → 400", async () => {

@@ -6,6 +6,7 @@ export default function TurnosSettingsForm({ slug }: { slug: string }) {
   const [alias, setAlias] = useState("")
   const [cbu, setCbu] = useState("")
   const [holder, setHolder] = useState("")
+  const [whatsappPhone, setWhatsappPhone] = useState("")
   const [paused, setPaused] = useState(false)
   const [msg, setMsg] = useState("")
 
@@ -20,6 +21,7 @@ export default function TurnosSettingsForm({ slug }: { slug: string }) {
         setAlias(s.transferAlias ?? "")
         setCbu(s.transferCbu ?? "")
         setHolder(s.transferHolder ?? "")
+        setWhatsappPhone(s.whatsappPhone ?? "")
         setPaused(Boolean(s.isPaused))
       })
       .catch(() => null)
@@ -37,6 +39,7 @@ export default function TurnosSettingsForm({ slug }: { slug: string }) {
         transferAlias: alias,
         transferCbu: cbu,
         transferHolder: holder,
+        whatsappPhone: whatsappPhone,
         isPaused: paused,
         hours: {
           mon: [["09:00", "18:00"]],
@@ -91,6 +94,19 @@ export default function TurnosSettingsForm({ slug }: { slug: string }) {
           value={holder}
           onChange={(e) => setHolder(e.target.value)}
         />
+      </label>
+      <label className="flex flex-col gap-2 text-sm font-semibold text-stone-600">
+        WhatsApp del negocio
+        <input
+          className="min-h-[52px] rounded-xl border border-stone-200 px-3 text-base"
+          value={whatsappPhone}
+          onChange={(e) => setWhatsappPhone(e.target.value)}
+          placeholder="Ej. +54 9 11 1234-5678"
+          inputMode="tel"
+        />
+        <span className="text-xs font-normal text-stone-500">
+          Ahí llegan los avisos de reserva del cliente.
+        </span>
       </label>
       <label className="flex min-h-[56px] items-center justify-between rounded-2xl border border-amber-200 bg-amber-50 px-4">
         <span className="text-base font-bold">Pausar reservas</span>

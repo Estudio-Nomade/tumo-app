@@ -1,4 +1,5 @@
 import type { JsonResult, SqlTagged } from "@/modules/turnos/lib/types"
+import { whatsappDigits } from "@/modules/turnos/lib/whatsapp"
 
 export type SettingsDeps = {
   sql: SqlTagged
@@ -11,6 +12,7 @@ type SettingsRow = {
   transfer_holder: string | null
   is_paused: boolean
   hours: unknown
+  whatsapp_phone?: string | null
 }
 
 function mapSettings(r: SettingsRow) {
@@ -21,6 +23,7 @@ function mapSettings(r: SettingsRow) {
     transferHolder: r.transfer_holder,
     isPaused: r.is_paused,
     hours: r.hours ?? {},
+    whatsappPhone: r.whatsapp_phone ?? null,
   }
 }
 
@@ -34,7 +37,7 @@ export async function getSettings(
   }
 
   const rows = (await deps.sql`
-    SELECT business_id, transfer_alias, transfer_cbu, transfer_holder, is_paused, hours
+    SELECT business_id, transfer_alias, transfer_cbu, transfer_holder, is_paused, hours, whatsapp_phone
     FROM turnos_settings
     WHERE business_id = ${businessId}
   `) as SettingsRow[]
@@ -50,6 +53,7 @@ export async function getSettings(
           transferHolder: null,
           isPaused: false,
           hours: {},
+          whatsappPhone: null,
         },
       },
     }
@@ -67,6 +71,7 @@ export async function upsertSettings(
     transferHolder?: string | null
     isPaused?: boolean
     hours?: unknown
+    whatsappPhone?: string | null
   }
 ): Promise<JsonResult> {
   const businessId = input.businessId?.trim() ?? ""
@@ -84,25 +89,33 @@ export async function upsertSettings(
     input.transferHolder !== undefined ? input.transferHolder : cur.transferHolder
   const isPaused = input.isPaused !== undefined ? input.isPaused : cur.isPaused
   const hours = input.hours !== undefined ? input.hours : cur.hours
+  const rawPhone =
+    input.whatsappPhone !== undefined ? input.whatsappPhone : cur.whatsappPhone
+  const whatsappPhone =
+    rawPhone == null || String(rawPhone).trim() === ""
+      ? null
+      : whatsappDigits(String(rawPhone)) || null
 
   const rows = (await deps.sql`
     INSERT INTO turnos_settings (
-      business_id, transfer_alias, transfer_cbu, transfer_holder, is_paused, hours
+      business_id, transfer_alias, transfer_cbu, transfer_holder, is_paused, hours, whatsapp_phone
     ) VALUES (
       ${businessId},
       ${alias},
       ${cbu},
       ${holder},
       ${isPaused},
-      ${JSON.stringify(hours ?? {})}::jsonb
+      ${JSON.stringify(hours ?? {})}::jsonb,
+      ${whatsappPhone}
     )
     ON CONFLICT (business_id) DO UPDATE SET
       transfer_alias = EXCLUDED.transfer_alias,
       transfer_cbu = EXCLUDED.transfer_cbu,
       transfer_holder = EXCLUDED.transfer_holder,
       is_paused = EXCLUDED.is_paused,
-      hours = EXCLUDED.hours
-    RETURNING business_id, transfer_alias, transfer_cbu, transfer_holder, is_paused, hours
+      hours = EXCLUDED.hours,
+      whatsapp_phone = EXCLUDED.whatsapp_phone
+    RETURNING business_id, transfer_alias, transfer_cbu, transfer_holder, is_paused, hours, whatsapp_phone
   `) as SettingsRow[]
 
   const row = rows[0]

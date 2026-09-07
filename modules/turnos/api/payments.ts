@@ -1,4 +1,8 @@
 import type { JsonResult, SqlTagged } from "@/modules/turnos/lib/types"
+import {
+  ALLOWED_RECEIPT_MIMES,
+  MAX_RECEIPT_BYTES,
+} from "@/modules/turnos/lib/receipt-image"
 
 export type PaymentsDeps = {
   sql: SqlTagged
@@ -21,6 +25,16 @@ export async function submitTransferReceipt(
   }
   if (!input.receiptBytes?.length) {
     return { status: 400, body: { error: "Subí el comprobante." } }
+  }
+  const mime = (input.receiptMime ?? "").trim().toLowerCase()
+  if (!(ALLOWED_RECEIPT_MIMES as readonly string[]).includes(mime)) {
+    return {
+      status: 400,
+      body: { error: "Subí una foto del comprobante (JPG o PNG)." },
+    }
+  }
+  if (input.receiptBytes.byteLength > MAX_RECEIPT_BYTES) {
+    return { status: 400, body: { error: "La foto es muy pesada." } }
   }
 
   const bookings = (await deps.sql`

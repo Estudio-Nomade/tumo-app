@@ -66,6 +66,37 @@ describe("submitTransferReceipt", () => {
     )
     expect(r.status).toBe(200)
   })
+
+  test("mime inválido → 400", async () => {
+    const r = await submitTransferReceipt(
+      { sql: makeSql() },
+      {
+        businessId: "biz-1",
+        bookingId: "b1",
+        receiptBytes: new Uint8Array([1, 2, 3]),
+        receiptMime: "application/pdf",
+        receiptFilename: "x.pdf",
+      }
+    )
+    expect(r.status).toBe(400)
+    expect(String((r.body as { error?: string }).error)).toMatch(/foto|JPG|PNG/i)
+  })
+
+  test("bytes > tope → 400", async () => {
+    const big = new Uint8Array(3 * 1024 * 1024 + 1)
+    const r = await submitTransferReceipt(
+      { sql: makeSql() },
+      {
+        businessId: "biz-1",
+        bookingId: "b1",
+        receiptBytes: big,
+        receiptMime: "image/jpeg",
+        receiptFilename: "big.jpg",
+      }
+    )
+    expect(r.status).toBe(400)
+    expect(String((r.body as { error?: string }).error)).toMatch(/pesada/i)
+  })
 })
 
 describe("approvePayment", () => {

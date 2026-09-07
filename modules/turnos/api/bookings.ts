@@ -9,6 +9,7 @@ import { initialPaymentStatus } from "@/modules/turnos/lib/types"
 export type BookingsDeps = {
   sql: SqlTagged
   getBusiness: (id: string) => Promise<Business | null>
+  generateCode: () => string
 }
 
 type ServiceRow = {
@@ -50,29 +51,39 @@ function mapBooking(r: BookingRow) {
 }
 
 async function upsertCustomer(
-  sql: SqlTagged,
+  deps: Pick<BookingsDeps, "sql" | "generateCode">,
   input: { businessId: string; name: string; phone: string }
 ): Promise<string | null> {
   const phone = input.phone.trim()
   const name = input.name.trim()
-  const existing = (await sql`
+  const existing = (await deps.sql`
     SELECT id FROM customers
     WHERE business_id = ${input.businessId} AND phone = ${phone}
     LIMIT 1
   `) as { id: string }[]
   if (existing[0]) {
-    await sql`
+    await deps.sql`
       UPDATE customers SET name = ${name}
       WHERE id = ${existing[0].id}
     `
     return existing[0].id
   }
-  const inserted = (await sql`
-    INSERT INTO customers (business_id, name, phone)
-    VALUES (${input.businessId}, ${name}, ${phone})
-    RETURNING id
-  `) as { id: string }[]
-  return inserted[0]?.id ?? null
+  for (let i = 0; i < 10; i++) {
+    const code = deps.generateCode()
+    const collision = (await deps.sql`
+      SELECT id FROM customers
+      WHERE code = ${code} AND business_id = ${input.businessId}
+      LIMIT 1
+    `) as { id: string }[]
+    if (collision[0]) continue
+    const inserted = (await deps.sql`
+      INSERT INTO customers (business_id, name, phone, code)
+      VALUES (${input.businessId}, ${name}, ${phone}, ${code})
+      RETURNING id
+    `) as { id: string }[]
+    if (inserted[0]?.id) return inserted[0].id
+  }
+  return null
 }
 
 export async function createBooking(
@@ -158,7 +169,7 @@ export async function createBooking(
     return { status: 409, body: { error: "Ese horario ya no está disponible." } }
   }
 
-  const customerId = await upsertCustomer(deps.sql, {
+  const customerId = await upsertCustomer(deps, {
     businessId,
     name: customerName,
     phone: customerPhone,
