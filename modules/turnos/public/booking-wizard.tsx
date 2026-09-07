@@ -24,13 +24,21 @@ type Props = {
 
 type Step = "service" | "day" | "time" | "data" | "pay" | "done"
 
+/** YYYY-MM-DD del calendario local (no UTC). */
+function localDateIso(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, "0")
+  const day = String(d.getDate()).padStart(2, "0")
+  return `${y}-${m}-${day}`
+}
+
 function nextDays(n: number): { iso: string; label: string }[] {
   const out: { iso: string; label: string }[] = []
   const now = new Date()
   for (let i = 0; i < n; i++) {
     const d = new Date(now)
     d.setDate(now.getDate() + i)
-    const iso = d.toISOString().slice(0, 10)
+    const iso = localDateIso(d)
     const label =
       i === 0
         ? `Hoy · ${d.toLocaleDateString("es-AR", { weekday: "short", day: "numeric", month: "short" })}`

@@ -1,3 +1,4 @@
+import { coerceHoursMap } from "@/modules/turnos/lib/availability"
 import type { JsonResult, SqlTagged } from "@/modules/turnos/lib/types"
 import { whatsappDigits } from "@/modules/turnos/lib/whatsapp"
 
@@ -22,7 +23,7 @@ function mapSettings(r: SettingsRow) {
     transferCbu: r.transfer_cbu,
     transferHolder: r.transfer_holder,
     isPaused: r.is_paused,
-    hours: r.hours ?? {},
+    hours: coerceHoursMap(r.hours),
     whatsappPhone: r.whatsapp_phone ?? null,
   }
 }
@@ -88,13 +89,19 @@ export async function upsertSettings(
   const holder =
     input.transferHolder !== undefined ? input.transferHolder : cur.transferHolder
   const isPaused = input.isPaused !== undefined ? input.isPaused : cur.isPaused
-  const hours = input.hours !== undefined ? input.hours : cur.hours
+  const hours = coerceHoursMap(
+    input.hours !== undefined ? input.hours : cur.hours
+  )
   const rawPhone =
     input.whatsappPhone !== undefined ? input.whatsappPhone : cur.whatsappPhone
   const whatsappPhone =
     rawPhone == null || String(rawPhone).trim() === ""
       ? null
       : whatsappDigits(String(rawPhone)) || null
+
+  if (typeof deps.sql.json !== "function") {
+    throw new Error("sql.json is required to persist hours as jsonb object")
+  }
 
   const rows = (await deps.sql`
     INSERT INTO turnos_settings (
@@ -105,7 +112,7 @@ export async function upsertSettings(
       ${cbu},
       ${holder},
       ${isPaused},
-      ${JSON.stringify(hours ?? {})}::jsonb,
+      ${deps.sql.json(hours)},
       ${whatsappPhone}
     )
     ON CONFLICT (business_id) DO UPDATE SET

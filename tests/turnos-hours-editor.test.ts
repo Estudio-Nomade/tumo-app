@@ -165,7 +165,7 @@ describe("normalizeHm / validateTurnosDayWindow", () => {
 })
 
 describe("source contracts UI", () => {
-  test("hours-editor UI multi-franja + labels", () => {
+  test("hours-editor UI multi-franja + labels Abierto|Cerrado", () => {
     const ui = readFileSync(
       join(root, "modules/turnos/dashboard/turnos-hours-editor.tsx"),
       "utf8"
@@ -175,7 +175,11 @@ describe("source contracts UI", () => {
       "utf8"
     )
     expect(lib).toMatch(/Lunes/)
+    expect(ui).toMatch(/Abierto/)
     expect(ui).toMatch(/Cerrado/)
+    expect(ui).toMatch(/day\.closed \? "Cerrado" : "Abierto"/)
+    expect(ui).toMatch(/aria-checked=\{!day\.closed\}/)
+    expect(ui).toMatch(/bg-green-500/)
     expect(ui).toMatch(/Abre/)
     expect(ui).toMatch(/Cierra/)
     expect(ui).toMatch(/Agregar franja/)
@@ -202,5 +206,14 @@ describe("source contracts UI", () => {
     )
     expect(src).toMatch(/dashboard\/turnos\/ajustes/)
     expect(src).toMatch(/>\s*Ajustes\s*</)
+  })
+
+  test("booking-wizard nextDays usa fecha local, no toISOString slice", () => {
+    const src = readFileSync(
+      join(root, "modules/turnos/public/booking-wizard.tsx"),
+      "utf8"
+    )
+    expect(src).toMatch(/localDateIso|getFullYear/)
+    expect(src).not.toMatch(/toISOString\(\)\.slice\(0,\s*10\)/)
   })
 })

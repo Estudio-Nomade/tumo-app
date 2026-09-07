@@ -1,4 +1,7 @@
-import type { HoursMap } from "@/modules/turnos/lib/availability"
+import {
+  coerceHoursMap,
+  type HoursMap,
+} from "@/modules/turnos/lib/availability"
 
 export const DAY_ORDER = [
   { key: "mon", label: "Lunes" },
@@ -42,22 +45,6 @@ function parseHm(hm: string): number | null {
   if (!HM_RE.test(n)) return null
   const [h, m] = n.split(":").map(Number)
   return h * 60 + m
-}
-
-function coerceHoursMap(hours: unknown): HoursMap {
-  if (hours == null) return {}
-  let raw: unknown = hours
-  if (typeof raw === "string") {
-    try {
-      raw = JSON.parse(raw) as unknown
-    } catch {
-      return {}
-    }
-  }
-  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
-    return {}
-  }
-  return raw as HoursMap
 }
 
 function readWindows(windows: unknown): WindowEditor[] {

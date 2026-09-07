@@ -5,8 +5,10 @@ import {
   type SettingsDeps,
 } from "@/modules/turnos/api/settings"
 
+type SqlJsonMarker = { __sqlJson: unknown }
+
 function makeSql(row?: unknown) {
-  const sql = mock((strings: TemplateStringsArray, ...values: unknown[]) => {
+  const sqlFn = mock((strings: TemplateStringsArray, ...values: unknown[]) => {
     void values
     const q = strings.join(" ")
     if (q.includes("INSERT INTO turnos_settings") || q.includes("ON CONFLICT")) {
@@ -39,7 +41,9 @@ function makeSql(row?: unknown) {
     }
     return Promise.resolve([])
   })
-  return sql as unknown as SettingsDeps["sql"]
+  return Object.assign(sqlFn, {
+    json: (value: unknown): SqlJsonMarker => ({ __sqlJson: value }),
+  }) as unknown as SettingsDeps["sql"]
 }
 
 describe("getSettings", () => {
@@ -75,6 +79,33 @@ describe("getSettings", () => {
     const body = r.body as { settings: { whatsappPhone: string | null } }
     expect(body.settings.whatsappPhone).toBe("5491112345678")
   })
+
+  test("hours jsonb string (double-encoded) se parsea a objeto", async () => {
+    const doubleEncoded = JSON.stringify({
+      mon: [["09:00", "18:00"]],
+    })
+    const r = await getSettings(
+      {
+        sql: makeSql({
+          business_id: "biz-1",
+          transfer_alias: "a",
+          transfer_cbu: "b",
+          transfer_holder: "c",
+          is_paused: false,
+          hours: doubleEncoded,
+          whatsapp_phone: null,
+        }),
+      },
+      { businessId: "biz-1" }
+    )
+    expect(r.status).toBe(200)
+    const body = r.body as { settings: { hours: unknown } }
+    expect(typeof body.settings.hours).toBe("object")
+    expect(Array.isArray(body.settings.hours)).toBe(false)
+    expect(
+      (body.settings.hours as { mon: Array<[string, string]> }).mon
+    ).toEqual([["09:00", "18:00"]])
+  })
 })
 
 describe("upsertSettings", () => {
@@ -90,13 +121,13 @@ describe("upsertSettings", () => {
     expect(r.status).toBe(200)
   })
 
-  test("hours undefined preserva hours actuales", async () => {
+  test("hours undefined preserva hours actuales vía sql.json(objeto)", async () => {
     const existingHours = {
       mon: [["10:00", "14:00"]],
       wed: [["09:00", "12:00"]],
     }
     const calls: { q: string; values: unknown[] }[] = []
-    const sql = mock((strings: TemplateStringsArray, ...values: unknown[]) => {
+    const sqlFn = mock((strings: TemplateStringsArray, ...values: unknown[]) => {
       const q = strings.join(" ")
       calls.push({ q, values })
       if (q.includes("FROM turnos_settings")) {
@@ -127,6 +158,9 @@ describe("upsertSettings", () => {
       }
       return Promise.resolve([])
     })
+    const sql = Object.assign(sqlFn, {
+      json: (value: unknown): SqlJsonMarker => ({ __sqlJson: value }),
+    })
     const r = await upsertSettings(
       { sql: sql as unknown as SettingsDeps["sql"] },
       { businessId: "biz-1", transferAlias: "nuevo" }
@@ -134,19 +168,19 @@ describe("upsertSettings", () => {
     expect(r.status).toBe(200)
     const insert = calls.find((c) => c.q.includes("INSERT INTO turnos_settings"))
     expect(insert).toBeDefined()
+    expect(insert!.q).not.toContain("::jsonb")
     const hoursArg = insert!.values.find(
-      (v) => typeof v === "string" && v.includes("10:00")
-    )
+      (v) => v && typeof v === "object" && "__sqlJson" in (v as object)
+    ) as SqlJsonMarker | undefined
     expect(hoursArg).toBeDefined()
-    expect(String(hoursArg)).toContain("10:00")
-    expect(String(hoursArg)).toContain("14:00")
-    expect(String(hoursArg)).not.toMatch(/09:00.*18:00/)
+    expect(hoursArg!.__sqlJson).toEqual(existingHours)
+    expect(typeof hoursArg).not.toBe("string")
   })
 
-  test("hours explícitos reemplazan el mapa", async () => {
+  test("hours explícitos reemplazan el mapa vía sql.json", async () => {
     const newHours = { fri: [["11:00", "15:00"]] }
     const calls: { q: string; values: unknown[] }[] = []
-    const sql = mock((strings: TemplateStringsArray, ...values: unknown[]) => {
+    const sqlFn = mock((strings: TemplateStringsArray, ...values: unknown[]) => {
       const q = strings.join(" ")
       calls.push({ q, values })
       if (q.includes("FROM turnos_settings")) {
@@ -177,6 +211,9 @@ describe("upsertSettings", () => {
       }
       return Promise.resolve([])
     })
+    const sql = Object.assign(sqlFn, {
+      json: (value: unknown): SqlJsonMarker => ({ __sqlJson: value }),
+    })
     const r = await upsertSettings(
       { sql: sql as unknown as SettingsDeps["sql"] },
       { businessId: "biz-1", hours: newHours }
@@ -184,17 +221,18 @@ describe("upsertSettings", () => {
     expect(r.status).toBe(200)
     const insert = calls.find((c) => c.q.includes("INSERT INTO turnos_settings"))
     expect(insert).toBeDefined()
+    expect(insert!.q).not.toContain("::jsonb")
     const hoursArg = insert!.values.find(
-      (v) => typeof v === "string" && v.includes("fri")
-    )
+      (v) => v && typeof v === "object" && "__sqlJson" in (v as object)
+    ) as SqlJsonMarker | undefined
     expect(hoursArg).toBeDefined()
-    expect(String(hoursArg)).toContain("11:00")
-    expect(String(hoursArg)).not.toContain("mon")
+    expect(hoursArg!.__sqlJson).toEqual(newHours)
+    expect(JSON.stringify(hoursArg!.__sqlJson)).not.toContain("mon")
   })
 
   test("persiste whatsappPhone en INSERT", async () => {
     const calls: { q: string; values: unknown[] }[] = []
-    const sql = mock((strings: TemplateStringsArray, ...values: unknown[]) => {
+    const sqlFn = mock((strings: TemplateStringsArray, ...values: unknown[]) => {
       const q = strings.join(" ")
       calls.push({ q, values })
       if (q.includes("FROM turnos_settings")) {
@@ -224,6 +262,9 @@ describe("upsertSettings", () => {
         ])
       }
       return Promise.resolve([])
+    })
+    const sql = Object.assign(sqlFn, {
+      json: (value: unknown): SqlJsonMarker => ({ __sqlJson: value }),
     })
     const r = await upsertSettings(
       { sql: sql as unknown as SettingsDeps["sql"] },
