@@ -1,6 +1,8 @@
 import Link from "next/link"
 import { AdminLogoutButton } from "@/modules/admin/dashboard/admin-logout-button"
 
+export const dynamic = "force-dynamic"
+
 export default function AdminLayout({
   children,
 }: {
