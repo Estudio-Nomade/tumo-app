@@ -11,6 +11,7 @@ import {
   recordVerifyAttempt,
   resetVerifyAttempts,
 } from "@/modules/admin/lib/rate-limit"
+import { findAdminUserByPhone } from "@/modules/admin/lib/session"
 import type { SqlTagged } from "@/modules/admin/lib/types"
 
 const taggedSql = sql as unknown as SqlTagged
@@ -19,6 +20,7 @@ export const adminAuthDeps: AdminAuthDeps = {
   sql: taggedSql,
   sendOtp,
   verifyOtp,
+  findAdminByPhone: (phone) => findAdminUserByPhone(phone, taggedSql),
   skipAuthyo: process.env.SKIP_AUTHYO === "true",
   canSendCode,
   recordSend,

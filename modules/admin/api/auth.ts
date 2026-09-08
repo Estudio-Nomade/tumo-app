@@ -1,19 +1,16 @@
 import { normalizePhone, toE164 } from "@/lib/phone"
-import {
-  isAdminPhoneAllowed,
-  parseAdminAllowlist,
-} from "@/modules/admin/lib/allowlist"
 import type { JsonResult, SqlTagged } from "@/modules/admin/lib/types"
 import {
   ADMIN_SESSION_COOKIE,
   ADMIN_SESSION_MAX_AGE,
   DEV_OTP_CODE,
   DEV_OTP_MASK,
+  type AdminSessionUser,
 } from "@/modules/admin/lib/types"
 import {
   createAdminSession,
   deleteAdminSession,
-  upsertAdminUser,
+  findAdminUserByPhone,
   validateAdminSession,
 } from "@/modules/admin/lib/session"
 
@@ -26,7 +23,7 @@ export type AdminAuthDeps = {
     maskId: string,
     code: string
   ) => Promise<{ success: true } | { success: false; error: string }>
-  isPhoneAllowed?: (phone: string) => boolean
+  findAdminByPhone: (phone: string) => Promise<AdminSessionUser | null>
   skipAuthyo?: boolean
   canSendCode: (phone: string) => boolean
   recordSend: (phone: string) => void
@@ -46,9 +43,8 @@ export async function handleAdminSendCode(
     return { status: 400, body: { error: "Ingresá tu WhatsApp." } }
   }
 
-  const allowed =
-    deps.isPhoneAllowed?.(phoneDigits) ?? isAdminPhoneAllowed(phoneDigits)
-  if (!allowed) {
+  const admin = await deps.findAdminByPhone(phoneDigits)
+  if (!admin) {
     return {
       status: 403,
       body: { error: "Ese número no tiene acceso al panel admin." },
@@ -90,9 +86,8 @@ export async function handleAdminVerifyCode(
     return { status: 400, body: { error: "Datos incompletos." } }
   }
 
-  const allowed =
-    deps.isPhoneAllowed?.(phoneDigits) ?? isAdminPhoneAllowed(phoneDigits)
-  if (!allowed) {
+  const admin = await deps.findAdminByPhone(phoneDigits)
+  if (!admin) {
     return {
       status: 403,
       body: { error: "Ese número no tiene acceso al panel admin." },
@@ -119,8 +114,7 @@ export async function handleAdminVerifyCode(
     }
   }
 
-  const user = await upsertAdminUser(phoneDigits, null, deps.sql)
-  const token = await createAdminSession(user.id, deps.sql)
+  const token = await createAdminSession(admin.id, deps.sql)
 
   return {
     status: 200,
@@ -166,4 +160,4 @@ export async function handleAdminMe(
   }
 }
 
-export { parseAdminAllowlist, isAdminPhoneAllowed }
+export { findAdminUserByPhone }

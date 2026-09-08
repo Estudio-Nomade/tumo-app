@@ -73,7 +73,7 @@ export function AdminLoginForm() {
     <div className="mx-auto w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <h1 className="text-xl font-bold text-slate-900">Admin Tumo</h1>
       <p className="mt-1 text-sm text-slate-500">
-        Acceso interno del equipo. Solo números en allowlist.
+        Acceso interno del equipo. Solo números dados de alta en admin.
       </p>
 
       {step === "phone" ? (

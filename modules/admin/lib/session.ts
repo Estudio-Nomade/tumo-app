@@ -1,5 +1,20 @@
+import { normalizePhone, phonesMatch } from "@/lib/phone"
 import type { AdminSessionUser, SqlTagged } from "@/modules/admin/lib/types"
 import { ADMIN_SESSION_MAX_AGE } from "@/modules/admin/lib/types"
+
+export async function findAdminUserByPhone(
+  phone: string,
+  db: SqlTagged
+): Promise<AdminSessionUser | null> {
+  const digits = normalizePhone(phone)
+  if (!digits) return null
+  const rows = (await db`
+    SELECT id, phone, name FROM admin_users
+  `) as AdminSessionUser[]
+  const exact = rows.find((row) => normalizePhone(row.phone) === digits)
+  if (exact) return exact
+  return rows.find((row) => phonesMatch(digits, row.phone)) ?? null
+}
 
 export async function createAdminSession(
   adminUserId: string,
@@ -41,17 +56,3 @@ export async function deleteAdminSession(
   `
 }
 
-export async function upsertAdminUser(
-  phoneDigits: string,
-  name: string | null,
-  db: SqlTagged
-): Promise<AdminSessionUser> {
-  const rows = (await db`
-    INSERT INTO admin_users (phone, name)
-    VALUES (${phoneDigits}, ${name})
-    ON CONFLICT (phone) DO UPDATE SET
-      name = COALESCE(EXCLUDED.name, admin_users.name)
-    RETURNING id, phone, name
-  `) as AdminSessionUser[]
-  return rows[0]
-}

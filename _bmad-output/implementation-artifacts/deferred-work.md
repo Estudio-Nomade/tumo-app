@@ -206,3 +206,7 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-turnos-hours-editor.md`
   summary: Test de occupancy cancelled debe ejercer el filtro SQL de availability route
   evidence: turnos-availability.test.ts hardcodea existing:[]; no cubre status != cancelled en route
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-admin-auth-db-allowlist.md`
+  summary: findAdminUserByPhone carga todos los admin_users en memoria para phonesMatch
+  evidence: OK con pocos staff; a escala conviene normalizar phone en write + WHERE exacto
