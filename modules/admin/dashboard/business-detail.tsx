@@ -15,6 +15,10 @@ import {
   BillingBadge,
   ModuleBadge,
 } from "@/modules/admin/dashboard/billing-badge"
+import {
+  syncDetailModuleState,
+  upsertModuleSubscription,
+} from "@/modules/admin/lib/subscription-state"
 import type { BillingStatus } from "@/modules/admin/lib/types"
 
 export type ModuleSubscriptionData = {
@@ -94,8 +98,36 @@ export function BusinessDetailClient({
   registeredModules: string[]
 }) {
   const router = useRouter()
-  const [modules, setModules] = useState(business.active_modules)
-  const [subs] = useState(business.module_subscriptions ?? [])
+  const serverKey = useMemo(
+    () =>
+      JSON.stringify({
+        modules: business.active_modules,
+        subs: business.module_subscriptions ?? [],
+      }),
+    [business.active_modules, business.module_subscriptions]
+  )
+  const serverState = useMemo(
+    () =>
+      syncDetailModuleState({
+        active_modules: business.active_modules,
+        module_subscriptions: business.module_subscriptions,
+      }),
+    [business.active_modules, business.module_subscriptions]
+  )
+  /** Optimistic patch keyed to server snapshot; discarded when props refresh. */
+  const [overlay, setOverlay] = useState<{
+    key: string
+    modules: string[]
+    subscriptions: ModuleSubscriptionData[]
+  } | null>(null)
+
+  const modules =
+    overlay && overlay.key === serverKey ? overlay.modules : serverState.modules
+  const subs =
+    overlay && overlay.key === serverKey
+      ? overlay.subscriptions
+      : serverState.subscriptions
+
   const [activateId, setActivateId] = useState<string | null>(null)
   const [deactivateId, setDeactivateId] = useState<string | null>(null)
   const [editId, setEditId] = useState<string | null>(null)
@@ -112,6 +144,27 @@ export function BusinessDetailClient({
     for (const s of subs) m.set(s.module_id, s)
     return m
   }, [subs])
+
+  function applyMutation(next: {
+    modules?: string[]
+    subscription?: ModuleSubscriptionData
+  }) {
+    const baseModules = modules
+    const baseSubs = subs
+    setOverlay({
+      key: serverKey,
+      modules: next.modules ?? baseModules,
+      subscriptions: next.subscription
+        ? upsertModuleSubscription(baseSubs, next.subscription)
+        : baseSubs,
+    })
+  }
+
+  type MutationBody = {
+    active_modules?: string[]
+    error?: string
+    subscription?: ModuleSubscriptionData
+  }
 
   async function confirmActivate() {
     if (!activateId) return
@@ -130,15 +183,17 @@ export function BusinessDetailClient({
           body: JSON.stringify(body),
         }
       )
-      const data = (await res.json()) as {
-        active_modules?: string[]
-        error?: string
-      }
+      const data = (await res.json()) as MutationBody
       if (!res.ok) {
         setError(data.error ?? "No se pudo activar.")
         return
       }
-      setModules(data.active_modules ?? [...modules, activateId])
+      applyMutation({
+        modules:
+          data.active_modules ??
+          [...new Set([...modules, activateId])].sort(),
+        subscription: data.subscription,
+      })
       setActivateId(null)
       router.refresh()
     } catch {
@@ -161,15 +216,16 @@ export function BusinessDetailClient({
           body: "{}",
         }
       )
-      const data = (await res.json()) as {
-        active_modules?: string[]
-        error?: string
-      }
+      const data = (await res.json()) as MutationBody
       if (!res.ok) {
         setError(data.error ?? "No se pudo desactivar.")
         return
       }
-      setModules(data.active_modules ?? modules.filter((m) => m !== deactivateId))
+      applyMutation({
+        modules:
+          data.active_modules ?? modules.filter((m) => m !== deactivateId),
+        subscription: data.subscription,
+      })
       setDeactivateId(null)
       router.refresh()
     } catch {
@@ -195,11 +251,27 @@ export function BusinessDetailClient({
           }),
         }
       )
-      const data = (await res.json()) as { error?: string }
+      const data = (await res.json()) as MutationBody
       if (!res.ok) {
         setError(data.error ?? "No se pudo editar fechas.")
         return
       }
+      let subscription = data.subscription
+      if (!subscription && (editActivated || editAnchor)) {
+        const cur = subById.get(editId)
+        if (cur) {
+          subscription = {
+            ...cur,
+            activated_at: editActivated
+              ? new Date(`${editActivated}T12:00:00.000Z`).toISOString()
+              : cur.activated_at,
+            billing_anchor_at: editAnchor
+              ? new Date(`${editAnchor}T12:00:00.000Z`).toISOString()
+              : cur.billing_anchor_at,
+          }
+        }
+      }
+      if (subscription) applyMutation({ subscription })
       setEditId(null)
       router.refresh()
     } catch {
