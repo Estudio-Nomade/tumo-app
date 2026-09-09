@@ -1,4 +1,5 @@
 import type { BillingStatus, JsonResult, SqlTagged } from "@/modules/admin/lib/types"
+import { businessAnchor } from "@/shell/billing/cycle"
 import { monthlyAmountCentsForModuleCount } from "@/shell/billing/pricing"
 
 export type AdminBusinessesDeps = {
@@ -124,7 +125,22 @@ export async function getBusinessAdmin(
     marked_by_admin_id: string | null
   }[]
 
+  const moduleSubs = (await deps.sql`
+    SELECT module_id, status, activated_at, billing_anchor_at, deactivated_at
+    FROM business_module_subscriptions
+    WHERE business_id = ${businessId}
+    ORDER BY module_id ASC
+  `) as {
+    module_id: string
+    status: string
+    activated_at: Date | string
+    billing_anchor_at: Date | string
+    deactivated_at: Date | string | null
+  }[]
+
   const owner = employees.find((e) => e.role === "owner")
+  const activeModules = r.active_modules ?? []
+  const anchor = businessAnchor(moduleSubs)
 
   return {
     status: 200,
@@ -133,7 +149,7 @@ export async function getBusinessAdmin(
         id: r.id,
         name: r.name,
         slug: r.slug,
-        active_modules: r.active_modules ?? [],
+        active_modules: activeModules,
         created_at: serializeDate(r.created_at),
         contact: owner
           ? { name: owner.name, phone: owner.phone }
@@ -145,13 +161,21 @@ export async function getBusinessAdmin(
           role: e.role,
           is_active: Boolean(e.is_active),
         })),
+        module_subscriptions: moduleSubs.map((s) => ({
+          module_id: s.module_id,
+          status: s.status,
+          activated_at: serializeDate(s.activated_at),
+          billing_anchor_at: serializeDate(s.billing_anchor_at),
+          deactivated_at: serializeDate(s.deactivated_at),
+        })),
         billing: {
           status: (r.billing_status ?? "pendiente") as BillingStatus,
           monthly_amount_cents: monthlyAmountCentsForModuleCount(
-            (r.active_modules ?? []).length
+            activeModules.length
           ),
           last_payment_at: serializeDate(r.last_payment_at),
           next_due_at: serializeDate(r.next_due_at),
+          business_anchor_at: serializeDate(anchor),
           notes: r.billing_notes ?? null,
           payments: payments.map((p) => ({
             id: p.id,

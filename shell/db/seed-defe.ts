@@ -40,6 +40,30 @@ async function seedDefe() {
   console.log("INSERT OK:", business)
 
   const defeMonthly = monthlyAmountCentsForModuleCount(1)
+  const seedNow = new Date()
+
+  await sql`
+    INSERT INTO business_module_subscriptions (
+      business_id,
+      module_id,
+      status,
+      activated_at,
+      billing_anchor_at,
+      updated_at
+    )
+    VALUES (
+      ${business.id},
+      ${"loyalty"},
+      ${"active"},
+      ${seedNow},
+      ${seedNow},
+      ${seedNow}
+    )
+    ON CONFLICT (business_id, module_id) DO UPDATE SET
+      status = ${"active"},
+      deactivated_at = ${null},
+      updated_at = ${seedNow}
+  `
 
   await sql`
     INSERT INTO business_billing (
