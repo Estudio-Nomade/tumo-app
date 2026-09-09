@@ -83,6 +83,31 @@ describe("listBusinesses", () => {
     )[0]
     expect(b.billing.monthly_amount_cents).toBe(0)
   })
+
+  test("legacy ARS 1990000 en DB se ignora: tarifa = N × 6999", async () => {
+    const { sql } = makeSql(() => [
+      {
+        id: "b4",
+        name: "Defe",
+        slug: "defe",
+        active_modules: ["loyalty"],
+        created_at: "2026-01-01",
+        billing_status: "vencido",
+        monthly_amount_cents: 1_990_000,
+        last_payment_at: null,
+        next_due_at: null,
+      },
+    ])
+    const result = await listBusinesses({ sql })
+    const b = (
+      result.body.businesses as {
+        billing: { status: string; monthly_amount_cents: number }
+      }[]
+    )[0]
+    expect(b.billing.status).toBe("vencido")
+    expect(b.billing.monthly_amount_cents).toBe(6999)
+    expect(b.billing.monthly_amount_cents).not.toBe(1_990_000)
+  })
 })
 
 describe("getBusinessAdmin", () => {
@@ -139,6 +164,38 @@ describe("getBusinessAdmin", () => {
     }
     expect(business.contact.name).toBe("Nobel")
     expect(business.employees).toHaveLength(1)
+  })
+
+  test("detalle ignora monthly legacy 1990000 y muestra N × 6999", async () => {
+    let call = 0
+    const { sql } = makeSql(() => {
+      call += 1
+      if (call === 1) {
+        return [
+          {
+            id: "b1",
+            name: "Defe",
+            slug: "defe",
+            active_modules: ["loyalty"],
+            created_at: new Date("2026-01-01"),
+            billing_status: "vencido",
+            monthly_amount_cents: 1_990_000,
+            last_payment_at: null,
+            next_due_at: null,
+            billing_notes: null,
+          },
+        ]
+      }
+      if (call === 2) return []
+      return []
+    })
+    const result = await getBusinessAdmin({ sql }, { businessId: "b1" })
+    expect(result.status).toBe(200)
+    const business = result.body.business as {
+      billing: { monthly_amount_cents: number; status: string }
+    }
+    expect(business.billing.status).toBe("vencido")
+    expect(business.billing.monthly_amount_cents).toBe(6999)
   })
 })
 
