@@ -1,5 +1,5 @@
 import type { BillingStatus, JsonResult, SqlTagged } from "@/modules/admin/lib/types"
-import { DEFAULT_MONTHLY_AMOUNT_CENTS } from "@/modules/admin/lib/types"
+import { monthlyAmountCentsForModuleCount } from "@/shell/billing/pricing"
 
 export type AdminBusinessesDeps = {
   sql: SqlTagged
@@ -60,7 +60,8 @@ export async function listBusinesses(
     billing: {
       status: (r.billing_status ?? "pendiente") as BillingStatus,
       monthly_amount_cents:
-        r.monthly_amount_cents ?? DEFAULT_MONTHLY_AMOUNT_CENTS,
+        r.monthly_amount_cents ??
+        monthlyAmountCentsForModuleCount((r.active_modules ?? []).length),
       last_payment_at: serializeDate(r.last_payment_at),
       next_due_at: serializeDate(r.next_due_at),
     },
@@ -146,7 +147,8 @@ export async function getBusinessAdmin(
         billing: {
           status: (r.billing_status ?? "pendiente") as BillingStatus,
           monthly_amount_cents:
-            r.monthly_amount_cents ?? DEFAULT_MONTHLY_AMOUNT_CENTS,
+            r.monthly_amount_cents ??
+            monthlyAmountCentsForModuleCount((r.active_modules ?? []).length),
           last_payment_at: serializeDate(r.last_payment_at),
           next_due_at: serializeDate(r.next_due_at),
           notes: r.billing_notes ?? null,

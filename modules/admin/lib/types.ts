@@ -28,4 +28,3 @@ export const ADMIN_SESSION_COOKIE = "admin_session_token"
 export const ADMIN_SESSION_MAX_AGE = 30 * 24 * 60 * 60
 export const DEV_OTP_CODE = "000000"
 export const DEV_OTP_MASK = "dev-admin-mask"
-export const DEFAULT_MONTHLY_AMOUNT_CENTS = 1_990_000

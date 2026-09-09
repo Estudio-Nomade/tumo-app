@@ -3,7 +3,7 @@ import type {
   JsonResult,
   SqlTagged,
 } from "@/modules/admin/lib/types"
-import { DEFAULT_MONTHLY_AMOUNT_CENTS } from "@/modules/admin/lib/types"
+import { monthlyAmountCentsForModuleCount } from "@/shell/billing/pricing"
 
 export type AdminBillingDeps = {
   sql: SqlTagged
@@ -16,6 +16,17 @@ function addOneMonth(d: Date): Date {
   const next = new Date(d.getTime())
   next.setUTCMonth(next.getUTCMonth() + 1)
   return next
+}
+
+async function loadActiveModules(
+  sql: SqlTagged,
+  businessId: string
+): Promise<string[] | null> {
+  const rows = (await sql`
+    SELECT id, active_modules FROM businesses WHERE id = ${businessId} LIMIT 1
+  `) as { id: string; active_modules: string[] | null }[]
+  if (!rows[0]) return null
+  return rows[0].active_modules ?? []
 }
 
 export async function markPaid(
@@ -32,10 +43,14 @@ export async function markPaid(
     return { status: 400, body: { error: "businessId es requerido." } }
   }
 
+  const modules = await loadActiveModules(deps.sql, businessId)
+  if (modules == null) {
+    return { status: 404, body: { error: "Negocio no encontrado." } }
+  }
+
+  const expected = monthlyAmountCentsForModuleCount(modules.length)
   const amount =
-    input.amountCents == null
-      ? DEFAULT_MONTHLY_AMOUNT_CENTS
-      : Number(input.amountCents)
+    input.amountCents == null ? expected : Number(input.amountCents)
   if (!Number.isFinite(amount) || amount < 0) {
     return { status: 400, body: { error: "amountCents inválido." } }
   }
@@ -44,13 +59,6 @@ export async function markPaid(
   const nextDue = addOneMonth(now)
   const note = input.note?.trim() || null
   const adminId = input.adminUserId ?? null
-
-  const exists = (await deps.sql`
-    SELECT id FROM businesses WHERE id = ${businessId} LIMIT 1
-  `) as { id: string }[]
-  if (!exists[0]) {
-    return { status: 404, body: { error: "Negocio no encontrado." } }
-  }
 
   await deps.sql`
     INSERT INTO business_billing (
@@ -63,13 +71,14 @@ export async function markPaid(
     )
     VALUES (
       ${businessId},
-      ${DEFAULT_MONTHLY_AMOUNT_CENTS},
+      ${expected},
       ${"al_dia"},
       ${now},
       ${nextDue},
       ${now}
     )
     ON CONFLICT (business_id) DO UPDATE SET
+      monthly_amount_cents = ${expected},
       status = ${"al_dia"},
       last_payment_at = ${now},
       next_due_at = ${nextDue},
@@ -133,14 +142,13 @@ export async function setBillingStatus(
     }
   }
 
-  const now = deps.now?.() ?? new Date()
-
-  const exists = (await deps.sql`
-    SELECT id FROM businesses WHERE id = ${businessId} LIMIT 1
-  `) as { id: string }[]
-  if (!exists[0]) {
+  const modules = await loadActiveModules(deps.sql, businessId)
+  if (modules == null) {
     return { status: 404, body: { error: "Negocio no encontrado." } }
   }
+
+  const expected = monthlyAmountCentsForModuleCount(modules.length)
+  const now = deps.now?.() ?? new Date()
 
   await deps.sql`
     INSERT INTO business_billing (
@@ -151,11 +159,12 @@ export async function setBillingStatus(
     )
     VALUES (
       ${businessId},
-      ${DEFAULT_MONTHLY_AMOUNT_CENTS},
+      ${expected},
       ${status},
       ${now}
     )
     ON CONFLICT (business_id) DO UPDATE SET
+      monthly_amount_cents = ${expected},
       status = ${status},
       updated_at = ${now}
   `
