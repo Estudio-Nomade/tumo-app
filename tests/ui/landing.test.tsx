@@ -21,23 +21,35 @@ describe("LandingPage", () => {
     expect(html).not.toContain("Dejanos tu teléfono y te llamamos")
   })
 
-  test("qué hacemos: fidelización y a medida; pedidos humilde", () => {
+  test("qué hacemos: fidelización, turnos disponible y a medida; pedidos humilde", () => {
     const html = renderToStaticMarkup(<LandingPage />)
     expect(html).toContain("Fidelización")
+    expect(html).toContain("Turnos")
+    expect(html).toContain("Reserva online")
+    expect(html).toContain("Disponible")
     expect(html).toContain("Lo desarrollamos")
     expect(html).toContain("Pedidos")
     expect(html).toContain("lo estamos armando")
+    expect(html).toContain("EN CAMINO")
     expect(html).not.toContain("En desarrollo")
+    const fidelizacion = html.indexOf("Fidelización")
+    const turnos = html.indexOf(">Turnos<")
+    const aMedida = html.indexOf("A medida de tu rubro")
+    expect(turnos).toBeGreaterThan(fidelizacion)
+    expect(aMedida).toBeGreaterThan(turnos)
   })
 
-  test("precio $30.000 ARS por módulo / mes, sin desde 19.900", () => {
+  test("precio $69.99 USD por módulo / mes, sin 30.000/ARS/desde 19.900", () => {
     const html = renderToStaticMarkup(<LandingPage />)
-    expect(html).toContain("30.000")
-    expect(html).toContain("ARS")
+    expect(html).toContain("69.99")
+    expect(html).toContain("USD")
     expect(html).toMatch(/por m[oó]dulo|cada m[oó]dulo/i)
+    expect(html).not.toContain("30.000")
     expect(html).not.toContain("19.900")
+    expect(html).not.toContain("ARS")
     expect(html).not.toMatch(/\bDesde\b/)
-    expect(html).toContain("30.000%2Fmes%20por%20m%C3%B3dulo")
+    // WA prefill: $69.99 USD/mes por módulo (encoded)
+    expect(html).toContain("69.99%20USD%2Fmes%20por%20m%C3%B3dulo")
   })
 
   test("casos y FAQ esenciales", () => {
