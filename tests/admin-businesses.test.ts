@@ -125,9 +125,9 @@ describe("getBusinessAdmin", () => {
 
   test("detalle con empleados y payments", async () => {
     let call = 0
-    const { sql } = makeSql(() => {
+    const { sql } = makeSql((q) => {
       call += 1
-      if (call === 1) {
+      if (q.includes("FROM businesses") && q.includes("billing_status")) {
         return [
           {
             id: "b1",
@@ -143,7 +143,7 @@ describe("getBusinessAdmin", () => {
           },
         ]
       }
-      if (call === 2) {
+      if (q.includes("FROM employees")) {
         return [
           {
             id: "e1",
@@ -154,23 +154,50 @@ describe("getBusinessAdmin", () => {
           },
         ]
       }
-      return [{ id: "p1", amount_cents: 100, paid_at: new Date(), note: null, marked_by_admin_id: null }]
+      if (q.includes("business_billing_payments")) {
+        return [
+          {
+            id: "p1",
+            amount_cents: 100,
+            paid_at: new Date(),
+            note: null,
+            marked_by_admin_id: null,
+          },
+        ]
+      }
+      if (q.includes("business_module_subscriptions")) {
+        return [
+          {
+            module_id: "loyalty",
+            status: "active",
+            activated_at: new Date("2026-09-01T12:00:00Z"),
+            billing_anchor_at: new Date("2026-09-01T12:00:00Z"),
+            deactivated_at: null,
+          },
+        ]
+      }
+      void call
+      return []
     })
     const result = await getBusinessAdmin({ sql }, { businessId: "b1" })
     expect(result.status).toBe(200)
     const business = result.body.business as {
       contact: { name: string }
       employees: unknown[]
+      module_subscriptions: unknown[]
+      billing: { business_anchor_at: string | null }
     }
     expect(business.contact.name).toBe("Nobel")
     expect(business.employees).toHaveLength(1)
+    expect(business.module_subscriptions).toHaveLength(1)
+    expect(business.billing.business_anchor_at).toBe(
+      "2026-09-01T12:00:00.000Z"
+    )
   })
 
   test("detalle ignora monthly legacy 1990000 y muestra N × 6999", async () => {
-    let call = 0
-    const { sql } = makeSql(() => {
-      call += 1
-      if (call === 1) {
+    const { sql } = makeSql((q) => {
+      if (q.includes("FROM businesses") && q.includes("billing_status")) {
         return [
           {
             id: "b1",
@@ -186,7 +213,6 @@ describe("getBusinessAdmin", () => {
           },
         ]
       }
-      if (call === 2) return []
       return []
     })
     const result = await getBusinessAdmin({ sql }, { businessId: "b1" })

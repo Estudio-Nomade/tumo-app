@@ -5,6 +5,7 @@ import { monthlyAmountCentsForModuleCount } from "@/shell/billing/pricing"
 export type AdminModulesDeps = {
   sql: SqlTagged
   getRegisteredIds?: () => string[]
+  now?: () => Date
 }
 
 function normalizeModules(
@@ -19,6 +20,10 @@ function normalizeModules(
   return { ok: true, modules: unique.sort() }
 }
 
+/**
+ * Legacy bulk PUT. Activa/desactiva con fechas = now.
+ * UI nueva debe usar activate/deactivate con fechas.
+ */
 export async function setActiveModules(
   deps: AdminModulesDeps,
   input: { businessId?: string; modules?: string[] }
@@ -60,7 +65,45 @@ export async function setActiveModules(
 
   const modules = rows[0].active_modules ?? normalized.modules
   const monthly = monthlyAmountCentsForModuleCount(modules.length)
-  const now = new Date()
+  const now = deps.now?.() ?? new Date()
+
+  // Sync subscriptions: activate listed, deactivate others known
+  for (const moduleId of modules) {
+    await deps.sql`
+      INSERT INTO business_module_subscriptions (
+        business_id,
+        module_id,
+        status,
+        activated_at,
+        billing_anchor_at,
+        deactivated_at,
+        updated_at
+      )
+      VALUES (
+        ${businessId},
+        ${moduleId},
+        ${"active"},
+        ${now},
+        ${now},
+        ${null},
+        ${now}
+      )
+      ON CONFLICT (business_id, module_id) DO UPDATE SET
+        status = ${"active"},
+        deactivated_at = ${null},
+        updated_at = ${now}
+    `
+  }
+
+  await deps.sql`
+    UPDATE business_module_subscriptions
+    SET status = ${"inactive"},
+        deactivated_at = ${now},
+        updated_at = ${now}
+    WHERE business_id = ${businessId}
+      AND status = ${"active"}
+      AND NOT (module_id = ANY(${modules}))
+  `
 
   await deps.sql`
     INSERT INTO business_billing (

@@ -17,6 +17,14 @@ import {
 } from "@/modules/admin/dashboard/billing-badge"
 import type { BillingStatus } from "@/modules/admin/lib/types"
 
+export type ModuleSubscriptionData = {
+  module_id: string
+  status: string
+  activated_at: string | null
+  billing_anchor_at: string | null
+  deactivated_at: string | null
+}
+
 export type BusinessDetailData = {
   id: string
   name: string
@@ -31,11 +39,13 @@ export type BusinessDetailData = {
     role: string
     is_active: boolean
   }[]
+  module_subscriptions?: ModuleSubscriptionData[]
   billing: {
     status: BillingStatus
     monthly_amount_cents: number
     last_payment_at: string | null
     next_due_at: string | null
+    business_anchor_at?: string | null
     notes: string | null
     payments: {
       id: string
@@ -54,13 +64,26 @@ function formatMoney(cents: number): string {
   }).format(cents / 100)
 }
 
-function formatDate(iso: string | null): string {
+function formatDate(iso: string | null | undefined): string {
   if (!iso) return "—"
   try {
     return new Date(iso).toLocaleString("es-AR")
   } catch {
     return iso
   }
+}
+
+function toDateInputValue(iso: string | null | undefined): string {
+  if (!iso) return ""
+  try {
+    return new Date(iso).toISOString().slice(0, 10)
+  } catch {
+    return ""
+  }
+}
+
+function todayDateInput(): string {
+  return new Date().toISOString().slice(0, 10)
 }
 
 export function BusinessDetailClient({
@@ -72,41 +95,115 @@ export function BusinessDetailClient({
 }) {
   const router = useRouter()
   const [modules, setModules] = useState(business.active_modules)
-  const [pendingToggle, setPendingToggle] = useState<string | null>(null)
+  const [subs] = useState(business.module_subscriptions ?? [])
+  const [activateId, setActivateId] = useState<string | null>(null)
+  const [deactivateId, setDeactivateId] = useState<string | null>(null)
+  const [editId, setEditId] = useState<string | null>(null)
+  const [activateDate, setActivateDate] = useState(todayDateInput())
+  const [sameAnchor, setSameAnchor] = useState(true)
+  const [anchorDate, setAnchorDate] = useState(todayDateInput())
+  const [editActivated, setEditActivated] = useState("")
+  const [editAnchor, setEditAnchor] = useState("")
   const [error, setError] = useState("")
   const [busy, setBusy] = useState(false)
 
-  const pendingOn = useMemo(() => {
-    if (!pendingToggle) return false
-    return !modules.includes(pendingToggle)
-  }, [pendingToggle, modules])
+  const subById = useMemo(() => {
+    const m = new Map<string, ModuleSubscriptionData>()
+    for (const s of subs) m.set(s.module_id, s)
+    return m
+  }, [subs])
 
-  async function confirmToggle() {
-    if (!pendingToggle) return
+  async function confirmActivate() {
+    if (!activateId) return
     setBusy(true)
     setError("")
-    const next = pendingOn
-      ? [...modules, pendingToggle]
-      : modules.filter((m) => m !== pendingToggle)
     try {
-      const res = await fetch(`/api/admin/businesses/${business.id}/modules`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ modules: next }),
-      })
+      const body: { activatedAt: string; billingAnchorAt?: string } = {
+        activatedAt: activateDate,
+      }
+      if (!sameAnchor) body.billingAnchorAt = anchorDate
+      const res = await fetch(
+        `/api/admin/businesses/${business.id}/modules/${activateId}/activate`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }
+      )
       const data = (await res.json()) as {
         active_modules?: string[]
         error?: string
       }
       if (!res.ok) {
-        setError(data.error ?? "No se pudo actualizar módulos.")
+        setError(data.error ?? "No se pudo activar.")
         return
       }
-      setModules(data.active_modules ?? next)
-      setPendingToggle(null)
+      setModules(data.active_modules ?? [...modules, activateId])
+      setActivateId(null)
       router.refresh()
     } catch {
-      setError("Error de red al actualizar módulos.")
+      setError("Error de red al activar.")
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function confirmDeactivate() {
+    if (!deactivateId) return
+    setBusy(true)
+    setError("")
+    try {
+      const res = await fetch(
+        `/api/admin/businesses/${business.id}/modules/${deactivateId}/deactivate`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: "{}",
+        }
+      )
+      const data = (await res.json()) as {
+        active_modules?: string[]
+        error?: string
+      }
+      if (!res.ok) {
+        setError(data.error ?? "No se pudo desactivar.")
+        return
+      }
+      setModules(data.active_modules ?? modules.filter((m) => m !== deactivateId))
+      setDeactivateId(null)
+      router.refresh()
+    } catch {
+      setError("Error de red al desactivar.")
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function confirmEdit() {
+    if (!editId) return
+    setBusy(true)
+    setError("")
+    try {
+      const res = await fetch(
+        `/api/admin/businesses/${business.id}/modules/${editId}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            activatedAt: editActivated || undefined,
+            billingAnchorAt: editAnchor || undefined,
+          }),
+        }
+      )
+      const data = (await res.json()) as { error?: string }
+      if (!res.ok) {
+        setError(data.error ?? "No se pudo editar fechas.")
+        return
+      }
+      setEditId(null)
+      router.refresh()
+    } catch {
+      setError("Error de red al editar.")
     } finally {
       setBusy(false)
     }
@@ -118,7 +215,11 @@ export function BusinessDetailClient({
     try {
       const res = await fetch(
         `/api/admin/businesses/${business.id}/billing/mark-paid`,
-        { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: "{}",
+        }
       )
       const data = (await res.json()) as { error?: string }
       if (!res.ok) {
@@ -168,7 +269,10 @@ export function BusinessDetailClient({
       </header>
 
       {error ? (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+        <p
+          className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+          role="alert"
+        >
           {error}
         </p>
       ) : null}
@@ -180,26 +284,68 @@ export function BusinessDetailClient({
         <ul className="mt-3 flex flex-col gap-2">
           {registeredModules.map((id) => {
             const on = modules.includes(id)
+            const sub = subById.get(id)
             return (
               <li
                 key={id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-slate-100 px-3 py-2"
+                className="flex flex-col gap-2 rounded-lg border border-slate-100 px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
               >
-                <div className="flex items-center gap-2">
-                  <ModuleBadge id={id} />
-                  <span className="text-sm text-slate-600">
-                    {on ? "activo" : "apagado"}
-                  </span>
+                <div className="flex min-w-0 flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <ModuleBadge id={id} />
+                    <span className="text-sm text-slate-600">
+                      {on ? "Activo" : "Inactivo"}
+                    </span>
+                  </div>
+                  {on && sub ? (
+                    <p className="text-xs text-slate-500">
+                      Activado: {formatDate(sub.activated_at)} · Ancla:{" "}
+                      {formatDate(sub.billing_anchor_at)}
+                    </p>
+                  ) : null}
                 </div>
-                <Button
-                  type="button"
-                  variant={on ? "outline" : "default"}
-                  className="h-9 min-w-28"
-                  disabled={busy}
-                  onClick={() => setPendingToggle(id)}
-                >
-                  {on ? "Desactivar" : "Activar"}
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  {on ? (
+                    <>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-9"
+                        disabled={busy}
+                        onClick={() => {
+                          setEditId(id)
+                          setEditActivated(toDateInputValue(sub?.activated_at))
+                          setEditAnchor(toDateInputValue(sub?.billing_anchor_at))
+                        }}
+                      >
+                        Editar fechas
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="h-9 min-w-28"
+                        disabled={busy}
+                        onClick={() => setDeactivateId(id)}
+                      >
+                        Desactivar
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      type="button"
+                      className="h-9 min-w-28"
+                      disabled={busy}
+                      onClick={() => {
+                        setActivateId(id)
+                        setActivateDate(todayDateInput())
+                        setAnchorDate(todayDateInput())
+                        setSameAnchor(true)
+                      }}
+                    >
+                      Activar…
+                    </Button>
+                  )}
+                </div>
               </li>
             )
           })}
@@ -224,6 +370,10 @@ export function BusinessDetailClient({
           <div>
             <dt className="text-xs text-slate-400">Próximo vencimiento</dt>
             <dd>{formatDate(business.billing.next_due_at)}</dd>
+          </div>
+          <div className="sm:col-span-2">
+            <dt className="text-xs text-slate-400">Ancla negocio</dt>
+            <dd>{formatDate(business.billing.business_anchor_at)}</dd>
           </div>
         </dl>
         <div className="mt-4 flex flex-wrap gap-2">
@@ -295,20 +445,83 @@ export function BusinessDetailClient({
       </section>
 
       <Dialog
-        open={pendingToggle != null}
+        open={activateId != null}
         onOpenChange={(open) => {
-          if (!open) setPendingToggle(null)
+          if (!open) setActivateId(null)
         }}
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {pendingOn ? "Activar" : "Desactivar"} módulo
-            </DialogTitle>
+            <DialogTitle>Activar módulo</DialogTitle>
             <DialogDescription>
-              ¿{pendingOn ? "Activar" : "Desactivar"}{" "}
-              <strong>{pendingToggle}</strong> para {business.slug}? Apagar no
-              borra datos del módulo.
+              Elegí desde qué fecha cuenta el mes de facturación de{" "}
+              <strong>{activateId}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-2">
+            <label className="text-sm text-slate-700">
+              Fecha de activación
+              <input
+                type="date"
+                className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2"
+                value={activateDate}
+                onChange={(e) => {
+                  setActivateDate(e.target.value)
+                  if (sameAnchor) setAnchorDate(e.target.value)
+                }}
+              />
+            </label>
+            <label className="flex items-center gap-2 text-sm text-slate-700">
+              <input
+                type="checkbox"
+                checked={sameAnchor}
+                onChange={(e) => {
+                  setSameAnchor(e.target.checked)
+                  if (e.target.checked) setAnchorDate(activateDate)
+                }}
+              />
+              Facturar desde la misma fecha
+            </label>
+            {!sameAnchor ? (
+              <label className="text-sm text-slate-700">
+                Ancla de facturación
+                <input
+                  type="date"
+                  className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2"
+                  value={anchorDate}
+                  onChange={(e) => setAnchorDate(e.target.value)}
+                />
+              </label>
+            ) : null}
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busy}
+              onClick={() => setActivateId(null)}
+            >
+              Cancelar
+            </Button>
+            <Button type="button" disabled={busy} onClick={confirmActivate}>
+              Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={deactivateId != null}
+        onOpenChange={(open) => {
+          if (!open) setDeactivateId(null)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Desactivar módulo</DialogTitle>
+            <DialogDescription>
+              ¿Desactivar <strong>{deactivateId}</strong>? No borra datos del
+              módulo.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -316,12 +529,62 @@ export function BusinessDetailClient({
               type="button"
               variant="outline"
               disabled={busy}
-              onClick={() => setPendingToggle(null)}
+              onClick={() => setDeactivateId(null)}
             >
               Cancelar
             </Button>
-            <Button type="button" disabled={busy} onClick={confirmToggle}>
+            <Button type="button" disabled={busy} onClick={confirmDeactivate}>
               Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={editId != null}
+        onOpenChange={(open) => {
+          if (!open) setEditId(null)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar fechas</DialogTitle>
+            <DialogDescription>
+              Módulo <strong>{editId}</strong>. Con pagos previos, el próximo
+              vencimiento no se mueve.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 py-2">
+            <label className="text-sm text-slate-700">
+              Activado
+              <input
+                type="date"
+                className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2"
+                value={editActivated}
+                onChange={(e) => setEditActivated(e.target.value)}
+              />
+            </label>
+            <label className="text-sm text-slate-700">
+              Ancla facturación
+              <input
+                type="date"
+                className="mt-1 w-full rounded-md border border-slate-200 px-3 py-2"
+                value={editAnchor}
+                onChange={(e) => setEditAnchor(e.target.value)}
+              />
+            </label>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={busy}
+              onClick={() => setEditId(null)}
+            >
+              Cancelar
+            </Button>
+            <Button type="button" disabled={busy} onClick={confirmEdit}>
+              Guardar
             </Button>
           </DialogFooter>
         </DialogContent>

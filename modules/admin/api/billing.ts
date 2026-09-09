@@ -3,6 +3,7 @@ import type {
   JsonResult,
   SqlTagged,
 } from "@/modules/admin/lib/types"
+import { addOneMonthUTC } from "@/shell/billing/cycle"
 import { monthlyAmountCentsForModuleCount } from "@/shell/billing/pricing"
 
 export type AdminBillingDeps = {
@@ -11,12 +12,6 @@ export type AdminBillingDeps = {
 }
 
 const VALID_STATUS = new Set<BillingStatus>(["al_dia", "pendiente", "vencido"])
-
-function addOneMonth(d: Date): Date {
-  const next = new Date(d.getTime())
-  next.setUTCMonth(next.getUTCMonth() + 1)
-  return next
-}
 
 async function loadActiveModules(
   sql: SqlTagged,
@@ -56,7 +51,7 @@ export async function markPaid(
   }
 
   const now = deps.now?.() ?? new Date()
-  const nextDue = addOneMonth(now)
+  const nextDue = addOneMonthUTC(now)
   const note = input.note?.trim() || null
   const adminId = input.adminUserId ?? null
 

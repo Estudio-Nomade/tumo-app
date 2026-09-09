@@ -221,6 +221,32 @@ async function seed() {
   const carriModules = (carriRow?.active_modules as string[] | null) ?? []
   const carriMonthly = monthlyAmountCentsForModuleCount(carriModules.length)
 
+  const seedNow = new Date()
+  for (const moduleId of carriModules) {
+    await sql`
+      INSERT INTO business_module_subscriptions (
+        business_id,
+        module_id,
+        status,
+        activated_at,
+        billing_anchor_at,
+        updated_at
+      )
+      VALUES (
+        ${business.id},
+        ${moduleId},
+        ${"active"},
+        ${seedNow},
+        ${seedNow},
+        ${seedNow}
+      )
+      ON CONFLICT (business_id, module_id) DO UPDATE SET
+        status = ${"active"},
+        deactivated_at = ${null},
+        updated_at = ${seedNow}
+    `
+  }
+
   await sql`
     INSERT INTO business_billing (
       business_id,
