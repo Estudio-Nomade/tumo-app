@@ -1,0 +1,812 @@
+{
+  "version": "2.17",
+  "variables": {
+    "primary": {
+      "type": "color",
+      "value": "#577e99"
+    },
+    "primary-deep": {
+      "type": "color",
+      "value": "#3d5f78"
+    },
+    "secondary": {
+      "type": "color",
+      "value": "#84a7c2"
+    },
+    "surface": {
+      "type": "color",
+      "value": "#FFFFFF"
+    },
+    "surface-soft": {
+      "type": "color",
+      "value": "#e7f4f8"
+    },
+    "surface-card": {
+      "type": "color",
+      "value": "#F5F5F4"
+    },
+    "ink": {
+      "type": "color",
+      "value": "#1C1917"
+    },
+    "ink-muted": {
+      "type": "color",
+      "value": "#475569"
+    },
+    "ink-soft": {
+      "type": "color",
+      "value": "#94a3b8"
+    },
+    "border": {
+      "type": "color",
+      "value": "#c9dbe8"
+    },
+    "font": {
+      "type": "string",
+      "value": "Inter"
+    }
+  },
+  "children": [
+    {
+      "type": "frame",
+      "id": "idx00",
+      "x": 0,
+      "y": 0,
+      "width": 480,
+      "height": 640,
+      "fill": "$surface-soft",
+      "layout": "vertical",
+      "gap": 12,
+      "padding": 28,
+      "cornerRadius": 16,
+      "stroke": "$border",
+      "strokeWidth": 1,
+      "children": [
+        {
+          "type": "text",
+          "id": "i1",
+          "fill": "$primary-deep",
+          "content": "Defe · Tip QR loyalty",
+          "fontFamily": "$font",
+          "fontSize": 22,
+          "fontWeight": "700",
+          "textAlign": "left"
+        },
+        {
+          "type": "text",
+          "id": "i2",
+          "fill": "$ink-muted",
+          "content": "El Defe Cantina · slug defe",
+          "fontFamily": "$font",
+          "fontSize": 14,
+          "fontWeight": "normal",
+          "textAlign": "left"
+        },
+        {
+          "type": "text",
+          "id": "i3",
+          "fill": "$ink",
+          "content": "Tokens",
+          "fontFamily": "$font",
+          "fontSize": 13,
+          "fontWeight": "700",
+          "textAlign": "left"
+        },
+        {
+          "type": "text",
+          "id": "i4",
+          "fill": "$ink-muted",
+          "content": "primary #577e99 · secondary #84a7c2 · surface #e7f4f8 · ink #1C1917",
+          "fontFamily": "$font",
+          "fontSize": 12,
+          "fontWeight": "normal",
+          "textAlign": "left",
+          "width": "fill_container",
+          "textGrowth": "fixed-width",
+          "lineHeight": 1.4
+        },
+        {
+          "type": "text",
+          "id": "i5",
+          "fill": "$ink",
+          "content": "URL QR (dev)",
+          "fontFamily": "$font",
+          "fontSize": 13,
+          "fontWeight": "700",
+          "textAlign": "left"
+        },
+        {
+          "type": "text",
+          "id": "i6",
+          "fill": "$ink-muted",
+          "content": "http://localhost:3000/defe/loyalty\n[DECISIÓN] prod: tumo.com.ar/defe/loyalty (o dominio final)",
+          "fontFamily": "$font",
+          "fontSize": 12,
+          "fontWeight": "normal",
+          "textAlign": "left",
+          "width": "fill_container",
+          "textGrowth": "fixed-width",
+          "lineHeight": 1.4
+        },
+        {
+          "type": "text",
+          "id": "i7",
+          "fill": "$ink",
+          "content": "Frames",
+          "fontFamily": "$font",
+          "fontSize": 13,
+          "fontWeight": "700",
+          "textAlign": "left"
+        },
+        {
+          "type": "text",
+          "id": "i8",
+          "fill": "$ink",
+          "content": "01 Tip imprimible A5 (entregar)\n02 Card mostrador 1:1\n03 Branded QR card\nNote Brief · entregar a Defe",
+          "fontFamily": "$font",
+          "fontSize": 13,
+          "fontWeight": "normal",
+          "textAlign": "left",
+          "width": "fill_container",
+          "textGrowth": "fixed-width",
+          "lineHeight": 1.45
+        },
+        {
+          "type": "text",
+          "id": "i9",
+          "fill": "$ink",
+          "content": "QR asset",
+          "fontFamily": "$font",
+          "fontSize": 13,
+          "fontWeight": "700",
+          "textAlign": "left"
+        },
+        {
+          "type": "text",
+          "id": "i10",
+          "fill": "$ink-muted",
+          "content": "design-artifacts/defe-loyalty-qr/qr-raw.png (1200² scannable)\nFase código app: NO hecha.",
+          "fontFamily": "$font",
+          "fontSize": 12,
+          "fontWeight": "normal",
+          "textAlign": "left",
+          "width": "fill_container",
+          "textGrowth": "fixed-width",
+          "lineHeight": 1.4
+        }
+      ],
+      "name": "00 · Índice · Defe QR tip"
+    },
+    {
+      "type": "frame",
+      "id": "tip01",
+      "x": 560,
+      "y": 0,
+      "width": 595,
+      "height": 842,
+      "fill": "$surface-soft",
+      "layout": "vertical",
+      "clip": true,
+      "cornerRadius": 20,
+      "stroke": "$primary",
+      "strokeWidth": 3,
+      "children": [
+        {
+          "type": "frame",
+          "id": "t01h",
+          "width": "fill_container",
+          "fill": "$primary",
+          "layout": "vertical",
+          "gap": 8,
+          "padding": [
+            36,
+            32,
+            28,
+            32
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "t01n",
+              "fill": "$surface",
+              "content": "El Defe Cantina",
+              "fontFamily": "$font",
+              "fontSize": 36,
+              "fontWeight": "800",
+              "textAlign": "center",
+              "width": "fill_container",
+              "textGrowth": "fixed-width"
+            },
+            {
+              "type": "text",
+              "id": "t01t",
+              "fill": "$surface",
+              "content": "Club Defensores de Belgrano · Desde 1950",
+              "fontFamily": "$font",
+              "fontSize": 14,
+              "fontWeight": "normal",
+              "textAlign": "center",
+              "width": "fill_container",
+              "textGrowth": "fixed-width"
+            }
+          ],
+          "name": "hero"
+        },
+        {
+          "type": "frame",
+          "id": "t01b",
+          "width": "fill_container",
+          "height": "fill_container",
+          "layout": "vertical",
+          "gap": 16,
+          "padding": [
+            28,
+            36,
+            32,
+            36
+          ],
+          "alignItems": "center",
+          "fill": "$surface-soft",
+          "children": [
+            {
+              "type": "text",
+              "id": "t01hl",
+              "fill": "$primary-deep",
+              "content": "¡Registrate y sumá puntos!",
+              "fontFamily": "$font",
+              "fontSize": 28,
+              "fontWeight": "800",
+              "textAlign": "center",
+              "width": "fill_container",
+              "textGrowth": "fixed-width"
+            },
+            {
+              "type": "text",
+              "id": "t01sub",
+              "fill": "$ink-muted",
+              "content": "Escaneá el QR con la cámara de tu celular",
+              "fontFamily": "$font",
+              "fontSize": 16,
+              "fontWeight": "normal",
+              "textAlign": "center",
+              "width": "fill_container",
+              "textGrowth": "fixed-width",
+              "lineHeight": 1.4
+            },
+            {
+              "type": "frame",
+              "id": "t01qr",
+              "width": 316,
+              "height": 316,
+              "fill": "$surface",
+              "cornerRadius": 18,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "padding": 18,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "t01qri",
+                  "width": 280,
+                  "height": 280,
+                  "cornerRadius": 8,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "defe-loyalty-qr/qr-raw.png",
+                    "mode": "fill"
+                  },
+                  "children": [],
+                  "name": "qr-image"
+                }
+              ],
+              "name": "qr-slot"
+            },
+            {
+              "type": "frame",
+              "id": "t01badge",
+              "layout": "horizontal",
+              "gap": 8,
+              "padding": [
+                12,
+                18
+              ],
+              "cornerRadius": 999,
+              "fill": "$primary",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "t01bi",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "gift",
+                  "library": "lucide",
+                  "fill": "$surface"
+                },
+                {
+                  "type": "text",
+                  "id": "t01bt",
+                  "fill": "$surface",
+                  "content": "10 compras → hamburguesa gratis",
+                  "fontFamily": "$font",
+                  "fontSize": 15,
+                  "fontWeight": "700",
+                  "textAlign": "left"
+                }
+              ],
+              "name": "badge"
+            },
+            {
+              "type": "frame",
+              "id": "t01steps",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 12,
+              "padding": [
+                8,
+                12
+              ],
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "t01s1",
+                  "layout": "horizontal",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "width": "fill_container",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "t01sb1",
+                      "width": 36,
+                      "height": 36,
+                      "cornerRadius": 999,
+                      "fill": "$primary",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "t01sn1",
+                          "fill": "$surface",
+                          "content": "1",
+                          "fontFamily": "$font",
+                          "fontSize": 16,
+                          "fontWeight": "700",
+                          "textAlign": "center"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "t01sl1",
+                      "fill": "$ink",
+                      "content": "Escaneá",
+                      "fontFamily": "$font",
+                      "fontSize": 16,
+                      "fontWeight": "600",
+                      "textAlign": "left",
+                      "width": "fill_container",
+                      "textGrowth": "fixed-width"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "t01s2",
+                  "layout": "horizontal",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "width": "fill_container",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "t01sb2",
+                      "width": 36,
+                      "height": 36,
+                      "cornerRadius": 999,
+                      "fill": "$primary",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "t01sn2",
+                          "fill": "$surface",
+                          "content": "2",
+                          "fontFamily": "$font",
+                          "fontSize": 16,
+                          "fontWeight": "700",
+                          "textAlign": "center"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "t01sl2",
+                      "fill": "$ink",
+                      "content": "Registrate con WhatsApp",
+                      "fontFamily": "$font",
+                      "fontSize": 16,
+                      "fontWeight": "600",
+                      "textAlign": "left",
+                      "width": "fill_container",
+                      "textGrowth": "fixed-width"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "t01s3",
+                  "layout": "horizontal",
+                  "gap": 10,
+                  "alignItems": "center",
+                  "width": "fill_container",
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "t01sb3",
+                      "width": 36,
+                      "height": 36,
+                      "cornerRadius": 999,
+                      "fill": "$primary",
+                      "justifyContent": "center",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "t01sn3",
+                          "fill": "$surface",
+                          "content": "3",
+                          "fontFamily": "$font",
+                          "fontSize": 16,
+                          "fontWeight": "700",
+                          "textAlign": "center"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "id": "t01sl3",
+                      "fill": "$ink",
+                      "content": "Sumá en cada visita",
+                      "fontFamily": "$font",
+                      "fontSize": 16,
+                      "fontWeight": "600",
+                      "textAlign": "left",
+                      "width": "fill_container",
+                      "textGrowth": "fixed-width"
+                    }
+                  ]
+                }
+              ],
+              "name": "steps"
+            },
+            {
+              "type": "text",
+              "id": "t01url",
+              "fill": "$ink-soft",
+              "content": "localhost:3000/defe/loyalty",
+              "fontFamily": "$font",
+              "fontSize": 12,
+              "fontWeight": "normal",
+              "textAlign": "center",
+              "width": "fill_container",
+              "textGrowth": "fixed-width"
+            },
+            {
+              "type": "text",
+              "id": "t01pw",
+              "fill": "$ink-soft",
+              "content": "Powered by Tumo",
+              "fontFamily": "$font",
+              "fontSize": 11,
+              "fontWeight": "normal",
+              "textAlign": "center",
+              "width": "fill_container",
+              "textGrowth": "fixed-width"
+            }
+          ],
+          "name": "body"
+        }
+      ],
+      "name": "01 · Tip imprimible A5 · El Defe"
+    },
+    {
+      "type": "frame",
+      "id": "tip02",
+      "x": 1200,
+      "y": 0,
+      "width": 480,
+      "height": 480,
+      "fill": "$surface",
+      "layout": "vertical",
+      "clip": true,
+      "cornerRadius": 24,
+      "stroke": "$border",
+      "strokeWidth": 2,
+      "gap": 0,
+      "children": [
+        {
+          "type": "frame",
+          "id": "t02h",
+          "width": "fill_container",
+          "fill": "$primary",
+          "padding": [
+            20,
+            20,
+            16,
+            20
+          ],
+          "layout": "vertical",
+          "gap": 4,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "t02n",
+              "fill": "$surface",
+              "content": "El Defe Cantina",
+              "fontFamily": "$font",
+              "fontSize": 22,
+              "fontWeight": "800",
+              "textAlign": "center",
+              "width": "fill_container",
+              "textGrowth": "fixed-width"
+            },
+            {
+              "type": "text",
+              "id": "t02hl",
+              "fill": "$surface",
+              "content": "¡Registrate y sumá puntos!",
+              "fontFamily": "$font",
+              "fontSize": 16,
+              "fontWeight": "600",
+              "textAlign": "center",
+              "width": "fill_container",
+              "textGrowth": "fixed-width"
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "t02b",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "$surface-soft",
+          "layout": "vertical",
+          "gap": 12,
+          "padding": 20,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "t02qr",
+              "width": 276,
+              "height": 276,
+              "fill": "$surface",
+              "cornerRadius": 18,
+              "stroke": "$border",
+              "strokeWidth": 1,
+              "padding": 18,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "layout": "vertical",
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "t02qri",
+                  "width": 240,
+                  "height": 240,
+                  "cornerRadius": 8,
+                  "fill": {
+                    "type": "image",
+                    "enabled": true,
+                    "url": "defe-loyalty-qr/qr-raw.png",
+                    "mode": "fill"
+                  },
+                  "children": [],
+                  "name": "qr-image"
+                }
+              ],
+              "name": "qr-slot"
+            },
+            {
+              "type": "frame",
+              "id": "t02badge",
+              "layout": "horizontal",
+              "padding": [
+                10,
+                14
+              ],
+              "cornerRadius": 999,
+              "fill": "$primary-deep",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "t02bt",
+                  "fill": "$surface",
+                  "content": "10 compras → hamburguesa gratis",
+                  "fontFamily": "$font",
+                  "fontSize": 13,
+                  "fontWeight": "700",
+                  "textAlign": "left"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "t02sub",
+              "fill": "$ink-muted",
+              "content": "Escaneá con la cámara del celular",
+              "fontFamily": "$font",
+              "fontSize": 13,
+              "fontWeight": "normal",
+              "textAlign": "center"
+            }
+          ]
+        }
+      ],
+      "name": "02 · Card mostrador 1:1 · El Defe"
+    },
+    {
+      "type": "frame",
+      "id": "tip03",
+      "x": 1740,
+      "y": 0,
+      "width": 280,
+      "height": 360,
+      "fill": "$surface",
+      "cornerRadius": 20,
+      "stroke": "$border",
+      "strokeWidth": 1,
+      "strokeAlignment": "inner",
+      "layout": "vertical",
+      "alignItems": "center",
+      "clip": true,
+      "children": [
+        {
+          "type": "frame",
+          "id": "t03top",
+          "width": "fill_container",
+          "fill": "$primary",
+          "cornerRadius": [
+            20,
+            20,
+            0,
+            0
+          ],
+          "gap": 8,
+          "padding": 14,
+          "layout": "vertical",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "t03logo",
+              "width": 32,
+              "height": 32,
+              "fill": "$surface",
+              "cornerRadius": 8,
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "icon",
+                  "id": "t03li",
+                  "width": 18,
+                  "height": 18,
+                  "icon": "utensils",
+                  "library": "lucide",
+                  "fill": "$primary"
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "id": "t03n",
+              "fill": "$surface",
+              "content": "El Defe Cantina",
+              "fontFamily": "$font",
+              "fontSize": 14,
+              "fontWeight": "700",
+              "textAlign": "center",
+              "width": "fill_container",
+              "textGrowth": "fixed-width"
+            }
+          ],
+          "name": "qrTop"
+        },
+        {
+          "type": "frame",
+          "id": "t03mid",
+          "width": "fill_container",
+          "height": "fill_container",
+          "fill": "$surface",
+          "layout": "vertical",
+          "padding": 18,
+          "justifyContent": "center",
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "t03qri",
+              "width": 160,
+              "height": 160,
+              "cornerRadius": 8,
+              "fill": {
+                "type": "image",
+                "enabled": true,
+                "url": "defe-loyalty-qr/qr-raw.png",
+                "mode": "fill"
+              },
+              "children": []
+            }
+          ],
+          "name": "qrMid"
+        },
+        {
+          "type": "frame",
+          "id": "t03bot",
+          "width": "fill_container",
+          "fill": "$surface-soft",
+          "cornerRadius": [
+            0,
+            0,
+            20,
+            20
+          ],
+          "layout": "vertical",
+          "gap": 2,
+          "padding": [
+            10,
+            14,
+            14,
+            14
+          ],
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "text",
+              "id": "t03f1",
+              "fill": "$primary-deep",
+              "content": "¡Registrate y sumá puntos!",
+              "fontFamily": "$font",
+              "fontSize": 12,
+              "fontWeight": "700",
+              "textAlign": "center"
+            },
+            {
+              "type": "text",
+              "id": "t03f2",
+              "fill": "$ink-muted",
+              "content": "10 compras → hamburguesa gratis",
+              "fontFamily": "$font",
+              "fontSize": 11,
+              "fontWeight": "600",
+              "textAlign": "center"
+            }
+          ],
+          "name": "qrBot"
+        }
+      ],
+      "name": "03 · Branded QR card · El Defe"
+    },
+    {
+      "type": "note",
+      "id": "noteB",
+      "x": 0,
+      "y": 720,
+      "name": "Brief · entregar a Defe",
+      "width": 480,
+      "height": 420,
+      "content": "BRIEF · Tip QR El Defe Cantina\n\nCopy final\n• Título: ¡Registrate y sumá puntos!\n• Sub: Escaneá el QR con la cámara de tu celular\n• Badge: 10 compras → hamburguesa gratis\n• Steps: 1 Escaneá · 2 Registrate con WhatsApp · 3 Sumá en cada visita\n• Tagline: Club Defensores de Belgrano · Desde 1950\n\nQR scannable\ndesign-artifacts/defe-loyalty-qr/qr-raw.png\nURL dev: http://localhost:3000/defe/loyalty\n[DECISIÓN] prod: actualizar URL del QR al dominio final\n\nExport print\n1. Abrir defe-loyalty-qr-tip.pen en Pencil\n2. Seleccionar frame «01 · Tip imprimible A5 · El Defe»\n3. Export PNG/PDF alta res (ideal 300dpi)\n4. Imprimir A5 o escalar a A4 centrado\n\nFase código app: NO hecha (solo design).\nNo reusar naranja Carri #F97316.\n"
+    }
+  ]
+}
