@@ -218,3 +218,15 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-landing-modulo-pedidos-disponible.md`
   summary: Grid 2×2 pone Turnos al lado de “A medida” highlighted
   evidence: Con 4 TOOLS el layout md:grid-cols-2 pierde el énfasis solo de custom en segunda fila; no rediseñar en este PR
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-admin-billing-usd-per-module.md`
+  summary: Payments históricos en cents ARS se muestran como USD sin distinción de era
+  evidence: Handoff v1 no reescribe historia; display USD solo para montos nuevos
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-admin-billing-usd-per-module.md`
+  summary: markPaid override amountCents no deja nota de auditoría de override manual
+  evidence: Producto acepta override staff; warning/audit queda fuera de KISS
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-admin-billing-usd-per-module.md`
+  summary: PRICE_PER_MODULE_CENTS y landing PRICE_PER_MODULE_USD no comparten fuente única
+  evidence: Comment-only alignment; shared constant cross-layer deferred
