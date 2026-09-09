@@ -1,7 +1,7 @@
 import {
   DEFAULT_WA_MESSAGE,
   MEDIA,
-  PRICE_PER_MODULE_ARS,
+  PRICE_PER_MODULE_USD,
   whatsappHref,
 } from "../config"
 import { LandingButton } from "../ui/button"
@@ -72,7 +72,7 @@ export function Hero() {
               href="#precios"
               className="text-center text-base font-medium text-[#A3A3A3] underline-offset-4 transition-colors hover:text-[#FFFFFF] hover:underline sm:text-left"
             >
-              {`Ver $${PRICE_PER_MODULE_ARS} ARS/mes por módulo`}
+              {`Ver $${PRICE_PER_MODULE_USD} USD/mes por módulo`}
             </a>
           </div>
         </div>

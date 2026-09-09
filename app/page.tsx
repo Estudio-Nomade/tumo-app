@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 import { LandingPage } from "@/modules/landing/landing-page"
-import { PRICE_PER_MODULE_ARS } from "@/modules/landing/config"
+import { PRICE_PER_MODULE_USD } from "@/modules/landing/config"
 
-const metaDescription = `Armamos el sistema digital de tu comercio y te acompañamos por WhatsApp. $${PRICE_PER_MODULE_ARS} ARS/mes por módulo.`
+const metaDescription = `Armamos el sistema digital de tu comercio y te acompañamos por WhatsApp. $${PRICE_PER_MODULE_USD} USD/mes por módulo.`
 
 export const metadata: Metadata = {
   title: "Tumo — Tecnología que no te frena el negocio",
