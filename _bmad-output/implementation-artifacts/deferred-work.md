@@ -210,3 +210,11 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-admin-auth-db-allowlist.md`
   summary: findAdminUserByPhone carga todos los admin_users en memoria para phonesMatch
   evidence: OK con pocos staff; a escala conviene normalizar phone en write + WHERE exacto
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-landing-modulo-pedidos-disponible.md`
+  summary: Copy landing Pedidos solo vende retiro; producto también tiene delivery
+  evidence: Handoff pidió copy seguro retiro/transferencia/local; alinear con delivery queda marketing aparte
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-landing-modulo-pedidos-disponible.md`
+  summary: Grid 2×2 pone Turnos al lado de “A medida” highlighted
+  evidence: Con 4 TOOLS el layout md:grid-cols-2 pierde el énfasis solo de custom en segunda fila; no rediseñar en este PR

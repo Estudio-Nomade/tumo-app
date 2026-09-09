@@ -54,13 +54,16 @@ describe("landing pricing copy", () => {
 })
 
 describe("landing tools", () => {
-  test("TOOLS incluye Turnos Disponible entre Fidelización y A medida", () => {
+  test("TOOLS: Fidelización → Pedidos → Turnos → A medida (Pedidos Disponible)", () => {
     const ids = TOOLS.map((t) => t.id)
-    expect(ids).toContain("loyalty")
-    expect(ids).toContain("turnos")
-    expect(ids).toContain("custom")
-    expect(ids.indexOf("turnos")).toBeGreaterThan(ids.indexOf("loyalty"))
-    expect(ids.indexOf("turnos")).toBeLessThan(ids.indexOf("custom"))
+    expect(ids).toEqual(["loyalty", "orders", "turnos", "custom"])
+
+    const orders = TOOLS.find((t) => t.id === "orders")
+    expect(orders).toBeDefined()
+    expect(orders!.title).toContain("Pedidos")
+    expect(orders!.statusLabel).toBe("Disponible")
+    expect(orders!.highlighted).toBeFalsy()
+    expect(orders!.description.toLowerCase()).toMatch(/menú|retirar|pedido/)
 
     const turnos = TOOLS.find((t) => t.id === "turnos")
     expect(turnos).toBeDefined()
@@ -70,5 +73,6 @@ describe("landing tools", () => {
 
     const custom = TOOLS.find((t) => t.id === "custom")
     expect(custom!.highlighted).toBe(true)
+    expect(custom!.statusLabel).toBe("Lo desarrollamos")
   })
 })
