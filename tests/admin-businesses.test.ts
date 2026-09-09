@@ -24,7 +24,7 @@ describe("listBusinesses", () => {
         active_modules: ["loyalty", "orders"],
         created_at: new Date("2026-01-01T00:00:00Z"),
         billing_status: "al_dia",
-        monthly_amount_cents: 1_990_000,
+        monthly_amount_cents: 13998,
         last_payment_at: new Date("2026-08-01T00:00:00Z"),
         next_due_at: new Date("2026-09-01T00:00:00Z"),
       },
@@ -35,16 +35,40 @@ describe("listBusinesses", () => {
     expect(businesses).toHaveLength(1)
     expect(businesses[0]).toMatchObject({
       slug: "carri",
-      billing: { status: "al_dia" },
+      billing: { status: "al_dia", monthly_amount_cents: 13998 },
     })
   })
 
-  test("sin billing row → pendiente default", async () => {
+  test("sin billing row → pendiente + fee por #módulos (no 1990000)", async () => {
     const { sql } = makeSql(() => [
       {
         id: "b2",
         name: "X",
         slug: "x",
+        active_modules: ["loyalty", "orders"],
+        created_at: "2026-01-01",
+        billing_status: null,
+        monthly_amount_cents: null,
+        last_payment_at: null,
+        next_due_at: null,
+      },
+    ])
+    const result = await listBusinesses({ sql })
+    const b = (
+      result.body.businesses as {
+        billing: { status: string; monthly_amount_cents: number }
+      }[]
+    )[0]
+    expect(b.billing.status).toBe("pendiente")
+    expect(b.billing.monthly_amount_cents).toBe(13998)
+  })
+
+  test("sin billing y 0 módulos → monthly 0", async () => {
+    const { sql } = makeSql(() => [
+      {
+        id: "b3",
+        name: "Y",
+        slug: "y",
         active_modules: [],
         created_at: "2026-01-01",
         billing_status: null,
@@ -54,8 +78,10 @@ describe("listBusinesses", () => {
       },
     ])
     const result = await listBusinesses({ sql })
-    const b = (result.body.businesses as { billing: { status: string } }[])[0]
-    expect(b.billing.status).toBe("pendiente")
+    const b = (
+      result.body.businesses as { billing: { monthly_amount_cents: number } }[]
+    )[0]
+    expect(b.billing.monthly_amount_cents).toBe(0)
   })
 })
 
@@ -85,7 +111,7 @@ describe("getBusinessAdmin", () => {
             active_modules: ["loyalty"],
             created_at: new Date("2026-01-01"),
             billing_status: "al_dia",
-            monthly_amount_cents: 1_990_000,
+            monthly_amount_cents: 6999,
             last_payment_at: null,
             next_due_at: null,
             billing_notes: null,

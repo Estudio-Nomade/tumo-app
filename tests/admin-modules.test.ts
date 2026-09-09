@@ -82,4 +82,66 @@ describe("setActiveModules", () => {
     expect(result.status).toBe(200)
     expect(result.body.active_modules).toEqual([])
   })
+
+  test("recalcula monthly_amount_cents = N × 6999 tras toggle", async () => {
+    const queries: string[] = []
+    const values: unknown[][] = []
+    const sql = mock((strings: TemplateStringsArray, ...vals: unknown[]) => {
+      const q = strings.join(" ")
+      queries.push(q)
+      values.push(vals)
+      if (q.includes("UPDATE businesses")) {
+        return Promise.resolve([
+          {
+            id: "b1",
+            slug: "carri",
+            active_modules: ["loyalty", "orders", "turnos"],
+          },
+        ])
+      }
+      return Promise.resolve([])
+    })
+    const deps: AdminModulesDeps = {
+      sql: sql as unknown as AdminModulesDeps["sql"],
+      getRegisteredIds: () => ["loyalty", "orders", "turnos"],
+    }
+    const result = await setActiveModules(deps, {
+      businessId: "b1",
+      modules: ["loyalty", "orders", "turnos"],
+    })
+    expect(result.status).toBe(200)
+    expect(
+      queries.some(
+        (q) =>
+          q.includes("INSERT INTO business_billing") &&
+          q.includes("monthly_amount_cents")
+      )
+    ).toBe(true)
+    const flat = values.flat()
+    expect(flat).toContain(20997)
+    expect(flat).not.toContain(1_990_000)
+  })
+
+  test("toggle a 0 módulos pone monthly 0", async () => {
+    const values: unknown[][] = []
+    const sql = mock((strings: TemplateStringsArray, ...vals: unknown[]) => {
+      values.push(vals)
+      const q = strings.join(" ")
+      if (q.includes("UPDATE businesses")) {
+        return Promise.resolve([
+          { id: "b1", slug: "carri", active_modules: [] },
+        ])
+      }
+      return Promise.resolve([])
+    })
+    const result = await setActiveModules(
+      {
+        sql: sql as unknown as AdminModulesDeps["sql"],
+        getRegisteredIds: () => ["loyalty", "orders", "turnos"],
+      },
+      { businessId: "b1", modules: [] }
+    )
+    expect(result.status).toBe(200)
+    expect(values.flat()).toContain(0)
+  })
 })
