@@ -50,7 +50,7 @@ export type LandingTool = {
   highlighted?: boolean
 }
 
-/** Piezas fuertes; pedidos va como nota humilde aparte */
+/** Módulos de catálogo + custom a medida */
 export const TOOLS: LandingTool[] = [
   {
     id: "loyalty",
@@ -58,6 +58,13 @@ export const TOOLS: LandingTool[] = [
     statusLabel: "Disponible",
     description:
       "Tarjeta de puntos digital. Tus clientes suman compras, canjean premios y vos sabés quién está por canjear.",
+  },
+  {
+    id: "orders",
+    title: "Pedidos",
+    statusLabel: "Disponible",
+    description:
+      "Menú digital, carrito y pedido para retirar. El cliente elige, paga por transferencia o en el local, y vos lo ves en el panel.",
   },
   {
     id: "turnos",
@@ -75,9 +82,6 @@ export const TOOLS: LandingTool[] = [
     highlighted: true,
   },
 ]
-
-export const ORDERS_NOTE =
-  "Pedidos por WhatsApp: lo estamos armando con comercios. Si te sirve, escribinos y te contamos cómo va."
 
 export type CaseStudy = {
   id: string

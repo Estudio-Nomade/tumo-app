@@ -1,4 +1,4 @@
-import { ORDERS_NOTE, TOOLS } from "../config"
+import { TOOLS } from "../config"
 import { Reveal } from "../ui/reveal"
 
 export function ModulesSection() {
@@ -79,18 +79,6 @@ export function ModulesSection() {
             </Reveal>
           ))}
         </div>
-
-        <Reveal className="mt-5" delayMs={280}>
-          <div className="flex flex-col gap-3 rounded-[20px] border border-dashed border-[#404040] bg-[#080808] px-6 py-5 sm:flex-row sm:items-center sm:justify-between md:px-8">
-            <p className="text-base leading-relaxed text-[#A3A3A3] md:text-lg">
-              <span className="font-semibold text-[#FFFFFF]">Pedidos. </span>
-              {ORDERS_NOTE.replace(/^Pedidos por WhatsApp:\s*/i, "")}
-            </p>
-            <span className="shrink-0 font-[family-name:var(--font-geist-mono)] text-xs tracking-wide text-[#737373]">
-              EN CAMINO
-            </span>
-          </div>
-        </Reveal>
       </div>
     </section>
   )
