@@ -1,4 +1,5 @@
 import { sql } from "./pool"
+import { monthlyAmountCentsForModuleCount } from "../billing/pricing"
 
 async function seedDefe() {
   const [business] = await sql`
@@ -38,6 +39,8 @@ async function seedDefe() {
 
   console.log("INSERT OK:", business)
 
+  const defeMonthly = monthlyAmountCentsForModuleCount(1)
+
   await sql`
     INSERT INTO business_billing (
       business_id,
@@ -47,12 +50,13 @@ async function seedDefe() {
     )
     VALUES (
       ${business.id},
-      ${1_990_000},
+      ${defeMonthly},
       ${"vencido"},
       ${new Date()}
     )
     ON CONFLICT (business_id) DO UPDATE SET
       status = ${"vencido"},
+      monthly_amount_cents = ${defeMonthly},
       updated_at = ${new Date()}
   `
 

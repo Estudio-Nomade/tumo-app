@@ -1,5 +1,6 @@
 import { getRegisteredModuleIds } from "@/lib/modules"
 import type { JsonResult, SqlTagged } from "@/modules/admin/lib/types"
+import { monthlyAmountCentsForModuleCount } from "@/shell/billing/pricing"
 
 export type AdminModulesDeps = {
   sql: SqlTagged
@@ -57,12 +58,35 @@ export async function setActiveModules(
     return { status: 404, body: { error: "Negocio no encontrado." } }
   }
 
+  const modules = rows[0].active_modules ?? normalized.modules
+  const monthly = monthlyAmountCentsForModuleCount(modules.length)
+  const now = new Date()
+
+  await deps.sql`
+    INSERT INTO business_billing (
+      business_id,
+      monthly_amount_cents,
+      status,
+      updated_at
+    )
+    VALUES (
+      ${businessId},
+      ${monthly},
+      ${"pendiente"},
+      ${now}
+    )
+    ON CONFLICT (business_id) DO UPDATE SET
+      monthly_amount_cents = ${monthly},
+      updated_at = ${now}
+  `
+
   return {
     status: 200,
     body: {
       id: rows[0].id,
       slug: rows[0].slug,
-      active_modules: rows[0].active_modules ?? normalized.modules,
+      active_modules: modules,
+      monthly_amount_cents: monthly,
     },
   }
 }

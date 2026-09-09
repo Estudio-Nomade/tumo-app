@@ -1,4 +1,5 @@
 import { sql } from "./pool"
+import { monthlyAmountCentsForModuleCount } from "../billing/pricing"
 import {
   categories,
   demoCustomers,
@@ -214,6 +215,12 @@ async function seed() {
     }
   }
 
+  const [carriRow] = await sql`
+    SELECT active_modules FROM businesses WHERE id = ${business.id} LIMIT 1
+  `
+  const carriModules = (carriRow?.active_modules as string[] | null) ?? []
+  const carriMonthly = monthlyAmountCentsForModuleCount(carriModules.length)
+
   await sql`
     INSERT INTO business_billing (
       business_id,
@@ -225,7 +232,7 @@ async function seed() {
     )
     VALUES (
       ${business.id},
-      ${1_990_000},
+      ${carriMonthly},
       ${"al_dia"},
       ${new Date()},
       ${new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)},
@@ -238,9 +245,12 @@ async function seed() {
   `
 
   const [defe] = await sql`
-    SELECT id FROM businesses WHERE slug = ${"defe"} LIMIT 1
+    SELECT id, active_modules FROM businesses WHERE slug = ${"defe"} LIMIT 1
   `
   if (defe) {
+    const defeMonthly = monthlyAmountCentsForModuleCount(
+      (defe.active_modules as string[] | null)?.length ?? 1
+    )
     await sql`
       INSERT INTO business_billing (
         business_id,
@@ -250,12 +260,13 @@ async function seed() {
       )
       VALUES (
         ${defe.id},
-        ${1_990_000},
+        ${defeMonthly},
         ${"vencido"},
         ${new Date()}
       )
       ON CONFLICT (business_id) DO UPDATE SET
         status = ${"vencido"},
+        monthly_amount_cents = ${defeMonthly},
         updated_at = ${new Date()}
     `
   }

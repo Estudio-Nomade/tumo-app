@@ -24,7 +24,7 @@ describe("listBusinesses", () => {
         active_modules: ["loyalty", "orders"],
         created_at: new Date("2026-01-01T00:00:00Z"),
         billing_status: "al_dia",
-        monthly_amount_cents: 1_990_000,
+        monthly_amount_cents: 13998,
         last_payment_at: new Date("2026-08-01T00:00:00Z"),
         next_due_at: new Date("2026-09-01T00:00:00Z"),
       },
@@ -35,16 +35,40 @@ describe("listBusinesses", () => {
     expect(businesses).toHaveLength(1)
     expect(businesses[0]).toMatchObject({
       slug: "carri",
-      billing: { status: "al_dia" },
+      billing: { status: "al_dia", monthly_amount_cents: 13998 },
     })
   })
 
-  test("sin billing row → pendiente default", async () => {
+  test("sin billing row → pendiente + fee por #módulos (no 1990000)", async () => {
     const { sql } = makeSql(() => [
       {
         id: "b2",
         name: "X",
         slug: "x",
+        active_modules: ["loyalty", "orders"],
+        created_at: "2026-01-01",
+        billing_status: null,
+        monthly_amount_cents: null,
+        last_payment_at: null,
+        next_due_at: null,
+      },
+    ])
+    const result = await listBusinesses({ sql })
+    const b = (
+      result.body.businesses as {
+        billing: { status: string; monthly_amount_cents: number }
+      }[]
+    )[0]
+    expect(b.billing.status).toBe("pendiente")
+    expect(b.billing.monthly_amount_cents).toBe(13998)
+  })
+
+  test("sin billing y 0 módulos → monthly 0", async () => {
+    const { sql } = makeSql(() => [
+      {
+        id: "b3",
+        name: "Y",
+        slug: "y",
         active_modules: [],
         created_at: "2026-01-01",
         billing_status: null,
@@ -54,8 +78,35 @@ describe("listBusinesses", () => {
       },
     ])
     const result = await listBusinesses({ sql })
-    const b = (result.body.businesses as { billing: { status: string } }[])[0]
-    expect(b.billing.status).toBe("pendiente")
+    const b = (
+      result.body.businesses as { billing: { monthly_amount_cents: number } }[]
+    )[0]
+    expect(b.billing.monthly_amount_cents).toBe(0)
+  })
+
+  test("legacy ARS 1990000 en DB se ignora: tarifa = N × 6999", async () => {
+    const { sql } = makeSql(() => [
+      {
+        id: "b4",
+        name: "Defe",
+        slug: "defe",
+        active_modules: ["loyalty"],
+        created_at: "2026-01-01",
+        billing_status: "vencido",
+        monthly_amount_cents: 1_990_000,
+        last_payment_at: null,
+        next_due_at: null,
+      },
+    ])
+    const result = await listBusinesses({ sql })
+    const b = (
+      result.body.businesses as {
+        billing: { status: string; monthly_amount_cents: number }
+      }[]
+    )[0]
+    expect(b.billing.status).toBe("vencido")
+    expect(b.billing.monthly_amount_cents).toBe(6999)
+    expect(b.billing.monthly_amount_cents).not.toBe(1_990_000)
   })
 })
 
@@ -85,7 +136,7 @@ describe("getBusinessAdmin", () => {
             active_modules: ["loyalty"],
             created_at: new Date("2026-01-01"),
             billing_status: "al_dia",
-            monthly_amount_cents: 1_990_000,
+            monthly_amount_cents: 6999,
             last_payment_at: null,
             next_due_at: null,
             billing_notes: null,
@@ -113,6 +164,38 @@ describe("getBusinessAdmin", () => {
     }
     expect(business.contact.name).toBe("Nobel")
     expect(business.employees).toHaveLength(1)
+  })
+
+  test("detalle ignora monthly legacy 1990000 y muestra N × 6999", async () => {
+    let call = 0
+    const { sql } = makeSql(() => {
+      call += 1
+      if (call === 1) {
+        return [
+          {
+            id: "b1",
+            name: "Defe",
+            slug: "defe",
+            active_modules: ["loyalty"],
+            created_at: new Date("2026-01-01"),
+            billing_status: "vencido",
+            monthly_amount_cents: 1_990_000,
+            last_payment_at: null,
+            next_due_at: null,
+            billing_notes: null,
+          },
+        ]
+      }
+      if (call === 2) return []
+      return []
+    })
+    const result = await getBusinessAdmin({ sql }, { businessId: "b1" })
+    expect(result.status).toBe(200)
+    const business = result.body.business as {
+      billing: { monthly_amount_cents: number; status: string }
+    }
+    expect(business.billing.status).toBe("vencido")
+    expect(business.billing.monthly_amount_cents).toBe(6999)
   })
 })
 

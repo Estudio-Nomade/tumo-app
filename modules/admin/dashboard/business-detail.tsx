@@ -49,7 +49,8 @@ export type BusinessDetailData = {
 function formatMoney(cents: number): string {
   return new Intl.NumberFormat("es-AR", {
     style: "currency",
-    currency: "ARS",
+    currency: "USD",
+    minimumFractionDigits: 2,
   }).format(cents / 100)
 }
 
