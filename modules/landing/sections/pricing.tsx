@@ -1,4 +1,4 @@
-import { PRICE_PER_MODULE_ARS, whatsappHref } from "../config"
+import { PRICE_PER_MODULE_USD, whatsappHref } from "../config"
 import { LandingButton } from "../ui/button"
 
 export function PricingSection() {
@@ -19,10 +19,10 @@ export function PricingSection() {
               />
               <p className="landing-kicker mb-6">Inversión</p>
               <p className="mt-1 font-[family-name:var(--font-geist-sans)] text-[56px] font-extrabold leading-none tracking-[-0.05em] text-[#FFFFFF] md:text-[64px]">
-                ${PRICE_PER_MODULE_ARS}
+                ${PRICE_PER_MODULE_USD}
               </p>
               <p className="mt-2 text-xl font-semibold text-[#7754E3]">
-                ARS{" "}
+                USD{" "}
                 <span className="font-normal text-[#A3A3A3]">
                   / mes por módulo
                 </span>
@@ -54,7 +54,7 @@ export function PricingSection() {
               </ul>
               <LandingButton
                 href={whatsappHref(
-                  `Hola, quiero un presupuesto de Tumo ($${PRICE_PER_MODULE_ARS}/mes por módulo).`
+                  `Hola, quiero un presupuesto de Tumo ($${PRICE_PER_MODULE_USD} USD/mes por módulo).`
                 )}
                 className="min-h-[56px] w-full text-lg sm:w-auto sm:min-w-[240px]"
                 target="_blank"

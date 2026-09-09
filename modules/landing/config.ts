@@ -12,7 +12,7 @@ export function whatsappHref(message?: string): string {
 
 export const DEFAULT_WA_MESSAGE = "Hola, quiero saber más sobre Tumo."
 
-export const PRICE_PER_MODULE_ARS = "30.000"
+export const PRICE_PER_MODULE_USD = "69.99"
 
 /**
  * Media servida desde /public (mismo origen en Vercel).
@@ -50,7 +50,7 @@ export type LandingTool = {
   highlighted?: boolean
 }
 
-/** Dos piezas fuertes; pedidos va como nota humilde aparte */
+/** Piezas fuertes; pedidos va como nota humilde aparte */
 export const TOOLS: LandingTool[] = [
   {
     id: "loyalty",
@@ -58,6 +58,13 @@ export const TOOLS: LandingTool[] = [
     statusLabel: "Disponible",
     description:
       "Tarjeta de puntos digital. Tus clientes suman compras, canjean premios y vos sabés quién está por canjear.",
+  },
+  {
+    id: "turnos",
+    title: "Turnos",
+    statusLabel: "Disponible",
+    description:
+      "Reserva online por el cliente, servicios con duración y precio, panel del local, pago por transferencia o en el local, y aviso por WhatsApp.",
   },
   {
     id: "custom",
@@ -117,7 +124,7 @@ export type FaqItem = {
 export const FAQ_ITEMS: FaqItem[] = [
   {
     question: "¿Cuánto sale?",
-    answer: `Cada módulo sale $${PRICE_PER_MODULE_ARS} ARS por mes. Activás los que uses, más un setup único. Te armamos el presupuesto por WhatsApp.`,
+    answer: `Cada módulo sale $${PRICE_PER_MODULE_USD} USD por mes. Activás los que uses, más un setup único. Te armamos el presupuesto por WhatsApp.`,
   },
   {
     question: "¿Es difícil de usar?",
