@@ -16,7 +16,6 @@ import {
   ModuleBadge,
 } from "@/modules/admin/dashboard/billing-badge"
 import type { BillingStatus } from "@/modules/admin/lib/types"
-import { PRICE_PER_MODULE_CENTS } from "@/shell/billing/pricing"
 
 export type BusinessDetailData = {
   id: string
@@ -215,10 +214,6 @@ export function BusinessDetailClient({
           <BillingBadge status={business.billing.status} />
           <span className="text-sm text-slate-600">
             {formatMoney(business.billing.monthly_amount_cents)} / mes
-          </span>
-          <span className="text-xs text-slate-400">
-            {modules.length} módulo{modules.length === 1 ? "" : "s"} × $
-            {(PRICE_PER_MODULE_CENTS / 100).toFixed(2)}
           </span>
         </div>
         <dl className="mt-3 grid gap-1 text-sm text-slate-600 sm:grid-cols-2">
