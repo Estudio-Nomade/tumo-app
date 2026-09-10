@@ -106,7 +106,7 @@
           "type": "text",
           "id": "i5",
           "fill": "$ink",
-          "content": "URL QR (dev)",
+          "content": "URL QR (prod · cerrada)",
           "fontFamily": "$font",
           "fontSize": 13,
           "fontWeight": "700"
@@ -117,7 +117,7 @@
           "fill": "$ink-muted",
           "textGrowth": "fixed-width",
           "width": "fill_container",
-          "content": "http://localhost:3000/defe/loyalty\n[DECISIÓN] prod: tumo.com.ar/defe/loyalty (o dominio final)",
+          "content": "https://www.tumo.com.ar/defe/loyalty\n[CERRADO] URL canónica print = prod www",
           "lineHeight": 1.4,
           "fontFamily": "$font",
           "fontSize": 12,
@@ -459,7 +459,7 @@
               "fill": "$ink-soft",
               "textGrowth": "fixed-width",
               "width": "fill_container",
-              "content": "localhost:3000/defe/loyalty",
+              "content": "www.tumo.com.ar/defe/loyalty",
               "textAlign": "center",
               "fontFamily": "$font",
               "fontSize": 12,
@@ -747,7 +747,7 @@
       "name": "Brief · entregar a Defe",
       "width": 480,
       "height": 420,
-      "content": "BRIEF · Tip QR El Defe Cantina\n\nCopy final\n• Título: ¡Registrate y sumá puntos!\n• Sub: Escaneá el QR con la cámara de tu celular\n• Steps: 1 Escaneá · 2 Registrate con WhatsApp · 3 Sumá en cada visita\n• Tagline: Club Defensores de Belgrano · Desde 1950\n• SIN badge 10 compras\n\nLogo: design-artifacts/defe-loyalty-qr/defe-logo.jpg\nQR: design-artifacts/defe-loyalty-qr/qr-raw.png\nURL dev: http://localhost:3000/defe/loyalty\n\nExport print: frame 01 · Tip imprimible A5\nFase código app: NO hecha.\n"
+      "content": "BRIEF · Tip QR El Defe Cantina\n\nCopy final\n• Título: ¡Registrate y sumá puntos!\n• Sub: Escaneá el QR con la cámara de tu celular\n• Steps: 1 Escaneá · 2 Registrate con WhatsApp · 3 Sumá en cada visita\n• Tagline: Club Defensores de Belgrano · Desde 1950\n• SIN badge 10 compras\n\nLogo: design-artifacts/defe-loyalty-qr/defe-logo.jpg\nQR: design-artifacts/defe-loyalty-qr/qr-raw.png\nURL canónica (cerrada): https://www.tumo.com.ar/defe/loyalty\nDisplay tip: www.tumo.com.ar/defe/loyalty\n\nExport print: frame 01 · Tip imprimible A5 · El Defe\n1. Abrir defe-loyalty-qr-tip.pen en Pencil\n2. Seleccionar frame 01 / 02 / 03\n3. Export PNG/JPG alta res → design-artifacts/defe-loyalty-qr/export/\n4. Decodificar QR del export (payload debe ser URL prod)\n\nFase código app: NO (solo design artifacts).\n"
     }
   ]
 }
