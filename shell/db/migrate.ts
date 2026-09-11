@@ -18,6 +18,7 @@ async function migrate() {
     "013_turnos_whatsapp_phone.sql",
     "014_billing_default_usd_per_module.sql",
     "015_business_module_subscriptions.sql",
+    "016_schema_normalization_expand.sql",
   ]
   for (const file of files) {
     const migration = readFileSync(

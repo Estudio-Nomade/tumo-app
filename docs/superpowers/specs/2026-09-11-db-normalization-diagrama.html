@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Tumo — Diagrama de base de datos (normalización)</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 14mm 14mm 16mm 14mm;
+      @bottom-center {
+        content: "Tumo · Normalización DB · confidencia l interno · " counter(page);
+        font-size: 9px;
+        color: #64748b;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      color: #0f172a;
+      font-size: 11.5px;
+      line-height: 1.45;
+      margin: 0;
+    }
+    h1 {
+      font-size: 22px;
+      margin: 0 0 4px;
+      color: #0f172a;
+    }
+    h2 {
+      font-size: 14px;
+      margin: 18px 0 8px;
+      padding-bottom: 4px;
+      border-bottom: 2px solid #f97316;
+      color: #9a3412;
+      page-break-after: avoid;
+    }
+    h3 {
+      font-size: 12px;
+      margin: 12px 0 6px;
+      color: #334155;
+      page-break-after: avoid;
+    }
+    .meta {
+      color: #64748b;
+      font-size: 10.5px;
+      margin-bottom: 14px;
+    }
+    .badge {
+      display: inline-block;
+      background: #ffedd5;
+      color: #9a3412;
+      border: 1px solid #fdba74;
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 10px;
+      font-weight: 600;
+      margin-right: 6px;
+    }
+    .badge.ok {
+      background: #dcfce7;
+      color: #166534;
+      border-color: #86efac;
+    }
+    .badge.warn {
+      background: #fef9c3;
+      color: #854d0e;
+      border-color: #fde047;
+    }
+    p { margin: 6px 0; }
+    ul { margin: 4px 0 8px 18px; padding: 0; }
+    li { margin: 2px 0; }
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .card {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: #fff;
+      page-break-inside: avoid;
+    }
+    .card h3 { margin-top: 0; }
+    .card.before { background: #fef2f2; border-color: #fecaca; }
+    .card.after { background: #f0fdf4; border-color: #bbf7d0; }
+    .muted { color: #64748b; font-size: 10.5px; }
+    .mono {
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 10px;
+    }
+
+    /* ER boxes */
+    .er {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      page-break-inside: avoid;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      align-items: stretch;
+    }
+    .tbl {
+      min-width: 120px;
+      max-width: 170px;
+      border: 1.5px solid #334155;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+      font-size: 10px;
+    }
+    .tbl .hd {
+      background: #0f172a;
+      color: #fff;
+      font-weight: 700;
+      padding: 5px 8px;
+      text-align: center;
+    }
+    .tbl.new .hd { background: #ea580c; }
+    .tbl.core .hd { background: #1d4ed8; }
+    .tbl.mod .hd { background: #0f766e; }
+    .tbl.sys .hd { background: #6b7280; }
+    .tbl .bd {
+      padding: 5px 8px;
+      color: #334155;
+    }
+    .tbl .bd div { margin: 1px 0; }
+    .arrow-down {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 1;
+      margin: -2px 0;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 8px 0 4px;
+      font-size: 10px;
+    }
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+    .swatch.core { background: #1d4ed8; }
+    .swatch.new { background: #ea580c; }
+    .swatch.mod { background: #0f766e; }
+    .swatch.sys { background: #6b7280; }
+
+    table.rules {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10.5px;
+      page-break-inside: avoid;
+    }
+    table.rules th, table.rules td {
+      border: 1px solid #e2e8f0;
+      padding: 6px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    table.rules th {
+      background: #fff7ed;
+      color: #9a3412;
+      width: 28%;
+    }
+    .flow {
+      font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: 9.5px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      white-space: pre;
+      line-height: 1.35;
+      page-break-inside: avoid;
+    }
+    .note {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      padding: 8px 10px;
+      border-radius: 0 8px 8px 0;
+      margin: 10px 0;
+      font-size: 10.5px;
+    }
+    .footer-note {
+      margin-top: 16px;
+      font-size: 10px;
+      color: #64748b;
+    }
+    .center { text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>Tumo — Diagrama de base de datos</h1>
+  <div class="meta">
+    <span class="badge ok">Fase 016 expand · DEV</span>
+    <span class="badge warn">Prod no tocada</span>
+    <span class="badge">2026-09-11 · Estudio Nómade</span>
+  </div>
+  <p>
+    Objetivo: <strong>ordenar la base</strong> separando lo que estaba mezclado
+    (comercio + puntos + módulos + personas + horarios + alias), sin perder datos.
+    Se crearon cajones nuevos y se copió la info vieja. Las columnas viejas
+    siguen por compatibilidad hasta que la app lea solo lo nuevo.
+  </p>
+
+  <h2>1. Antes vs ahora</h2>
+  <div class="grid2">
+    <div class="card before">
+      <h3>Antes (mezclado)</h3>
+      <ul>
+        <li><strong>businesses</strong> tenía nombre/logo <em>y</em> reglas de puntos <em>y</em> módulos activos</li>
+        <li><strong>customers</strong> mezclaba persona + saldo + código del local</li>
+        <li>Alias repetido en pedidos y turnos</li>
+        <li>Horarios en JSON por módulo (difícil “partido” mañana/tarde)</li>
+        <li>Empleado: teléfono único global</li>
+      </ul>
+    </div>
+    <div class="card after">
+      <h3>Ahora (cajones)</h3>
+      <ul>
+        <li><strong>businesses</strong> = identidad del local</li>
+        <li><strong>loyalty_settings + franjas</strong> = programa de puntos</li>
+        <li><strong>people</strong> = persona por teléfono (nombre/cumple)</li>
+        <li><strong>customers</strong> = ficha en ese local (código, puntos, estrellitas)</li>
+        <li><strong>business_payment_profiles</strong> = alias base</li>
+        <li><strong>module_hours</strong> = horarios por módulo con tramos</li>
+        <li>Dueño: 1 teléfono = 1 comercio · developer multi-local</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>2. Leyenda</h2>
+  <div class="legend">
+    <span><i class="swatch core"></i> Núcleo / ya existía</span>
+    <span><i class="swatch new"></i> Nuevo en 016</span>
+    <span><i class="swatch mod"></i> Módulo (pedidos / turnos / loyalty)</span>
+    <span><i class="swatch sys"></i> Admin / billing Tumo</span>
+  </div>
+
+  <h2>3. Diagrama de cajones (vista simple)</h2>
+  <div class="er">
+    <div class="row">
+      <div class="tbl core">
+        <div class="hd">businesses</div>
+        <div class="bd">
+          <div>id, name, slug</div>
+          <div>logo, colores</div>
+          <div>tagline</div>
+          <div class="muted">(+ legacy temporal)</div>
+        </div>
+      </div>
+    </div>
+    <div class="arrow-down">▼ se cuelga de cada local</div>
+    <div class="row">
+      <div class="tbl new">
+        <div class="hd">loyalty_settings</div>
+        <div class="bd">
+          <div>points_needed</div>
+          <div>reward_name</div>
+          <div>max pts/compra</div>
+        </div>
+      </div>
+      <div class="tbl new">
+        <div class="hd">loyalty_point_ranges</div>
+        <div class="bd">
+          <div>min/max $</div>
+          <div>points</div>
+          <div>franjas editables</div>
+        </div>
+      </div>
+      <div class="tbl core">
+        <div class="hd">module_subscriptions</div>
+        <div class="bd">
+          <div>loyalty / orders</div>
+          <div>turnos activos</div>
+        </div>
+      </div>
+      <div class="tbl new">
+        <div class="hd">payment_profiles</div>
+        <div class="bd">
+          <div>alias, CBU</div>
+          <div>titular</div>
+          <div>base del local</div>
+        </div>
+      </div>
+      <div class="tbl new">
+        <div class="hd">module_hours</div>
+        <div class="bd">
+          <div>módulo + día</div>
+          <div>tramo desde–hasta</div>
+          <div>horario partido OK</div>
+        </div>
+      </div>
+    </div>
+    <div class="arrow-down">▼ personas y equipo</div>
+    <div class="row">
+      <div class="tbl new">
+        <div class="hd">people</div>
+        <div class="bd">
+          <div>phone (único)</div>
+          <div>name, birthday</div>
+          <div>autocomplete multi-local</div>
+        </div>
+      </div>
+      <div class="tbl core">
+        <div class="hd">customers</div>
+        <div class="bd">
+          <div>person_id → people</div>
+          <div>code, points</div>
+          <div>rewards_redeemed</div>
+          <div>por comercio</div>
+        </div>
+      </div>
+      <div class="tbl core">
+        <div class="hd">employees</div>
+        <div class="bd">
+          <div>phone + business</div>
+          <div>owner | employee</div>
+          <div>developer</div>
+        </div>
+      </div>
+      <div class="tbl core">
+        <div class="hd">point_movements</div>
+        <div class="bd">
+          <div>earn / redeem</div>
+          <div>historial puntos</div>
+        </div>
+      </div>
+    </div>
+    <div class="arrow-down">▼ módulos de producto</div>
+    <div class="row">
+      <div class="tbl mod">
+        <div class="hd">orders*</div>
+        <div class="bd">
+          <div>catálogo</div>
+          <div>pedidos + ítems</div>
+          <div>pagos</div>
+          <div>snapshots OK</div>
+        </div>
+      </div>
+      <div class="tbl mod">
+        <div class="hd">turnos*</div>
+        <div class="bd">
+          <div>servicios</div>
+          <div>reservas</div>
+          <div>pagos</div>
+          <div>snapshots OK</div>
+        </div>
+      </div>
+      <div class="tbl sys">
+        <div class="hd">billing / admin</div>
+        <div class="bd">
+          <div>business_billing</div>
+          <div>admin_users</div>
+          <div>cobro Tumo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h2>4. Relaciones clave (flechas)</h2>
+  <div class="flow">businesses 1 ──&lt; employees
+businesses 1 ──&lt; customers  &gt;── people (mismo teléfono, N locales)
+businesses 1 ── 1 loyalty_settings
+businesses 1 ──&lt; loyalty_point_ranges
+businesses 1 ── 1 business_payment_profiles
+businesses 1 ──&lt; module_hours          (orders | turnos, tramos)
+businesses 1 ──&lt; business_module_subscriptions
+customers  1 ──&lt; point_movements
+customers  1 ──&lt; orders / turnos_bookings
+orders     1 ──&lt; order_items (nombre/precio congelados)
+orders     1 ──&lt; order_payments</div>
+
+  <h2>5. Reglas de negocio cerradas</h2>
+  <table class="rules">
+    <tr><th>Puntos</th><td>1 programa por comercio. Franjas editables. Saldo al toque. Canje → saldo 0 + contador de premios (estrellita). “De 10 en 10” descartado.</td></tr>
+    <tr><th>Ejemplo Defe</th><td>Premio 20% off efectivo/transfer (150 pts). Franjas: &lt;10k→5 · 10–20k→10 · 20–35k→18 · 35–50k→28 · 50k+→40. Tope 80 pts/compra.</td></tr>
+    <tr><th>Clientes</th><td>Mismo teléfono en otro local: autocompleta nombre/cumple. Código, puntos e historial <strong>por comercio</strong>.</td></tr>
+    <tr><th>Dueño</th><td><strong>1 teléfono = 1 comercio</strong> al abrir/ownership.</td></tr>
+    <tr><th>Developer</th><td>Puede estar en varios comercios con el mismo teléfono.</td></tr>
+    <tr><th>Alias</th><td>Base del local; se ve en módulos activos; después cada módulo puede editar el suyo.</td></tr>
+    <tr><th>Horarios</th><td>Siempre por módulo. Horario partido (ej. 11–15 y 19–23) soportado.</td></tr>
+    <tr><th>Pedidos/Turnos</th><td>Se mantienen snapshots (precio/nombre del momento). No es “desorden”.</td></tr>
+  </table>
+
+  <h2>6. Ejemplo Defe (zoom puntos)</h2>
+  <div class="flow">El Defe (businesses)
+ │
+ ├─ loyalty_settings
+ │     premio: 20% off efectivo/transfer
+ │     puntos para canjear: 150
+ │     tope por compra: 80
+ │
+ ├─ loyalty_point_ranges
+ │     &lt; $10.000 → 5 pts
+ │     $10.000–$19.999 → 10
+ │     $20.000–$34.999 → 18
+ │     $35.000–$49.999 → 28
+ │     $50.000+ → 40
+ │
+ ├─ people: Juan +54911…
+ │     └─ customers (en Defe): código QR · 40 pts · 1★
+ │           └─ point_movements: +40, canje, …
+ │
+ └─ si Juan se anota en otro local:
+       otro customers (otro código, otros puntos)
+       nombre/cumple se pueden rellenar desde people</div>
+
+  <h2>7. Estado del trabajo</h2>
+  <div class="grid2">
+    <div class="card after">
+      <h3>Hecho (dev)</h3>
+      <ul>
+        <li>Migración <span class="mono">016_schema_normalization_expand</span></li>
+        <li>Copia shell + supabase/migrations</li>
+        <li>Aplicada en Supabase local Tumo (:54322)</li>
+        <li>Tests: 777 pass (suite) · 9 pass (016)</li>
+        <li>Docs plan + inventario de cajones</li>
+      </ul>
+    </div>
+    <div class="card before">
+      <h3>Pendiente</h3>
+      <ul>
+        <li>App leyendo tablas nuevas</li>
+        <li>Seed Defe con franjas reales</li>
+        <li>Dejar de escribir columnas viejas</li>
+        <li>Borrar legacy (contract)</li>
+        <li>Aplicar en producción (otro paso)</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Importante para el compa:</strong> esto es <em>expand</em>, no un big-bang.
+    Las tablas/columnas viejas siguen vivas a propósito. No aplicar en prod hasta
+    cablear app + verificar dev. Criterio de listo: schema prolijo a futuro, no el cambio más chico posible.
+  </div>
+
+  <h2>8. Archivos en el repo</h2>
+  <ul class="mono">
+    <li>shell/db/migrations/016_schema_normalization_expand.sql</li>
+    <li>supabase/migrations/20260911120000_schema_normalization_expand.sql</li>
+    <li>tests/db-normalization-016.test.ts</li>
+    <li>docs/superpowers/plans/2026-09-11-db-normalization.md</li>
+    <li>docs/superpowers/specs/2026-09-11-db-normalization-cajas.md</li>
+    <li>Rama: feat/db-normalization-schema</li>
+  </ul>
+
+  <p class="footer-note">
+    Generado para compartir internamente · Estudio Nómade / Tumo · normalización de esquema 2026-09-11
+  </p>
+</body>
+</html>
