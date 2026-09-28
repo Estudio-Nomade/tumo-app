@@ -25,8 +25,8 @@ export function ModulesSection() {
           </Reveal>
           <Reveal className="md:col-span-5" delayMs={80}>
             <p className="text-lg leading-relaxed text-[#A3A3A3] md:text-xl md:text-right">
-              Activás lo que usás. Si falta una pieza para tu rubro, la armamos
-              y la pagás como un módulo más.
+              Los módulos llenan el cupo de tu plan (Básico, Pro o Full). Si
+              falta una pieza de tu rubro, la armamos y entra en el cupo.
             </p>
           </Reveal>
         </div>

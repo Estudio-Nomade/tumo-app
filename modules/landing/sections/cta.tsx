@@ -32,19 +32,27 @@ export function CtaSection() {
           <div className="relative z-10 flex min-h-[380px] flex-col justify-end gap-6 p-7 md:min-h-[420px] md:max-w-xl md:justify-center md:p-12">
             <p className="landing-kicker">Siguiente paso</p>
             <h2 className="font-[family-name:var(--font-geist-sans)] text-[32px] font-extrabold leading-[1.1] tracking-[-0.04em] text-[#FFFFFF] md:text-5xl">
-              Si te cierra cómo hablamos, escribinos.
+              Elegí tu plan y escribinos.
             </h2>
             <p className="text-lg text-[#D4D4D4] md:text-xl">
-              Te contestamos por WhatsApp. Sin vueltas.
+              Básico, Pro o Full. Te contestamos por WhatsApp. Sin vueltas.
             </p>
-            <LandingButton
-              href={whatsappHref(DEFAULT_WA_MESSAGE)}
-              className="min-h-[56px] w-full text-lg sm:w-auto sm:min-w-[280px]"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Escribinos por WhatsApp
-            </LandingButton>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <LandingButton
+                href="#precios"
+                className="min-h-[56px] w-full text-lg sm:w-auto sm:min-w-[200px]"
+              >
+                Ver planes
+              </LandingButton>
+              <LandingButton
+                href={whatsappHref(DEFAULT_WA_MESSAGE)}
+                className="min-h-[56px] w-full border border-[#FFFFFF44] bg-transparent text-lg text-[#FFFFFF] hover:bg-[#FFFFFF18] sm:w-auto sm:min-w-[200px]"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                WhatsApp
+              </LandingButton>
+            </div>
           </div>
         </div>
       </div>

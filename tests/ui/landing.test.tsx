@@ -14,11 +14,13 @@ describe("LandingPage", () => {
     expect(html).not.toContain("landing-glow-breathe")
   })
 
-  test("un solo camino fuerte de WhatsApp en hero", () => {
+  test("hero apunta a planes y WhatsApp de soporte", () => {
     const html = renderToStaticMarkup(<LandingPage />)
     expect(html).toContain("wa.me/542494512494")
-    expect(html).toContain("Escribinos por WhatsApp")
+    expect(html).toMatch(/Elegí tu plan|Ver planes|#precios/i)
+    expect(html).toContain("39.99")
     expect(html).not.toContain("Dejanos tu teléfono y te llamamos")
+    expect(html).not.toContain("69.99")
   })
 
   test("qué hacemos: Fidelización, Pedidos, Turnos Disponibles + A medida; sin EN CAMINO", () => {
@@ -42,17 +44,27 @@ describe("LandingPage", () => {
     expect(aMedida).toBeGreaterThan(turnos)
   })
 
-  test("precio $69.99 USD por módulo / mes, sin 30.000/ARS/desde 19.900", () => {
+  test("precios: 3 planes Básico/Pro/Full, sin 69.99 ni 30.000/19.900", () => {
     const html = renderToStaticMarkup(<LandingPage />)
-    expect(html).toContain("69.99")
-    expect(html).toContain("USD")
-    expect(html).toMatch(/por m[oó]dulo|cada m[oó]dulo/i)
+    expect(html).toContain("Básico")
+    expect(html).toContain("Pro")
+    expect(html).toContain("Full")
+    expect(html).toContain("39.99")
+    expect(html).toContain("89.99")
+    expect(html).toContain("129.99")
+    expect(html).toContain("11.99")
+    expect(html).toContain("25.99")
+    expect(html).toContain("36.99")
+    expect(html).toMatch(/1 m[oó]dulo/i)
+    expect(html).toMatch(/hasta 3|3 m[oó]dulos/i)
+    expect(html).toMatch(/todos los m[oó]dulos|todos/i)
+    expect(html).toMatch(/ARS|pesos/i)
+    expect(html).toMatch(/mes/i)
+    expect(html).not.toContain("69.99")
     expect(html).not.toContain("30.000")
     expect(html).not.toContain("19.900")
-    expect(html).not.toContain("ARS")
-    expect(html).not.toMatch(/\bDesde\b/)
-    // WA prefill: $69.99 USD/mes por módulo (encoded)
-    expect(html).toContain("69.99%20USD%2Fmes%20por%20m%C3%B3dulo")
+    // WA prefill por plan (encoded)
+    expect(html).toMatch(/plan%20B%C3%A1sico|plan%20Basico|B%C3%A1sico/i)
   })
 
   test("casos y FAQ esenciales", () => {
@@ -61,6 +73,7 @@ describe("LandingPage", () => {
     expect(html).toContain("Defe")
     expect(html).toContain("¿Cuánto sale?")
     expect(html).toContain("¿Es difícil de usar?")
+    expect(html).toMatch(/C[oó]mo empiezo/i)
   })
 
   test("media stock y tokens oscuros", () => {
@@ -111,6 +124,3 @@ describe("LandingPage", () => {
     expect(html).toContain('data-landing-img="loading"')
   })
 })
-
-
-
