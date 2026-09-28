@@ -12,7 +12,54 @@ export function whatsappHref(message?: string): string {
 
 export const DEFAULT_WA_MESSAGE = "Hola, quiero saber más sobre Tumo."
 
-export const PRICE_PER_MODULE_USD = "69.99"
+/** Precio de entrada (plan Básico) — hero, SEO, “desde”. */
+export const PRICE_FROM_USD = "39.99"
+
+export type LandingPlan = {
+  id: "basico" | "pro" | "full"
+  name: string
+  cupoLabel: string
+  priceUsdMonth: string
+  priceUsdWeek: string
+  blurb: string
+  highlighted?: boolean
+  waMessage: string
+}
+
+/**
+ * Planes por cupo (no por módulo suelto).
+ * Cobro en ARS vía dLocal cuando el checkout esté live; hoy CTA = WA por plan.
+ */
+export const PLANS: LandingPlan[] = [
+  {
+    id: "basico",
+    name: "Básico",
+    cupoLabel: "1 módulo",
+    priceUsdMonth: "39.99",
+    priceUsdWeek: "11.99",
+    blurb: "Una sola pieza: Pedidos, Turnos o Fidelización.",
+    waMessage: "Hola, quiero el plan Básico de Tumo (1 módulo, U$S 39.99/mes).",
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    cupoLabel: "Hasta 3 módulos",
+    priceUsdMonth: "89.99",
+    priceUsdWeek: "25.99",
+    blurb: "Combiná hasta tres módulos según tu local.",
+    highlighted: true,
+    waMessage: "Hola, quiero el plan Pro de Tumo (hasta 3 módulos, U$S 89.99/mes).",
+  },
+  {
+    id: "full",
+    name: "Full",
+    cupoLabel: "Todos los módulos",
+    priceUsdMonth: "129.99",
+    priceUsdWeek: "36.99",
+    blurb: "Todo el stack. Sin pensar en cupos.",
+    waMessage: "Hola, quiero el plan Full de Tumo (todos los módulos, U$S 129.99/mes).",
+  },
+]
 
 /**
  * Media servida desde /public (mismo origen en Vercel).
@@ -78,7 +125,7 @@ export const TOOLS: LandingTool[] = [
     title: "A medida de tu rubro",
     statusLabel: "Lo desarrollamos",
     description:
-      "Si te falta una pieza, la armamos sin cobrarte el desarrollo: la pagás como un módulo más.",
+      "Si te falta una pieza, la armamos sin cobrarte el desarrollo: entra en el cupo de tu plan.",
     highlighted: true,
   },
 ]
@@ -128,7 +175,13 @@ export type FaqItem = {
 export const FAQ_ITEMS: FaqItem[] = [
   {
     question: "¿Cuánto sale?",
-    answer: `Cada módulo sale $${PRICE_PER_MODULE_USD} USD por mes. Activás los que uses, más un setup único. Te armamos el presupuesto por WhatsApp.`,
+    answer:
+      "Tres planes por cupo (ref. USD/mes): Básico U$S 39.99 (1 módulo), Pro U$S 89.99 (hasta 3) y Full U$S 129.99 (todos). También hay ref. semanal (~11.99 / ~25.99 / ~36.99); el mensual sale un toque mejor que 4 semanas. El cobro es en ARS (pesos). Te armamos el alta por WhatsApp.",
+  },
+  {
+    question: "¿Cómo empiezo?",
+    answer:
+      "Elegís el plan (Básico, Pro o Full), nos escribís por WhatsApp y te activamos la cuenta. Cuando el pago online esté live: elegís plan → pagás en ARS → se crea la cuenta.",
   },
   {
     question: "¿Es difícil de usar?",
@@ -138,7 +191,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   {
     question: "¿Y si necesito algo que no tienen?",
     answer:
-      "Lo desarrollamos sin cobrarte el desarrollo; lo pagás como un módulo más.",
+      "Lo desarrollamos sin cobrarte el desarrollo; entra en el cupo de tu plan como un módulo más.",
   },
   {
     question: "¿Qué pasa si no entiendo algo?",

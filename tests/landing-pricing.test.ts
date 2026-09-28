@@ -2,39 +2,81 @@ import { describe, expect, test } from "bun:test"
 import { metadata } from "@/app/page"
 import {
   FAQ_ITEMS,
-  PRICE_PER_MODULE_USD,
+  PLANS,
   TOOLS,
+  PRICE_FROM_USD,
 } from "@/modules/landing/config"
 
-describe("landing pricing copy", () => {
-  test("precio por módulo es $69.99 USD", () => {
-    expect(PRICE_PER_MODULE_USD).toBe("69.99")
+describe("landing plans pricing", () => {
+  test("PLANS: Básico 39.99 (1) · Pro 89.99 (hasta 3) · Full 129.99 (todos)", () => {
+    expect(PLANS.map((p) => p.id)).toEqual(["basico", "pro", "full"])
+
+    const basico = PLANS.find((p) => p.id === "basico")!
+    expect(basico.name).toBe("Básico")
+    expect(basico.priceUsdMonth).toBe("39.99")
+    expect(basico.priceUsdWeek).toBe("11.99")
+    expect(basico.cupoLabel.toLowerCase()).toMatch(/1 m[oó]dulo/)
+
+    const pro = PLANS.find((p) => p.id === "pro")!
+    expect(pro.name).toBe("Pro")
+    expect(pro.priceUsdMonth).toBe("89.99")
+    expect(pro.priceUsdWeek).toBe("25.99")
+    expect(pro.cupoLabel.toLowerCase()).toMatch(/3/)
+    expect(pro.highlighted).toBe(true)
+
+    const full = PLANS.find((p) => p.id === "full")!
+    expect(full.name).toBe("Full")
+    expect(full.priceUsdMonth).toBe("129.99")
+    expect(full.priceUsdWeek).toBe("36.99")
+    expect(full.cupoLabel.toLowerCase()).toMatch(/todos/)
   })
 
-  test("FAQ ¿Cuánto sale? habla de $69.99 USD por módulo / mes, sin 30.000/ARS/19.900/Desde", () => {
+  test("precio de entrada (desde) es 39.99", () => {
+    expect(PRICE_FROM_USD).toBe("39.99")
+  })
+
+  test("FAQ ¿Cuánto sale? habla de los 3 planes, cobro ARS, sin 69.99/30.000/19.900", () => {
     const item = FAQ_ITEMS.find((f) => f.question === "¿Cuánto sale?")
     expect(item).toBeDefined()
     const answer = item!.answer
-    expect(answer).toContain("$69.99")
-    expect(answer).toMatch(/USD|US\$|dólar/i)
-    expect(answer.toLowerCase()).toMatch(/módulo/)
+    expect(answer).toContain("39.99")
+    expect(answer).toContain("89.99")
+    expect(answer).toContain("129.99")
+    expect(answer).toMatch(/B[aá]sico/i)
+    expect(answer).toMatch(/Pro/i)
+    expect(answer).toMatch(/Full/i)
+    expect(answer).toMatch(/ARS|pesos/i)
     expect(answer.toLowerCase()).toMatch(/mes/)
+    expect(answer).not.toContain("69.99")
     expect(answer).not.toContain("30.000")
     expect(answer).not.toContain("19.900")
-    expect(answer).not.toContain("ARS")
-    expect(answer).not.toContain("Desde")
   })
 
-  test("ningún FAQ menciona 19.900 ni 30.000", () => {
+  test("FAQ incluye cómo empiezo (plan → pago → cuenta)", () => {
+    const item = FAQ_ITEMS.find(
+      (f) =>
+        f.question.toLowerCase().includes("cómo empiezo") ||
+        f.question.toLowerCase().includes("como empiezo"),
+    )
+    expect(item).toBeDefined()
+    const a = item!.answer.toLowerCase()
+    expect(a).toMatch(/plan/)
+    expect(a).toMatch(/pag/)
+    expect(a).toMatch(/cuenta/)
+  })
+
+  test("ningún FAQ menciona 19.900, 30.000 ni 69.99", () => {
     for (const item of FAQ_ITEMS) {
       expect(item.answer).not.toContain("19.900")
       expect(item.answer).not.toContain("30.000")
+      expect(item.answer).not.toContain("69.99")
       expect(item.question).not.toContain("19.900")
       expect(item.question).not.toContain("30.000")
+      expect(item.question).not.toContain("69.99")
     }
   })
 
-  test("metadata SEO/OG/Twitter usa $69.99 USD por módulo, sin 30.000/ARS/19.900/Desde", () => {
+  test("metadata SEO/OG/Twitter: planes desde 39.99, sin 69.99/30.000/19.900", () => {
     const descriptions = [
       metadata.description,
       metadata.openGraph?.description,
@@ -42,13 +84,11 @@ describe("landing pricing copy", () => {
     ]
     for (const description of descriptions) {
       expect(description).toBeString()
-      expect(description).toContain("$69.99")
-      expect(description).toMatch(/USD/)
-      expect(description!.toLowerCase()).toMatch(/módulo/)
+      expect(description).toContain("39.99")
+      expect(description).toMatch(/USD|plan/i)
+      expect(description).not.toContain("69.99")
       expect(description).not.toContain("30.000")
       expect(description).not.toContain("19.900")
-      expect(description).not.toContain("ARS")
-      expect(description).not.toContain("Desde")
     }
   })
 })
