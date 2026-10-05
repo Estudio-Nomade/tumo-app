@@ -21,6 +21,7 @@ async function migrate() {
     "016_schema_normalization_expand.sql",
     "017_saas_tenant_subscriptions.sql",
     "018_saas_checkout_sessions.sql",
+    "019_saas_owner_accounts.sql",
   ]
   for (const file of files) {
     const migration = readFileSync(

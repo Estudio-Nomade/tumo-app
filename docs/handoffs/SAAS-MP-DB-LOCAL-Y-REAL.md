@@ -44,17 +44,19 @@ docker exec tumo-supabase-db psql -U postgres -d postgres -c '\d tenant_subscrip
 | 3 | App branch `feat/saas-mp-subscriptions` | Deploy código que lee `saas_subscription` en admin |
 | 4 | `shell/db/migrations/018_saas_checkout_sessions.sql` | `checkout_sessions` + `provider_events` |
 | 5 | Mirror `supabase/migrations/20261005130000_saas_checkout_sessions.sql` | Idem |
+| 6 | `shell/billing/checkout/{apply-event,provision}.ts` + fake path | Post-pago provision |
+| 7 | `shell/db/migrations/019_saas_owner_accounts.sql` + mirror | `owner_accounts` + `employees.owner_account_id` |
 
 ### Aún NO (siguiente slices — agregar acá al cerrarlos)
 
 | # | Artefacto | Notas |
 |---|-----------|--------|
-| 6 | Adapter MP real (`MP_ACCESS_TOKEN`) | Preferences API + webhook verify |
-| 7 | `owner_accounts` + link employee | Login email self-serve |
-| 8 | Provision post-pago | business + modules + tenant_subscriptions |
+| 8 | Adapter MP real (`MP_ACCESS_TOKEN`) | Preferences API + webhook verify |
 | 9 | UI `/signup` + landing CTA flag | |
-| 10 | Env `MP_*`, `SELF_SERVICE_SIGNUP` en Vercel | Secrets |
-| 11 | Webhook URL pública | `https://…/api/billing/webhooks/mercadopago` |
+| 10 | Owner login email+password | cookie `session_token` |
+| 11 | Env `MP_*`, `SELF_SERVICE_SIGNUP` en Vercel | Secrets |
+| 12 | Webhook URL pública | `https://…/api/billing/webhooks/mercadopago` |
+| 13 | Renew + grace + reconciler | |
 
 ### Cómo aplicar en real (amigo)
 
