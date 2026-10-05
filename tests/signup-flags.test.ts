@@ -12,9 +12,25 @@ describe("signup flags", () => {
     expect(isSelfServiceSignupEnabled({ SELF_SERVICE_SIGNUP: "yes" })).toBe(true)
   })
 
-  test("missing or false disables", () => {
+  test("NEXT_PUBLIC_SELF_SERVICE_SIGNUP also enables", () => {
+    expect(
+      isSelfServiceSignupEnabled({ NEXT_PUBLIC_SELF_SERVICE_SIGNUP: "true" })
+    ).toBe(true)
+  })
+
+  test("explicit false disables even in development", () => {
+    expect(
+      isSelfServiceSignupEnabled({
+        SELF_SERVICE_SIGNUP: "false",
+        NODE_ENV: "development",
+      })
+    ).toBe(false)
+  })
+
+  test("missing flag: development defaults on, production off", () => {
+    expect(isSelfServiceSignupEnabled({ NODE_ENV: "development" })).toBe(true)
+    expect(isSelfServiceSignupEnabled({ NODE_ENV: "production" })).toBe(false)
     expect(isSelfServiceSignupEnabled({})).toBe(false)
-    expect(isSelfServiceSignupEnabled({ SELF_SERVICE_SIGNUP: "false" })).toBe(false)
   })
 
   test("planCheckoutHref uses /signup when enabled else WA", () => {
