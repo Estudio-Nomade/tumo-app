@@ -21,8 +21,9 @@ export function createFakeMercadoPagoProvider(opts?: {
     },
     async parseAndVerifyWebhook(
       rawBody: string,
-      _headers: Headers | Record<string, string>
+      _headers?: Headers | Record<string, string>
     ): Promise<ProviderEvent> {
+      void _headers
       const data = JSON.parse(rawBody) as {
         type?: string
         external_reference?: string
