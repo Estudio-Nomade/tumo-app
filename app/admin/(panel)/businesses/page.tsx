@@ -18,6 +18,13 @@ export default async function AdminBusinessesPage() {
               status: BillingStatus
               monthly_amount_cents: number
             }
+            saas_subscription?: {
+              plan_id: string
+              plan_label: string
+              status: string
+              status_label?: string
+              subscribed_at: string | null
+            } | null
           }[]
         )
       : []

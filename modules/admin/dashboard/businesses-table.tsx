@@ -15,6 +15,13 @@ export type AdminBusinessRow = {
     status: BillingStatus
     monthly_amount_cents: number
   }
+  saas_subscription?: {
+    plan_id: string
+    plan_label: string
+    status: string
+    status_label?: string
+    subscribed_at: string | null
+  } | null
 }
 
 function formatDate(iso: string | null): string {
@@ -41,6 +48,7 @@ export function BusinessesTable({ rows }: { rows: AdminBusinessRow[] }) {
         <thead className="border-b border-slate-100 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
           <tr>
             <th className="px-4 py-3 font-semibold">Negocio</th>
+            <th className="px-4 py-3 font-semibold">Plan</th>
             <th className="px-4 py-3 font-semibold">Módulos</th>
             <th className="px-4 py-3 font-semibold">Alta</th>
             <th className="px-4 py-3 font-semibold">Billing</th>
@@ -56,6 +64,15 @@ export function BusinessesTable({ rows }: { rows: AdminBusinessRow[] }) {
               <td className="px-4 py-3">
                 <div className="font-medium text-slate-900">{row.name}</div>
                 <div className="text-xs text-slate-500">/{row.slug}</div>
+              </td>
+              <td className="px-4 py-3">
+                {row.saas_subscription ? (
+                  <span className="inline-flex rounded-full bg-violet-100 px-2.5 py-0.5 text-xs font-semibold text-violet-800">
+                    {row.saas_subscription.plan_label}
+                  </span>
+                ) : (
+                  <span className="text-xs text-slate-400">manual</span>
+                )}
               </td>
               <td className="px-4 py-3">
                 <div className="flex flex-wrap gap-1">

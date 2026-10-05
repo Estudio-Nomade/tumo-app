@@ -19,6 +19,7 @@ async function migrate() {
     "014_billing_default_usd_per_module.sql",
     "015_business_module_subscriptions.sql",
     "016_schema_normalization_expand.sql",
+    "017_saas_tenant_subscriptions.sql",
   ]
   for (const file of files) {
     const migration = readFileSync(

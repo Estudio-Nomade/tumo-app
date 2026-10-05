@@ -1,6 +1,7 @@
 import type { BillingStatus, JsonResult, SqlTagged } from "@/modules/admin/lib/types"
 import { businessAnchor } from "@/shell/billing/cycle"
 import { monthlyAmountCentsForModuleCount } from "@/shell/billing/pricing"
+import { planLabel, saasStatusLabel } from "@/shell/billing/plan-catalog"
 
 export type AdminBusinessesDeps = {
   sql: SqlTagged
@@ -26,15 +27,65 @@ type EmployeeRow = {
   is_active: boolean
 }
 
+type TenantSubRow = {
+  id?: string
+  business_id?: string
+  plan_id: string
+  billing_interval?: string
+  module_ids?: string[] | null
+  amount_cents: number
+  currency: string
+  price_version?: number
+  status: string
+  provider?: string
+  provider_subscription_id?: string | null
+  subscribed_at: Date | string | null
+  current_period_end?: Date | string | null
+  grace_deadline_at?: Date | string | null
+}
+
 function serializeDate(v: Date | string | null | undefined): string | null {
   if (v == null) return null
   if (v instanceof Date) return v.toISOString()
   return String(v)
 }
 
+function mapSaasSubscriptionDetail(row: TenantSubRow | null | undefined) {
+  if (!row) return null
+  return {
+    id: row.id ?? null,
+    plan_id: row.plan_id,
+    plan_label: planLabel(row.plan_id),
+    billing_interval: row.billing_interval ?? "month",
+    module_ids: row.module_ids ?? [],
+    amount_cents: row.amount_cents,
+    currency: row.currency,
+    price_version: row.price_version ?? 1,
+    status: row.status,
+    status_label: saasStatusLabel(row.status),
+    provider: row.provider ?? "mercadopago",
+    provider_subscription_id: row.provider_subscription_id ?? null,
+    subscribed_at: serializeDate(row.subscribed_at),
+    current_period_end: serializeDate(row.current_period_end),
+    grace_deadline_at: serializeDate(row.grace_deadline_at),
+  }
+}
+
+function mapSaasSubscriptionList(row: TenantSubRow | null | undefined) {
+  if (!row) return null
+  return {
+    plan_id: row.plan_id,
+    plan_label: planLabel(row.plan_id),
+    status: row.status,
+    status_label: saasStatusLabel(row.status),
+    subscribed_at: serializeDate(row.subscribed_at),
+    amount_cents: row.amount_cents,
+    currency: row.currency,
+  }
+}
+
 export async function listBusinesses(
-  deps: AdminBusinessesDeps,
-  _input: Record<string, never> = {}
+  deps: AdminBusinessesDeps
 ): Promise<JsonResult> {
   const rows = (await deps.sql`
     SELECT
@@ -52,22 +103,49 @@ export async function listBusinesses(
     ORDER BY b.created_at ASC
   `) as BusinessListRow[]
 
-  const businesses = rows.map((r) => ({
-    id: r.id,
-    name: r.name,
-    slug: r.slug,
-    active_modules: r.active_modules ?? [],
-    created_at: serializeDate(r.created_at),
-    billing: {
-      status: (r.billing_status ?? "pendiente") as BillingStatus,
-      // Tarifa de catálogo siempre N×6999 (ignora legacy ARS en DB).
-      monthly_amount_cents: monthlyAmountCentsForModuleCount(
-        (r.active_modules ?? []).length
-      ),
-      last_payment_at: serializeDate(r.last_payment_at),
-      next_due_at: serializeDate(r.next_due_at),
-    },
-  }))
+  const ids = rows.map((r) => r.id)
+  const subByBusiness = new Map<string, TenantSubRow>()
+  if (ids.length > 0) {
+    const subs = (await deps.sql`
+      SELECT
+        business_id,
+        plan_id,
+        status,
+        subscribed_at,
+        amount_cents,
+        currency
+      FROM tenant_subscriptions
+      WHERE business_id = ANY(${ids})
+        AND status IN ('active', 'past_due', 'paused')
+      ORDER BY subscribed_at DESC
+    `) as TenantSubRow[]
+    for (const s of subs) {
+      const bid = s.business_id
+      if (bid && !subByBusiness.has(bid)) subByBusiness.set(bid, s)
+    }
+  }
+
+  const businesses = rows.map((r) => {
+    const saas = subByBusiness.get(r.id)
+    const moduleCount = (r.active_modules ?? []).length
+    const monthly = saas
+      ? saas.amount_cents
+      : monthlyAmountCentsForModuleCount(moduleCount)
+    return {
+      id: r.id,
+      name: r.name,
+      slug: r.slug,
+      active_modules: r.active_modules ?? [],
+      created_at: serializeDate(r.created_at),
+      saas_subscription: mapSaasSubscriptionList(saas),
+      billing: {
+        status: (r.billing_status ?? "pendiente") as BillingStatus,
+        monthly_amount_cents: monthly,
+        last_payment_at: serializeDate(r.last_payment_at),
+        next_due_at: serializeDate(r.next_due_at),
+      },
+    }
+  })
 
   return { status: 200, body: { businesses } }
 }
@@ -138,9 +216,35 @@ export async function getBusinessAdmin(
     deactivated_at: Date | string | null
   }[]
 
+  const tenantSubs = (await deps.sql`
+    SELECT
+      id,
+      plan_id,
+      billing_interval,
+      module_ids,
+      amount_cents,
+      currency,
+      price_version,
+      status,
+      provider,
+      provider_subscription_id,
+      subscribed_at,
+      current_period_end,
+      grace_deadline_at
+    FROM tenant_subscriptions
+    WHERE business_id = ${businessId}
+      AND status IN ('active', 'past_due', 'paused')
+    ORDER BY subscribed_at DESC
+    LIMIT 1
+  `) as TenantSubRow[]
+
+  const saasRow = tenantSubs[0] ?? null
   const owner = employees.find((e) => e.role === "owner")
   const activeModules = r.active_modules ?? []
   const anchor = businessAnchor(moduleSubs)
+  const monthly = saasRow
+    ? saasRow.amount_cents
+    : monthlyAmountCentsForModuleCount(activeModules.length)
 
   return {
     status: 200,
@@ -168,11 +272,10 @@ export async function getBusinessAdmin(
           billing_anchor_at: serializeDate(s.billing_anchor_at),
           deactivated_at: serializeDate(s.deactivated_at),
         })),
+        saas_subscription: mapSaasSubscriptionDetail(saasRow),
         billing: {
           status: (r.billing_status ?? "pendiente") as BillingStatus,
-          monthly_amount_cents: monthlyAmountCentsForModuleCount(
-            activeModules.length
-          ),
+          monthly_amount_cents: monthly,
           last_payment_at: serializeDate(r.last_payment_at),
           next_due_at: serializeDate(r.next_due_at),
           business_anchor_at: serializeDate(anchor),
