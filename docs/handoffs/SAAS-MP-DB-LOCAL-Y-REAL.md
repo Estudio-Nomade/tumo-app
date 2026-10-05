@@ -42,16 +42,19 @@ docker exec tumo-supabase-db psql -U postgres -d postgres -c '\d tenant_subscrip
 | 1 | `shell/db/migrations/017_saas_tenant_subscriptions.sql` | Crear `tenant_subscriptions` |
 | 2 | Mirror `supabase/migrations/20261005120000_saas_tenant_subscriptions.sql` | Mismo SQL vía CLI push o SQL editor |
 | 3 | App branch `feat/saas-mp-subscriptions` | Deploy código que lee `saas_subscription` en admin |
+| 4 | `shell/db/migrations/018_saas_checkout_sessions.sql` | `checkout_sessions` + `provider_events` |
+| 5 | Mirror `supabase/migrations/20261005130000_saas_checkout_sessions.sql` | Idem |
 
 ### Aún NO (siguiente slices — agregar acá al cerrarlos)
 
 | # | Artefacto | Notas |
 |---|-----------|--------|
-| 4 | `checkout_sessions` | Pre-pago / state machine |
-| 5 | `provider_events` | Idempotencia webhooks MP |
-| 6 | `owner_accounts` + link employee | Login email self-serve |
-| 7 | Env `MP_*`, `SELF_SERVICE_SIGNUP` | Secrets Vercel / amigo |
-| 8 | Webhook URL pública | `https://…/api/billing/webhooks/mercadopago` |
+| 6 | Adapter MP real (`MP_ACCESS_TOKEN`) | Preferences API + webhook verify |
+| 7 | `owner_accounts` + link employee | Login email self-serve |
+| 8 | Provision post-pago | business + modules + tenant_subscriptions |
+| 9 | UI `/signup` + landing CTA flag | |
+| 10 | Env `MP_*`, `SELF_SERVICE_SIGNUP` en Vercel | Secrets |
+| 11 | Webhook URL pública | `https://…/api/billing/webhooks/mercadopago` |
 
 ### Cómo aplicar en real (amigo)
 
