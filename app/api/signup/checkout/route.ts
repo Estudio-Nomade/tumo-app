@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { postSignupCheckout } from "@/modules/signup/api/checkout"
+import { jsonFromCheckoutThrow } from "@/modules/signup/lib/checkout-route-error"
 import { signupCheckoutDeps } from "@/modules/signup/lib/default-deps"
 
 export async function POST(req: Request) {
@@ -16,16 +17,25 @@ export async function POST(req: Request) {
       ? [body.moduleIds]
       : []
 
-  const result = await postSignupCheckout(signupCheckoutDeps, {
-    email: typeof body.email === "string" ? body.email : "",
-    password: typeof body.password === "string" ? body.password : "",
-    businessName: typeof body.businessName === "string" ? body.businessName : "",
-    payerName: typeof body.payerName === "string" ? body.payerName : "",
-    payerDocument:
-      typeof body.payerDocument === "string" ? body.payerDocument : undefined,
-    planId: typeof body.planId === "string" ? body.planId : "",
-    moduleIds,
-  })
+  try {
+    const result = await postSignupCheckout(signupCheckoutDeps, {
+      email: typeof body.email === "string" ? body.email : "",
+      password: typeof body.password === "string" ? body.password : "",
+      businessName:
+        typeof body.businessName === "string" ? body.businessName : "",
+      payerName: typeof body.payerName === "string" ? body.payerName : "",
+      payerDocument:
+        typeof body.payerDocument === "string" ? body.payerDocument : undefined,
+      planId: typeof body.planId === "string" ? body.planId : "",
+      moduleIds,
+    })
 
-  return NextResponse.json(result.body, { status: result.status })
+    return NextResponse.json(result.body, { status: result.status })
+  } catch (err) {
+    console.error("[signup/checkout]", err)
+    const mapped = jsonFromCheckoutThrow(err)
+    return NextResponse.json(mapped.body, { status: mapped.status })
+  }
 }
+
+

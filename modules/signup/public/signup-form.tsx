@@ -6,11 +6,16 @@ import { PLANS } from "@/modules/landing/config"
 import { PLAN_CATALOG, type PlanId } from "@/shell/billing/plan-catalog"
 import { MODULE_OPTIONS } from "./module-options"
 import {
+  messageFromCheckoutHttp,
+  NETWORK_ERROR_MESSAGE,
+} from "./checkout-client-errors"
+import {
   cupoCounterLabel,
   defaultModulesForPlan,
   modulesAfterPlanChange,
   toggleModuleSelection,
 } from "./module-selection"
+
 
 function parsePlanId(value?: string): PlanId {
   return value === "basico" || value === "pro" || value === "full"
@@ -76,13 +81,18 @@ export function SignupForm({ initialPlan }: { initialPlan?: string }) {
           moduleIds: modules,
         }),
       })
-      const data = (await res.json()) as {
+      let data: {
         error?: string
         redirectUrl?: string
         sessionId?: string
+      } = {}
+      try {
+        data = (await res.json()) as typeof data
+      } catch {
+        /* empty / non-JSON body */
       }
       if (!res.ok) {
-        setError(data.error ?? "No se pudo iniciar el checkout.")
+        setError(messageFromCheckoutHttp(res.status, data))
         return
       }
       if (data.redirectUrl) {
@@ -91,7 +101,7 @@ export function SignupForm({ initialPlan }: { initialPlan?: string }) {
       }
       setError("Respuesta sin redirect.")
     } catch {
-      setError("Error de red. Reintentá.")
+      setError(NETWORK_ERROR_MESSAGE)
     } finally {
       setBusy(false)
     }
