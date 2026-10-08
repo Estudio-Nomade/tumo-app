@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useMemo, useState } from "react"
+import { useEffect, useState, useSyncExternalStore } from "react"
 import { PLANS } from "@/modules/landing/config"
 import { PLAN_CATALOG, type PlanId } from "@/shell/billing/plan-catalog"
 import { MODULE_OPTIONS } from "./module-options"
@@ -15,7 +15,11 @@ import {
   modulesAfterPlanChange,
   toggleModuleSelection,
 } from "./module-selection"
-
+import {
+  loadSignupDraft,
+  saveSignupDraft,
+  type SignupDraftV1,
+} from "./signup-draft"
 
 function parsePlanId(value?: string): PlanId {
   return value === "basico" || value === "pro" || value === "full"
@@ -33,41 +37,127 @@ function cupoLabelFor(planId: PlanId): string {
   return PLANS.find((p) => p.id === planId)?.cupoLabel ?? ""
 }
 
-export function SignupForm({ initialPlan }: { initialPlan?: string }) {
-  const defaultPlan = parsePlanId(initialPlan)
+function subscribeDraftNoop() {
+  return () => {}
+}
 
-  const [planId, setPlanId] = useState<PlanId>(defaultPlan)
-  const [modules, setModules] = useState<string[]>(() =>
-    defaultModulesForPlan(defaultPlan)
+let cachedDraftKey = ""
+let cachedDraft: SignupDraftV1 | null = null
+
+/** Stable getSnapshot for useSyncExternalStore (same ref when content unchanged). */
+function readClientDraft(): SignupDraftV1 | null {
+  const draft = loadSignupDraft()
+  const key = draft ? JSON.stringify(draft) : ""
+  if (key === cachedDraftKey) return cachedDraft
+  cachedDraftKey = key
+  cachedDraft = draft
+  return cachedDraft
+}
+
+type FormFields = {
+  planId: PlanId
+  modules: string[]
+  businessName: string
+  payerName: string
+  email: string
+}
+
+function fieldsFromDraft(
+  draft: SignupDraftV1 | null,
+  fallbackPlan: PlanId
+): FormFields {
+  if (!draft) {
+    return {
+      planId: fallbackPlan,
+      modules: defaultModulesForPlan(fallbackPlan),
+      businessName: "",
+      payerName: "",
+      email: "",
+    }
+  }
+  return {
+    planId: draft.planId,
+    modules: draft.moduleIds,
+    businessName: draft.businessName,
+    payerName: draft.payerName,
+    email: draft.email,
+  }
+}
+
+export function SignupForm({ initialPlan }: { initialPlan?: string }) {
+  const urlPlan = parsePlanId(initialPlan)
+  // sessionStorage draft wins over ?plan= when returning from checkout.
+  // Fresh landing visits have no draft → URL plan applies.
+  const storedDraft = useSyncExternalStore(
+    subscribeDraftNoop,
+    readClientDraft,
+    () => null
   )
-  const [email, setEmail] = useState("")
+  const seed = fieldsFromDraft(storedDraft, urlPlan)
+  const [local, setLocal] = useState<FormFields | null>(null)
+  const fields = local ?? seed
+  const { planId, modules, businessName, payerName, email } = fields
   const [password, setPassword] = useState("")
-  const [businessName, setBusinessName] = useState("")
-  const [payerName, setPayerName] = useState("")
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const plan = useMemo(
-    () => PLAN_CATALOG.find((p) => p.id === planId)!,
-    [planId]
-  )
+  // bfcache Back can restore in-memory password; product omits pass from draft.
+  useEffect(() => {
+    function onPageShow(e: PageTransitionEvent) {
+      if (e.persisted) setPassword("")
+    }
+    window.addEventListener("pageshow", onPageShow)
+    return () => window.removeEventListener("pageshow", onPageShow)
+  }, [])
+
+  useEffect(() => {
+    if (!local) return
+    saveSignupDraft({
+      planId: local.planId,
+      moduleIds: local.modules,
+      businessName: local.businessName,
+      payerName: local.payerName,
+      email: local.email,
+    })
+  }, [local])
+
+  const plan = PLAN_CATALOG.find((p) => p.id === planId)!
 
   const counter = cupoCounterLabel(planId, modules.length)
   const fullLocked = planId === "full"
 
+  function patch(partial: Partial<FormFields>) {
+    setLocal((prev) => ({ ...(prev ?? seed), ...partial }))
+  }
+
   function onPlanChange(id: PlanId) {
-    setPlanId(id)
-    setModules((prev) => modulesAfterPlanChange(id, prev))
+    const base = local ?? seed
+    setLocal({
+      ...base,
+      planId: id,
+      modules: modulesAfterPlanChange(id, base.modules),
+    })
   }
 
   function onToggleModule(id: string) {
-    setModules((prev) => toggleModuleSelection(planId, prev, id))
+    const base = local ?? seed
+    setLocal({
+      ...base,
+      modules: toggleModuleSelection(planId, base.modules, id),
+    })
   }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setBusy(true)
+    saveSignupDraft({
+      planId,
+      moduleIds: modules,
+      businessName,
+      payerName,
+      email,
+    })
     try {
       const res = await fetch("/api/signup/checkout", {
         method: "POST",
@@ -250,7 +340,7 @@ export function SignupForm({ initialPlan }: { initialPlan?: string }) {
             required
             className="min-h-[48px] rounded-xl border border-[#333] bg-[#111] px-3"
             value={businessName}
-            onChange={(e) => setBusinessName(e.target.value)}
+            onChange={(e) => patch({ businessName: e.target.value })}
           />
         </label>
         <label className="flex flex-col gap-1 text-sm">
@@ -259,7 +349,7 @@ export function SignupForm({ initialPlan }: { initialPlan?: string }) {
             required
             className="min-h-[48px] rounded-xl border border-[#333] bg-[#111] px-3"
             value={payerName}
-            onChange={(e) => setPayerName(e.target.value)}
+            onChange={(e) => patch({ payerName: e.target.value })}
           />
         </label>
         <label className="flex flex-col gap-1 text-sm">
@@ -269,7 +359,7 @@ export function SignupForm({ initialPlan }: { initialPlan?: string }) {
             type="email"
             className="min-h-[48px] rounded-xl border border-[#333] bg-[#111] px-3"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => patch({ email: e.target.value })}
           />
         </label>
         <label className="flex flex-col gap-1 text-sm">
