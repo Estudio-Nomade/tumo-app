@@ -143,7 +143,7 @@ export function SignupContinueClient({
 
 function Box({ children }: { children: React.ReactNode }) {
   return (
-    <div className="mx-auto flex w-full max-w-md flex-col gap-3 rounded-2xl border border-[#262626] bg-[#0A0A0A] p-6 text-white">
+    <div className="mx-auto flex w-full max-w-md flex-col gap-3 rounded-[24px] border border-[#262626] bg-[#0A0A0A] p-6 text-white">
       {children}
     </div>
   )
