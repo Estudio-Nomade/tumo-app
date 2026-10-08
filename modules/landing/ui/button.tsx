@@ -1,6 +1,6 @@
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react"
 
-type Variant = "primary" | "outline" | "ghost" | "brandOutline"
+type Variant = "primary" | "outline" | "ghost" | "brandOutline" | "inverse"
 
 const variantClass: Record<Variant, string> = {
   primary:
@@ -11,6 +11,9 @@ const variantClass: Record<Variant, string> = {
     "bg-[#FFFFFF18] text-[#FFFFFF] border border-[#FFFFFF55] hover:bg-[#FFFFFF22]",
   brandOutline:
     "bg-[#0A0A0A] text-[#FFFFFF] border-[1.5px] border-[#7754E3] hover:bg-[#7754E322]",
+  /** White pill on purple/brand surfaces — never pair with primary (white text wins). */
+  inverse:
+    "bg-[#FFFFFF] text-[#0A0A0A] border border-transparent hover:bg-[#F5F5F5]",
 }
 
 type Shared = {

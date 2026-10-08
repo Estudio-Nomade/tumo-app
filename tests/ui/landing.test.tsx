@@ -67,6 +67,18 @@ describe("LandingPage", () => {
     expect(html).toMatch(/plan%20B%C3%A1sico|plan%20Basico|B%C3%A1sico/i)
   })
 
+  test("CTA Quiero Pro: contraste legible (no blanco-sobre-blanco)", () => {
+    const html = renderToStaticMarkup(<LandingPage />)
+    const idx = html.indexOf("Quiero Pro")
+    expect(idx).toBeGreaterThan(-1)
+    const windowStart = Math.max(0, idx - 500)
+    const chunk = html.slice(windowStart, idx + 40)
+    // inverse pill: white bg + near-black text (no primary text-[#FFFFFF] clash)
+    expect(chunk).toMatch(/bg-\[#FFFFFF\]/)
+    expect(chunk).toMatch(/text-\[#0A0A0A\]/)
+    expect(chunk).not.toContain("text-[#FFFFFF]")
+  })
+
   test("casos y FAQ esenciales", () => {
     const html = renderToStaticMarkup(<LandingPage />)
     expect(html).toContain("Carri")

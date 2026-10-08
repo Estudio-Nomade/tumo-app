@@ -93,12 +93,8 @@ export function PricingSection() {
                   planId: plan.id,
                   waHref: whatsappHref(plan.waMessage),
                 })}
-                className={[
-                  "mt-8 min-h-[52px] w-full text-base",
-                  plan.highlighted
-                    ? "bg-[#FFFFFF] text-[#5B35C9] hover:bg-[#F5F5F5]"
-                    : "",
-                ].join(" ")}
+                variant={plan.highlighted ? "inverse" : "primary"}
+                className="mt-8 min-h-[52px] w-full text-base"
                 {...(selfServe
                   ? {}
                   : { target: "_blank", rel: "noopener noreferrer" })}
