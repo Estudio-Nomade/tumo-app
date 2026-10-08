@@ -230,3 +230,23 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-admin-billing-usd-per-module.md`
   summary: PRICE_PER_MODULE_CENTS y landing PRICE_PER_MODULE_USD no comparten fuente única
   evidence: Comment-only alignment; shared constant cross-layer deferred
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-fix-signup-plan-modules-ux.md`
+  summary: Dual SoT MODULE_OPTIONS (TOOLS) vs getRegisteredModuleIds — full puede desalinearse si registry crece
+  evidence: Full POSTs ALL_MODULE_IDS from landing TOOLS filter; server validates against registered modules
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-fix-signup-plan-modules-ux.md`
+  summary: Cards muestran USD lista mientras checkout MP cobra ARS placeholder
+  evidence: priceUsd from PLAN_CATALOG cents; amountArsCentsMonth used server-side — pre-existing commercial gap
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-fix-signup-plan-modules-ux.md`
+  summary: Subtitle “Vas a pagar con Mercado Pago” puede no reflejar provider fake en local
+  evidence: BILLING_PROVIDER may still be fake; honest copy deferred to ops/provider UI
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-fix-signup-plan-modules-ux.md`
+  summary: Pro cupo 3 con solo 3 módulos = stack completo más barato que Full
+  evidence: Product/catalog issue; not this UI fix
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-fix-signup-plan-modules-ux.md`
+  summary: continue-client Box max-w-md vs form max-w-lg — funnel chrome mismatch residual
+  evidence: Only radius polished; full continue redesign out of scope
