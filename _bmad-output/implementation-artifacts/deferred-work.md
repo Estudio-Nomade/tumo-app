@@ -250,3 +250,15 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-fix-signup-plan-modules-ux.md`
   summary: continue-client Box max-w-md vs form max-w-lg — funnel chrome mismatch residual
   evidence: Only radius polished; full continue redesign out of scope
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-fix-signup-form-draft-persist.md`
+  summary: Draft sessionStorage gana siempre a ?plan= fresco de landing si hay draft viejo en la tab
+  evidence: By-design rule (draft > URL); multi-CTA same tab for 2h may show prior plan — product may want explicit override later
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-fix-signup-form-draft-persist.md`
+  summary: useSyncExternalStore subscribe es noop — no reacciona a clear cross-tab sin remount
+  evidence: Signup is full-nav; multi-tab live sync out of scope
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-fix-signup-form-draft-persist.md`
+  summary: PII (email/nombre) en sessionStorage legible por XSS
+  evidence: Acceptable for signup draft TTL; minimize later if threat model tightens

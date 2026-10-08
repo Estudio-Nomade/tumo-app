@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useCallback, useEffect, useState } from "react"
+import { clearSignupDraft } from "./signup-draft"
 
 type SessionPayload = {
   id: string
@@ -71,6 +72,12 @@ export function SignupContinueClient({
       if (timer) clearTimeout(timer)
     }
   }, [sessionId, missing, load])
+
+  useEffect(() => {
+    if (data?.status === "provisioned") {
+      clearSignupDraft()
+    }
+  }, [data?.status])
 
   if (err) {
     return (
