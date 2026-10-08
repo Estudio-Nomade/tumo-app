@@ -2,6 +2,9 @@ import type { Metadata } from "next"
 import { LandingPage } from "@/modules/landing/landing-page"
 import { PRICE_FROM_USD } from "@/modules/landing/config"
 
+/** Re-read SELF_SERVICE_SIGNUP each request — avoid baking WA hrefs into static HTML. */
+export const dynamic = "force-dynamic"
+
 const metaDescription = `Sistema digital para tu comercio. Planes desde $${PRICE_FROM_USD} USD/mes (Básico 1 módulo · Pro hasta 3 · Full todos). Cobro en ARS.`
 
 export const metadata: Metadata = {

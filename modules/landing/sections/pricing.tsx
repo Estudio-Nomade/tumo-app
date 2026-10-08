@@ -1,7 +1,12 @@
 import { PLANS, whatsappHref } from "../config"
 import { LandingButton } from "../ui/button"
+import {
+  isSelfServiceSignupEnabled,
+  planCheckoutHref,
+} from "@/modules/signup/lib/flags"
 
 export function PricingSection() {
+  const selfServe = isSelfServiceSignupEnabled()
   return (
     <section
       id="precios"
@@ -83,15 +88,16 @@ export function PricingSection() {
                 {plan.blurb}
               </p>
               <LandingButton
-                href={whatsappHref(plan.waMessage)}
-                className={[
-                  "mt-8 min-h-[52px] w-full text-base",
-                  plan.highlighted
-                    ? "bg-[#FFFFFF] text-[#5B35C9] hover:bg-[#F5F5F5]"
-                    : "",
-                ].join(" ")}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={planCheckoutHref({
+                  enabled: selfServe,
+                  planId: plan.id,
+                  waHref: whatsappHref(plan.waMessage),
+                })}
+                variant={plan.highlighted ? "inverse" : "primary"}
+                className="mt-8 min-h-[52px] w-full text-base"
+                {...(selfServe
+                  ? {}
+                  : { target: "_blank", rel: "noopener noreferrer" })}
               >
                 Quiero {plan.name}
               </LandingButton>

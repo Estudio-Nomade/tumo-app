@@ -15,6 +15,8 @@ import {
   BillingBadge,
   ModuleBadge,
 } from "@/modules/admin/dashboard/billing-badge"
+import { SaasSubscriptionSection } from "@/modules/admin/dashboard/saas-subscription-section"
+import type { SaasSubscriptionData } from "@/modules/admin/dashboard/saas-subscription-section"
 import {
   syncDetailModuleState,
   upsertModuleSubscription,
@@ -28,6 +30,8 @@ export type ModuleSubscriptionData = {
   billing_anchor_at: string | null
   deactivated_at: string | null
 }
+
+export type { SaasSubscriptionData }
 
 export type BusinessDetailData = {
   id: string
@@ -44,6 +48,7 @@ export type BusinessDetailData = {
     is_active: boolean
   }[]
   module_subscriptions?: ModuleSubscriptionData[]
+  saas_subscription?: SaasSubscriptionData | null
   billing: {
     status: BillingStatus
     monthly_amount_cents: number
@@ -60,10 +65,10 @@ export type BusinessDetailData = {
   }
 }
 
-function formatMoney(cents: number): string {
+function formatMoney(cents: number, currency = "USD"): string {
   return new Intl.NumberFormat("es-AR", {
     style: "currency",
-    currency: "USD",
+    currency,
     minimumFractionDigits: 2,
   }).format(cents / 100)
 }
@@ -349,6 +354,10 @@ export function BusinessDetailClient({
         </p>
       ) : null}
 
+      {business.saas_subscription ? (
+        <SaasSubscriptionSection subscription={business.saas_subscription} />
+      ) : null}
+
       <section className="rounded-xl border border-slate-200 bg-white p-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
           Módulos
@@ -431,7 +440,11 @@ export function BusinessDetailClient({
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <BillingBadge status={business.billing.status} />
           <span className="text-sm text-slate-600">
-            {formatMoney(business.billing.monthly_amount_cents)} / mes
+            {formatMoney(
+              business.billing.monthly_amount_cents,
+              business.saas_subscription?.currency ?? "USD"
+            )}{" "}
+            / mes
           </span>
         </div>
         <dl className="mt-3 grid gap-1 text-sm text-slate-600 sm:grid-cols-2">
@@ -482,7 +495,10 @@ export function BusinessDetailClient({
               <li key={p.id} className="flex justify-between py-2">
                 <span>{formatDate(p.paid_at)}</span>
                 <span className="font-medium tabular-nums">
-                  {formatMoney(p.amount_cents)}
+                  {formatMoney(
+                    p.amount_cents,
+                    business.saas_subscription?.currency ?? "USD"
+                  )}
                 </span>
               </li>
             ))}

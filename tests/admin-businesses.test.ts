@@ -219,9 +219,163 @@ describe("getBusinessAdmin", () => {
     expect(result.status).toBe(200)
     const business = result.body.business as {
       billing: { monthly_amount_cents: number; status: string }
+      saas_subscription: null
     }
     expect(business.billing.status).toBe("vencido")
     expect(business.billing.monthly_amount_cents).toBe(6999)
+    expect(business.saas_subscription).toBeNull()
+  })
+
+  test("detalle con tenant_subscriptions expone saas_subscription y amount del plan", async () => {
+    const { sql } = makeSql((q) => {
+      if (q.includes("FROM businesses") && q.includes("billing_status")) {
+        return [
+          {
+            id: "b1",
+            name: "Nuevo",
+            slug: "nuevo",
+            active_modules: ["loyalty", "orders"],
+            created_at: new Date("2026-10-01"),
+            billing_status: "al_dia",
+            monthly_amount_cents: 8999,
+            last_payment_at: new Date("2026-10-01T15:00:00Z"),
+            next_due_at: new Date("2026-11-01T15:00:00Z"),
+            billing_notes: null,
+          },
+        ]
+      }
+      if (q.includes("FROM employees")) return []
+      if (q.includes("business_billing_payments")) return []
+      if (q.includes("business_module_subscriptions")) {
+        return [
+          {
+            module_id: "loyalty",
+            status: "active",
+            activated_at: new Date("2026-10-01T15:00:00Z"),
+            billing_anchor_at: new Date("2026-10-01T15:00:00Z"),
+            deactivated_at: null,
+          },
+          {
+            module_id: "orders",
+            status: "active",
+            activated_at: new Date("2026-10-01T15:00:00Z"),
+            billing_anchor_at: new Date("2026-10-01T15:00:00Z"),
+            deactivated_at: null,
+          },
+        ]
+      }
+      if (q.includes("tenant_subscriptions")) {
+        return [
+          {
+            id: "ts1",
+            plan_id: "pro",
+            billing_interval: "month",
+            module_ids: ["loyalty", "orders"],
+            amount_cents: 8_999_000,
+            currency: "ARS",
+            price_version: 1,
+            status: "active",
+            provider: "mercadopago",
+            provider_subscription_id: "preapproval-xyz",
+            subscribed_at: new Date("2026-10-01T15:00:00Z"),
+            current_period_end: new Date("2026-11-01T15:00:00Z"),
+            grace_deadline_at: null,
+          },
+        ]
+      }
+      return []
+    })
+    const result = await getBusinessAdmin({ sql }, { businessId: "b1" })
+    expect(result.status).toBe(200)
+    const business = result.body.business as {
+      billing: { monthly_amount_cents: number }
+      saas_subscription: {
+        plan_id: string
+        plan_label: string
+        status: string
+        status_label: string
+        subscribed_at: string | null
+        module_ids: string[]
+        amount_cents: number
+        currency: string
+        provider: string
+        provider_subscription_id: string | null
+        current_period_end: string | null
+      } | null
+    }
+    expect(business.saas_subscription).toMatchObject({
+      plan_id: "pro",
+      plan_label: "Pro",
+      status: "active",
+      status_label: "Activa",
+      module_ids: ["loyalty", "orders"],
+      amount_cents: 8_999_000,
+      currency: "ARS",
+      provider: "mercadopago",
+      provider_subscription_id: "preapproval-xyz",
+    })
+    expect(business.saas_subscription?.subscribed_at).toBe(
+      "2026-10-01T15:00:00.000Z"
+    )
+    // SaaS: mostrar amount del ciclo (ARS snapshot), no N×6999
+    expect(business.billing.monthly_amount_cents).toBe(8_999_000)
+  })
+})
+
+describe("listBusinesses saas summary", () => {
+  test("incluye saas_subscription resumida cuando hay fila", async () => {
+    let call = 0
+    const { sql } = makeSql((q) => {
+      call += 1
+      if (q.includes("FROM businesses") && q.includes("LEFT JOIN business_billing")) {
+        return [
+          {
+            id: "b1",
+            name: "Nuevo",
+            slug: "nuevo",
+            active_modules: ["loyalty"],
+            created_at: new Date("2026-10-01"),
+            billing_status: "al_dia",
+            monthly_amount_cents: 3999,
+            last_payment_at: null,
+            next_due_at: null,
+          },
+        ]
+      }
+      if (q.includes("tenant_subscriptions")) {
+        return [
+          {
+            business_id: "b1",
+            plan_id: "basico",
+            status: "active",
+            subscribed_at: new Date("2026-10-01T12:00:00Z"),
+            amount_cents: 3_999_000,
+            currency: "ARS",
+          },
+        ]
+      }
+      void call
+      return []
+    })
+    const result = await listBusinesses({ sql })
+    expect(result.status).toBe(200)
+    const b = (
+      result.body.businesses as {
+        saas_subscription: {
+          plan_id: string
+          plan_label: string
+          status: string
+          subscribed_at: string | null
+        } | null
+        billing: { monthly_amount_cents: number }
+      }[]
+    )[0]
+    expect(b.saas_subscription).toMatchObject({
+      plan_id: "basico",
+      plan_label: "Básico",
+      status: "active",
+    })
+    expect(b.billing.monthly_amount_cents).toBe(3_999_000)
   })
 })
 
