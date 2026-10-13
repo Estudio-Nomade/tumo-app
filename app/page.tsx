@@ -1,11 +1,14 @@
 import type { Metadata } from "next"
 import { LandingPage } from "@/modules/landing/landing-page"
-import { PRICE_FROM_USD } from "@/modules/landing/config"
+import {
+  formatArsDisplay,
+  PRICE_FROM_ARS,
+} from "@/modules/landing/config"
 
 /** Re-read SELF_SERVICE_SIGNUP each request — avoid baking WA hrefs into static HTML. */
 export const dynamic = "force-dynamic"
 
-const metaDescription = `Sistema digital para tu comercio. Planes desde $${PRICE_FROM_USD} USD/mes (Básico 1 módulo · Pro hasta 3 · Full todos). Cobro en ARS.`
+const metaDescription = `Sistema digital para tu comercio. Planes desde $${formatArsDisplay(PRICE_FROM_ARS)} ARS/mes (Básico 1 módulo · Pro hasta 3 · Full todos). Cobro en pesos.`
 
 export const metadata: Metadata = {
   title: "Tumo — Tecnología que no te frena el negocio",

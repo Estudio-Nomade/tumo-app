@@ -12,15 +12,27 @@ export function whatsappHref(message?: string): string {
 
 export const DEFAULT_WA_MESSAGE = "Hola, quiero saber más sobre Tumo."
 
-/** Precio de entrada (plan Básico) — hero, SEO, “desde”. */
-export const PRICE_FROM_USD = "39.99"
+/** Formatea pesos enteros ARS con punto de miles (ej. 39990 → "39.990"). */
+export function formatArsDisplay(pesos: string | number): string {
+  const n = typeof pesos === "number" ? pesos : Number(pesos)
+  if (!Number.isFinite(n)) return String(pesos)
+  return Math.round(n).toLocaleString("es-AR")
+}
+
+/**
+ * Precio de entrada (plan Básico) en pesos — hero, SEO, “desde”.
+ * Alineado a PLAN_CATALOG amountArsCentsMonth / 100.
+ */
+export const PRICE_FROM_ARS = "39990"
 
 export type LandingPlan = {
   id: "basico" | "pro" | "full"
   name: string
   cupoLabel: string
-  priceUsdMonth: string
-  priceUsdWeek: string
+  /** Pesos enteros ARS / mes (string numérico sin separadores). */
+  priceArsMonth: string
+  /** Pesos enteros ARS / sem (ref.). */
+  priceArsWeek: string
   blurb: string
   highlighted?: boolean
   waMessage: string
@@ -28,36 +40,40 @@ export type LandingPlan = {
 
 /**
  * Planes por cupo (no por módulo suelto).
- * Cobro en ARS vía dLocal cuando el checkout esté live; hoy CTA = WA por plan.
+ * Precios en ARS alineados a shell/billing/plan-catalog.ts (amountArsCentsMonth).
+ * Cobro vía dLocal cuando el checkout esté live; hoy CTA = WA por plan.
  */
 export const PLANS: LandingPlan[] = [
   {
     id: "basico",
     name: "Básico",
     cupoLabel: "1 módulo",
-    priceUsdMonth: "39.99",
-    priceUsdWeek: "11.99",
+    priceArsMonth: "39990",
+    priceArsWeek: "11990",
     blurb: "Una sola pieza: Pedidos, Turnos o Fidelización.",
-    waMessage: "Hola, quiero el plan Básico de Tumo (1 módulo, U$S 39.99/mes).",
+    waMessage:
+      "Hola, quiero el plan Básico de Tumo (1 módulo, $39.990 ARS/mes).",
   },
   {
     id: "pro",
     name: "Pro",
     cupoLabel: "Hasta 3 módulos",
-    priceUsdMonth: "89.99",
-    priceUsdWeek: "25.99",
+    priceArsMonth: "89990",
+    priceArsWeek: "25990",
     blurb: "Combiná hasta tres módulos según tu local.",
     highlighted: true,
-    waMessage: "Hola, quiero el plan Pro de Tumo (hasta 3 módulos, U$S 89.99/mes).",
+    waMessage:
+      "Hola, quiero el plan Pro de Tumo (hasta 3 módulos, $89.990 ARS/mes).",
   },
   {
     id: "full",
     name: "Full",
     cupoLabel: "Todos los módulos",
-    priceUsdMonth: "129.99",
-    priceUsdWeek: "36.99",
+    priceArsMonth: "129990",
+    priceArsWeek: "36990",
     blurb: "Todo el stack. Sin pensar en cupos.",
-    waMessage: "Hola, quiero el plan Full de Tumo (todos los módulos, U$S 129.99/mes).",
+    waMessage:
+      "Hola, quiero el plan Full de Tumo (todos los módulos, $129.990 ARS/mes).",
   },
 ]
 
@@ -176,7 +192,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   {
     question: "¿Cuánto sale?",
     answer:
-      "Tres planes por cupo (ref. USD/mes): Básico U$S 39.99 (1 módulo), Pro U$S 89.99 (hasta 3) y Full U$S 129.99 (todos). También hay ref. semanal (~11.99 / ~25.99 / ~36.99); el mensual sale un toque mejor que 4 semanas. El cobro es en ARS (pesos). Te armamos el alta por WhatsApp.",
+      "Tres planes por cupo en ARS (pesos): Básico $39.990/mes (1 módulo), Pro $89.990 (hasta 3) y Full $129.990 (todos). También hay ref. semanal (~$11.990 / ~$25.990 / ~$36.990); el mensual sale un toque mejor que 4 semanas. Te armamos el alta por WhatsApp.",
   },
   {
     question: "¿Cómo empiezo?",

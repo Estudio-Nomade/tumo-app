@@ -1,4 +1,4 @@
-import { PLANS, whatsappHref } from "../config"
+import { formatArsDisplay, PLANS, whatsappHref } from "../config"
 import { LandingButton } from "../ui/button"
 import {
   isSelfServiceSignupEnabled,
@@ -66,7 +66,7 @@ export function PricingSection() {
                 {plan.cupoLabel}
               </p>
               <p className="mt-6 font-[family-name:var(--font-geist-sans)] text-[40px] font-extrabold leading-none tracking-[-0.04em] text-[#FFFFFF] md:text-[44px]">
-                ${plan.priceUsdMonth}
+                ${formatArsDisplay(plan.priceArsMonth)}
               </p>
               <p
                 className={[
@@ -74,9 +74,9 @@ export function PricingSection() {
                   plan.highlighted ? "text-[#EDE9FE]" : "text-[#A3A3A3]",
                 ].join(" ")}
               >
-                USD / mes
+                ARS / mes
                 <span className="mt-1 block text-sm opacity-90">
-                  o ~${plan.priceUsdWeek} USD / sem
+                  o ~${formatArsDisplay(plan.priceArsWeek)} ARS / sem
                 </span>
               </p>
               <p

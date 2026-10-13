@@ -18,7 +18,8 @@ describe("LandingPage", () => {
     const html = renderToStaticMarkup(<LandingPage />)
     expect(html).toContain("wa.me/542494512494")
     expect(html).toMatch(/Elegí tu plan|Ver planes|#precios/i)
-    expect(html).toContain("39.99")
+    expect(html).toMatch(/39\.?990/)
+    expect(html).not.toMatch(/USD|U\$S/i)
     expect(html).not.toContain("Dejanos tu teléfono y te llamamos")
     expect(html).not.toContain("69.99")
   })
@@ -44,22 +45,23 @@ describe("LandingPage", () => {
     expect(aMedida).toBeGreaterThan(turnos)
   })
 
-  test("precios: 3 planes Básico/Pro/Full, sin 69.99 ni 30.000/19.900", () => {
+  test("precios: 3 planes Básico/Pro/Full en ARS, sin USD ni precios viejos", () => {
     const html = renderToStaticMarkup(<LandingPage />)
     expect(html).toContain("Básico")
     expect(html).toContain("Pro")
     expect(html).toContain("Full")
-    expect(html).toContain("39.99")
-    expect(html).toContain("89.99")
-    expect(html).toContain("129.99")
-    expect(html).toContain("11.99")
-    expect(html).toContain("25.99")
-    expect(html).toContain("36.99")
+    expect(html).toMatch(/39\.?990/)
+    expect(html).toMatch(/89\.?990/)
+    expect(html).toMatch(/129\.?990/)
+    expect(html).toMatch(/11\.?990/)
+    expect(html).toMatch(/25\.?990/)
+    expect(html).toMatch(/36\.?990/)
     expect(html).toMatch(/1 m[oó]dulo/i)
     expect(html).toMatch(/hasta 3|3 m[oó]dulos/i)
     expect(html).toMatch(/todos los m[oó]dulos|todos/i)
     expect(html).toMatch(/ARS|pesos/i)
     expect(html).toMatch(/mes/i)
+    expect(html).not.toMatch(/USD|U\$S/i)
     expect(html).not.toContain("69.99")
     expect(html).not.toContain("30.000")
     expect(html).not.toContain("19.900")
@@ -115,6 +117,12 @@ describe("LandingPage", () => {
     expect(html).toContain("tumo.estudionomade@gmail.com")
     expect(html).not.toContain("hola@tumo.com.ar")
     expect(html).not.toContain("estudionomade2025@gmail.com")
+  })
+
+  test("footer linkea a términos de compra", () => {
+    const html = renderToStaticMarkup(<LandingPage />)
+    expect(html).toContain('href="/terminos"')
+    expect(html).toMatch(/Términos y condiciones|Términos de compra/i)
   })
 
   test("craft visual: grain, kickers y composición", () => {
