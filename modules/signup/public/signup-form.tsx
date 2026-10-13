@@ -28,10 +28,10 @@ function parsePlanId(value?: string): PlanId {
     : "basico"
 }
 
-function priceUsd(planId: PlanId): string {
+function priceArsDisplay(planId: PlanId): string {
   const cents =
-    PLAN_CATALOG.find((p) => p.id === planId)?.amountUsdCentsMonth ?? 0
-  return (cents / 100).toFixed(2)
+    PLAN_CATALOG.find((p) => p.id === planId)?.amountArsCentsMonth ?? 0
+  return Math.round(cents / 100).toLocaleString("es-AR")
 }
 
 function cupoLabelFor(planId: PlanId): string {
@@ -267,9 +267,9 @@ export function SignupForm({ initialPlan }: { initialPlan?: string }) {
                   {cupoLabelFor(p.id)}
                 </span>
                 <span className="mt-1 text-lg font-extrabold tracking-tight">
-                  ${priceUsd(p.id)}
+                  ${priceArsDisplay(p.id)}
                   <span className="ml-1 text-xs font-medium text-[#A3A3A3]">
-                    USD/mes
+                    ARS/mes
                   </span>
                 </span>
               </button>

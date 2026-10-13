@@ -8,6 +8,14 @@ export function FooterSection() {
         <p className="text-base text-[#A3A3A3]">
           tumo.estudionomade@gmail.com · WhatsApp
         </p>
+        <p className="text-sm text-[#A3A3A3]">
+          <a
+            href="/terminos"
+            className="underline-offset-4 transition-colors hover:text-[#FFFFFF] hover:underline"
+          >
+            Términos y condiciones
+          </a>
+        </p>
       </div>
     </footer>
   )

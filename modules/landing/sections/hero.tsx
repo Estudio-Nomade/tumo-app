@@ -1,15 +1,16 @@
 import {
   DEFAULT_WA_MESSAGE,
+  formatArsDisplay,
   MEDIA,
-  PRICE_FROM_USD,
+  PRICE_FROM_ARS,
   whatsappHref,
 } from "../config"
 import { LandingButton } from "../ui/button"
 import { StockImage } from "../ui/stock-image"
 
 const TRUST = [
-  "Planes desde U$S 39.99/mes",
-  "Cobro en ARS · te acompañamos por WA",
+  `Planes desde $${formatArsDisplay(PRICE_FROM_ARS)} ARS/mes`,
+  "Cobro en pesos · te acompañamos por WA",
   "Pedidos · Turnos · Fidelización",
 ]
 
@@ -72,7 +73,7 @@ export function Hero() {
               rel="noopener noreferrer"
               className="text-center text-base font-medium text-[#A3A3A3] underline-offset-4 transition-colors hover:text-[#FFFFFF] hover:underline sm:text-left"
             >
-              {`Dudas por WhatsApp · desde $${PRICE_FROM_USD} USD/mes`}
+              {`Dudas por WhatsApp · desde $${formatArsDisplay(PRICE_FROM_ARS)} ARS/mes`}
             </a>
           </div>
         </div>
